@@ -1,5 +1,4 @@
-```tsx
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import {
@@ -50,19 +49,22 @@ export default function VisitorOnboarding() {
             if (!res.ok) {
               throw new Error("Failed to load wilayas");
             }
+
             return res.json();
           })
           .then((data) => {
-            if (data?.success && Array.isArray(data.wilayas)) {
+            if (data.success && Array.isArray(data.wilayas)) {
               setWilayasList(data.wilayas);
+            } else {
+              setErrorMsg("تعذر تحميل قائمة الولايات");
             }
           })
-          .catch((error) => {
-            console.error("Wilayas loading error:", error);
+          .catch(() => {
+            setErrorMsg("تعذر تحميل قائمة الولايات");
           });
       }
-    } catch (error) {
-      console.error("Visitor onboarding error:", error);
+    } catch {
+      console.error("Unable to access localStorage");
     }
 
     return () => {
@@ -71,23 +73,19 @@ export default function VisitorOnboarding() {
   }, []);
 
   const validateStep1 = () => {
-    setErrorMsg("");
-
-    const cleanFirstName = firstName.trim();
-    const cleanLastName = lastName.trim();
-    const ageNumber = Number(age);
-
-    if (cleanFirstName.length < 2) {
-      setErrorMsg("الرجاء إدخال الاسم الأول بشكل صحيح");
+    if (!firstName.trim() || firstName.trim().length < 2) {
+      setErrorMsg("الرجاء إدخال الاسم الأول (حرفين على الأقل)");
       return false;
     }
 
-    if (cleanLastName.length < 2) {
-      setErrorMsg("الرجاء إدخال اللقب بشكل صحيح");
+    if (!lastName.trim() || lastName.trim().length < 2) {
+      setErrorMsg("الرجاء إدخال اللقب (حرفين على الأقل)");
       return false;
     }
 
-    if (!Number.isInteger(ageNumber) || ageNumber < 14 || ageNumber > 90) {
+    const ageNum = Number(age);
+
+    if (!Number.isInteger(ageNum) || ageNum < 14 || ageNum > 90) {
       setErrorMsg("الرجاء إدخال عمر صحيح بين 14 و90 سنة");
       return false;
     }
@@ -96,9 +94,7 @@ export default function VisitorOnboarding() {
   };
 
   const validateStep2 = () => {
-    setErrorMsg("");
-
-    if (wilayaId === null || wilayaId <= 0) {
+    if (!wilayaId) {
       setErrorMsg("الرجاء اختيار ولايتك من القائمة");
       return false;
     }
@@ -107,29 +103,27 @@ export default function VisitorOnboarding() {
   };
 
   const validateStep3 = () => {
-    setErrorMsg("");
+    const phoneValue = phone.trim();
 
-    const cleanPhone = phone.trim();
-
-    if (!cleanPhone) {
-      setErrorMsg("رقم الهاتف إجباري لإكمال التسجيل");
+    if (!phoneValue) {
+      setErrorMsg("الرجاء إدخال رقم الهاتف");
       return false;
     }
 
-    /*
-      أرقام المحمول الجزائرية:
-      05XXXXXXXX
-      06XXXXXXXX
-      07XXXXXXXX
-
-      المجموع = 10 أرقام
-      بدون مسافات أو رموز.
-    */
-    if (!/^0[567][0-9]{8}$/.test(cleanPhone)) {
+    if (!/^0(5|6|7)[0-9]{8}$/.test(phoneValue)) {
       setErrorMsg(
-        "أدخل رقم هاتف جزائري صحيح من 10 أرقام بدون مسافات، مثال: 0555123456"
+        "الرجاء إدخال رقم هاتف جزائري صحيح من 10 أرقام، مثال: 0555123456"
       );
       return false;
+    }
+
+    if (email.trim()) {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!emailPattern.test(email.trim())) {
+        setErrorMsg("الرجاء إدخال بريد إلكتروني صحيح");
+        return false;
+      }
     }
 
     return true;
@@ -142,6 +136,7 @@ export default function VisitorOnboarding() {
       if (validateStep1()) {
         setStep(2);
       }
+
       return;
     }
 
@@ -155,13 +150,10 @@ export default function VisitorOnboarding() {
   const handleBack = () => {
     setErrorMsg("");
 
-    if (step === 2) {
-      setStep(1);
-      return;
-    }
-
     if (step === 3) {
       setStep(2);
+    } else if (step === 2) {
+      setStep(1);
     }
   };
 
@@ -172,10 +164,16 @@ export default function VisitorOnboarding() {
       return;
     }
 
+    if (!wilayaId) {
+      setErrorMsg("الرجاء اختيار الولاية");
+      setStep(2);
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await fetch("/api/visitor", {
+      const res = await fetch("/api/visitor", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -190,14 +188,9 @@ export default function VisitorOnboarding() {
         }),
       });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (!response.ok) {
-        setErrorMsg(data?.error || "حدث خطأ أثناء حفظ البيانات");
-        return;
-      }
-
-      if (data?.success && data?.visitor) {
+      if (data.success && data.visitor) {
         localStorage.setItem(
           "nabda_visitor",
           JSON.stringify(data.visitor)
@@ -205,12 +198,10 @@ export default function VisitorOnboarding() {
 
         setIsOpen(false);
         document.body.style.overflow = "";
-        return;
+      } else {
+        setErrorMsg(data.error || "حدث خطأ أثناء حفظ البيانات");
       }
-
-      setErrorMsg(data?.error || "حدث خطأ أثناء حفظ البيانات");
-    } catch (error) {
-      console.error("Visitor submit error:", error);
+    } catch {
       setErrorMsg("خطأ في الاتصال بالخادم. حاول مرة أخرى.");
     } finally {
       setLoading(false);
@@ -226,13 +217,10 @@ export default function VisitorOnboarding() {
   );
 
   return (
-    <div
-      dir="rtl"
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-fadeIn"
-    >
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-fadeIn">
       <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[95vh] overflow-y-auto border-2 border-indigo-500/30">
-        {/* HEADER */}
-        <div className="bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 text-white p-6 sm:p-8 space-y-4 border-b-4 border-indigo-500">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 text-white p-6 sm:p-8 space-y-3 border-b-4 border-indigo-500">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-fuchsia-500 text-white flex items-center justify-center font-black shadow-md text-xs">
               NB
@@ -249,13 +237,11 @@ export default function VisitorOnboarding() {
             </div>
           </div>
 
-          {/* PROGRESS */}
+          {/* Progress Bar */}
           <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
             <div
               className="bg-gradient-to-r from-indigo-500 to-fuchsia-500 h-full transition-all duration-500"
-              style={{
-                width: `${(step / 3) * 100}%`,
-              }}
+              style={{ width: `${(step / 3) * 100}%` }}
             />
           </div>
 
@@ -264,7 +250,7 @@ export default function VisitorOnboarding() {
           </div>
         </div>
 
-        {/* BODY */}
+        {/* Body */}
         <div className="p-6 sm:p-8 space-y-6">
           {/* STEP 1 */}
           {step === 1 && (
@@ -281,64 +267,58 @@ export default function VisitorOnboarding() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                {/* FIRST NAME */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700">
-                    الاسم الأول *
+                    الاسم الأول
                   </label>
 
                   <input
                     type="text"
                     value={firstName}
-                    onChange={(event) => {
-                      setFirstName(event.target.value);
+                    onChange={(e) => {
+                      setFirstName(e.target.value);
                       setErrorMsg("");
                     }}
                     placeholder="محمد"
-                    autoComplete="given-name"
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-bold"
                     autoFocus
                   />
                 </div>
 
-                {/* LAST NAME */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700">
-                    اللقب *
+                    اللقب
                   </label>
 
                   <input
                     type="text"
                     value={lastName}
-                    onChange={(event) => {
-                      setLastName(event.target.value);
+                    onChange={(e) => {
+                      setLastName(e.target.value);
                       setErrorMsg("");
                     }}
                     placeholder="بن علي"
-                    autoComplete="family-name"
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-bold"
                   />
                 </div>
               </div>
 
-              {/* AGE */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">
-                  العمر *
+                  العمر
                 </label>
 
                 <input
                   type="number"
-                  min={14}
-                  max={90}
-                  step={1}
+                  min="14"
+                  max="90"
                   value={age}
-                  onChange={(event) => {
-                    setAge(event.target.value);
+                  onChange={(e) => {
+                    setAge(e.target.value);
                     setErrorMsg("");
                   }}
                   placeholder="مثال: 28"
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold font-mono"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-bold font-mono"
                 />
 
                 <p className="text-[11px] text-slate-400">
@@ -364,34 +344,34 @@ export default function VisitorOnboarding() {
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-700">
-                  اختر الولاية *
+                  اختر الولاية:
                 </label>
 
-                {wilayasList.length > 0 ? (
-                  <select
-                    value={wilayaId ?? ""}
-                    onChange={(event) => {
-                      const value = Number(event.target.value);
-                      setWilayaId(value > 0 ? value : null);
-                      setErrorMsg("");
-                    }}
-                    className="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold bg-white"
-                  >
-                    <option value="" disabled>
-                      -- اختر ولايتك --
-                    </option>
+                <select
+                  value={wilayaId ?? ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setWilayaId(value ? Number(value) : null);
+                    setErrorMsg("");
+                  }}
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-bold bg-white"
+                  size={Math.min(8, Math.max(1, wilayasList.length + 1))}
+                >
+                  <option value="" disabled>
+                    -- اختر ولايتك --
+                  </option>
 
-                    {wilayasList.map((wilaya) => (
-                      <option key={wilaya.id} value={wilaya.id}>
-                        {wilaya.code} - {wilaya.nameAr}
-                        {wilaya.nameFr ? ` (${wilaya.nameFr})` : ""}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500">
+                  {wilayasList.map((wilaya) => (
+                    <option key={wilaya.id} value={wilaya.id}>
+                      {wilaya.code} - {wilaya.nameAr} ({wilaya.nameFr})
+                    </option>
+                  ))}
+                </select>
+
+                {wilayasList.length === 0 && (
+                  <p className="text-[11px] text-amber-600">
                     جاري تحميل قائمة الولايات...
-                  </div>
+                  </p>
                 )}
 
                 <p className="text-[11px] text-slate-400">
@@ -411,15 +391,15 @@ export default function VisitorOnboarding() {
                 </h2>
 
                 <p className="text-xs text-slate-500">
-                  رقم الهاتف إجباري، والبريد الإلكتروني اختياري
+                  رقم الهاتف مطلوب، والبريد الإلكتروني اختياري
                 </p>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {/* PHONE */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                    <Phone className="w-3.5 h-3.5 text-indigo-600" />
+                    <Phone className="w-3.5 h-3.5" />
                     رقم الهاتف
                     <span className="text-rose-600">*</span>
                   </label>
@@ -428,37 +408,26 @@ export default function VisitorOnboarding() {
                     type="tel"
                     inputMode="numeric"
                     value={phone}
-                    onChange={(event) => {
-                      const onlyNumbers = event.target.value.replace(
-                        /[^0-9]/g,
-                        ""
-                      );
-
-                      setPhone(onlyNumbers.slice(0, 10));
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "");
+                      setPhone(value.slice(0, 10));
                       setErrorMsg("");
                     }}
                     placeholder="0555123456"
                     maxLength={10}
-                    autoComplete="tel"
-                    className="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold font-mono tracking-wider"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-bold font-mono"
                     required
                   />
 
                   <p className="text-[11px] text-slate-400">
-                    10 أرقام بدون مسافات — مثال: 0555123456
+                    أدخل رقم هاتف جزائري محمول من 10 أرقام بدون مسافات
                   </p>
-
-                  {phone.length > 0 && phone.length < 10 && (
-                    <p className="text-[11px] text-amber-600 font-bold">
-                      أدخل {10 - phone.length} أرقام إضافية
-                    </p>
-                  )}
                 </div>
 
                 {/* EMAIL */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                    <Mail className="w-3.5 h-3.5 text-indigo-600" />
+                    <Mail className="w-3.5 h-3.5" />
                     البريد الإلكتروني
                     <span className="text-slate-400">(اختياري)</span>
                   </label>
@@ -466,17 +435,15 @@ export default function VisitorOnboarding() {
                   <input
                     type="email"
                     value={email}
-                    onChange={(event) => {
-                      setEmail(event.target.value);
+                    onChange={(e) => {
+                      setEmail(e.target.value);
                       setErrorMsg("");
                     }}
                     placeholder="name@example.com"
-                    autoComplete="email"
-                    className="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-bold"
                   />
                 </div>
 
-                {/* SECURITY */}
                 <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-[11px] text-indigo-800 flex items-start gap-2">
                   <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
 
@@ -490,21 +457,21 @@ export default function VisitorOnboarding() {
 
                   <span>
                     رقم الهاتف مطلوب لإكمال التسجيل، أما البريد الإلكتروني
-                    فهو اختياري ويمكنك تركه فارغاً.
+                    فهو اختياري.
                   </span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* ERROR */}
+          {/* Error */}
           {errorMsg && (
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold animate-fadeIn">
               {errorMsg}
             </div>
           )}
 
-          {/* SUMMARY */}
+          {/* Summary */}
           {step === 3 && (
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
               <span className="text-xs font-bold text-slate-500 block">
@@ -513,44 +480,40 @@ export default function VisitorOnboarding() {
 
               <div className="grid grid-cols-2 gap-2 text-xs font-bold">
                 <div className="flex items-center gap-1 text-slate-700">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
+
                   <span>
                     الاسم: {firstName} {lastName}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-1 text-slate-700">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
+
                   <span>العمر: {age} سنة</span>
                 </div>
 
                 <div className="flex items-center gap-1 text-slate-700 col-span-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
 
                   <span>
                     الولاية:{" "}
-                    {selectedWilaya?.nameAr || "غير محددة"}
+                    {selectedWilaya?.nameAr || "لم يتم اختيار الولاية"}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-1 text-slate-700 col-span-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
 
-                  <span>الهاتف: {phone || "غير محدد"}</span>
+                  <span>
+                    الهاتف: {phone || "لم يتم إدخال الهاتف"}
+                  </span>
                 </div>
-
-                {email.trim() && (
-                  <div className="flex items-center gap-1 text-slate-700 col-span-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-
-                    <span>البريد: {email}</span>
-                  </div>
-                )}
               </div>
             </div>
           )}
 
-          {/* NAVIGATION */}
+          {/* Navigation */}
           <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-100">
             {step > 1 ? (
               <button
@@ -569,8 +532,8 @@ export default function VisitorOnboarding() {
               <button
                 type="button"
                 onClick={handleNext}
-                disabled={step === 2 && wilayasList.length === 0}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white font-extrabold text-sm hover:from-indigo-700 hover:to-fuchsia-700 transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white font-extrabold text-sm hover:from-indigo-700 hover:to-fuchsia-700 transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50"
               >
                 <span>التالي</span>
                 <ChevronLeft className="w-4 h-4" />
@@ -580,7 +543,7 @@ export default function VisitorOnboarding() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={loading}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white font-extrabold text-sm hover:from-indigo-700 hover:to-fuchsia-700 transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white font-extrabold text-sm hover:from-indigo-700 hover:to-fuchsia-700 transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50"
               >
                 {loading ? (
                   <span>جاري الحفظ...</span>
@@ -598,4 +561,3 @@ export default function VisitorOnboarding() {
     </div>
   );
 }
-```
