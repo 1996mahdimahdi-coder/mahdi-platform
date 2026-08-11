@@ -1,7 +1,18 @@
+```tsx
 "use client";
 
 import { useEffect, useState } from "react";
-import { User, MapPin, Phone, Mail, Sparkles, ShieldCheck, Lock, ChevronLeft, CheckCircle2 } from "lucide-react";
+import {
+  User,
+  MapPin,
+  Phone,
+  Mail,
+  Sparkles,
+  ShieldCheck,
+  Lock,
+  ChevronLeft,
+  CheckCircle2,
+} from "lucide-react";
 
 interface WilayaItem {
   id: number;
@@ -27,13 +38,13 @@ export default function VisitorOnboarding() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   useEffect(() => {
-    // Check if visitor has already onboarded
     try {
       const stored = localStorage.getItem("nabda_visitor");
+
       if (!stored) {
         setIsOpen(true);
         document.body.style.overflow = "hidden";
-        // Load wilayas list
+
         fetch("/api/wilayas")
           .then((res) => res.json())
           .then((data) => {
@@ -57,15 +68,19 @@ export default function VisitorOnboarding() {
       setErrorMsg("الرجاء إدخال الاسم الأول (حرفين على الأقل)");
       return false;
     }
+
     if (!lastName.trim() || lastName.trim().length < 2) {
       setErrorMsg("الرجاء إدخال اللقب (حرفين على الأقل)");
       return false;
     }
+
     const ageNum = Number(age);
+
     if (!ageNum || ageNum < 14 || ageNum > 90) {
       setErrorMsg("الرجاء إدخال عمر صحيح بين 14 و 90 سنة");
       return false;
     }
+
     return true;
   };
 
@@ -74,11 +89,33 @@ export default function VisitorOnboarding() {
       setErrorMsg("الرجاء اختيار ولايتك من القائمة");
       return false;
     }
+
+    return true;
+  };
+
+  const validateStep3 = () => {
+    const phoneValue = phone.trim();
+
+    if (!phoneValue) {
+      setErrorMsg("الرجاء إدخال رقم الهاتف");
+      return false;
+    }
+
+    // رقم هاتف جزائري محمول:
+    // 10 أرقام، يبدأ بـ 05 أو 06 أو 07، وبدون مسافات.
+    if (!/^0(5|6|7)[0-9]{8}$/.test(phoneValue)) {
+      setErrorMsg(
+        "الرجاء إدخال رقم هاتف جزائري صحيح من 10 أرقام، مثال: 0555123456"
+      );
+      return false;
+    }
+
     return true;
   };
 
   const handleNext = () => {
     setErrorMsg("");
+
     if (step === 1) {
       if (validateStep1()) {
         setStep(2);
@@ -92,6 +129,7 @@ export default function VisitorOnboarding() {
 
   const handleBack = () => {
     setErrorMsg("");
+
     if (step > 1) {
       setStep((step - 1) as 1 | 2);
     }
@@ -99,39 +137,53 @@ export default function VisitorOnboarding() {
 
   const handleSubmit = async () => {
     setErrorMsg("");
+
+    // حماية إضافية: لا يمكن الحفظ بدون هاتف صحيح.
+    if (!validateStep3()) {
+      return;
+    }
+
     setLoading(true);
 
     try {
       const res = await fetch("/api/visitor", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           age: Number(age),
           wilayaId,
-          phone: phone.trim() || undefined,
+          phone: phone.trim(),
           email: email.trim() || undefined,
         }),
       });
 
       const data = await res.json();
+
       if (data.success && data.visitor) {
-        // Save visitor to localStorage
-        localStorage.setItem("nabda_visitor", JSON.stringify(data.visitor));
+        localStorage.setItem(
+          "nabda_visitor",
+          JSON.stringify(data.visitor)
+        );
+
         setIsOpen(false);
         document.body.style.overflow = "";
       } else {
         setErrorMsg(data.error || "حدث خطأ أثناء حفظ البيانات");
       }
-    } catch (e: any) {
+    } catch (e) {
       setErrorMsg("خطأ في الاتصال بالخادم. حاول مرة أخرى.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-fadeIn">
@@ -142,9 +194,15 @@ export default function VisitorOnboarding() {
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-fuchsia-500 text-white flex items-center justify-center font-black shadow-md text-xs">
               NB
             </div>
+
             <div>
-              <h1 className="text-xl sm:text-2xl font-black">مرحباً بك في NABDA</h1>
-              <p className="text-xs text-slate-300">ساعدنا في تقديم تجربة مخصصة لك</p>
+              <h1 className="text-xl sm:text-2xl font-black">
+                مرحباً بك في NABDA
+              </h1>
+
+              <p className="text-xs text-slate-300">
+                ساعدنا في تقديم تجربة مخصصة لك
+              </p>
             </div>
           </div>
 
@@ -171,6 +229,7 @@ export default function VisitorOnboarding() {
                   <User className="w-5 h-5 text-indigo-600" />
                   أخبرنا عن نفسك
                 </h2>
+
                 <p className="text-xs text-slate-500">
                   نحتاج لمعلوماتك الأساسية لبناء تجربة مخصصة لك
                 </p>
@@ -178,7 +237,10 @@ export default function VisitorOnboarding() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">الاسم الأول</label>
+                  <label className="text-xs font-bold text-slate-700">
+                    الاسم الأول
+                  </label>
+
                   <input
                     type="text"
                     value={firstName}
@@ -188,8 +250,12 @@ export default function VisitorOnboarding() {
                     autoFocus
                   />
                 </div>
+
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">اللقب</label>
+                  <label className="text-xs font-bold text-slate-700">
+                    اللقب
+                  </label>
+
                   <input
                     type="text"
                     value={lastName}
@@ -201,7 +267,10 @@ export default function VisitorOnboarding() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">العمر</label>
+                <label className="text-xs font-bold text-slate-700">
+                  العمر
+                </label>
+
                 <input
                   type="number"
                   min="14"
@@ -211,6 +280,7 @@ export default function VisitorOnboarding() {
                   placeholder="مثال: 28"
                   className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-bold font-mono"
                 />
+
                 <p className="text-[11px] text-slate-400">
                   العمر يساعدنا في تقديم مشاريع تتناسب مع مرحلتك العمرية
                 </p>
@@ -226,13 +296,17 @@ export default function VisitorOnboarding() {
                   <MapPin className="w-5 h-5 text-indigo-600" />
                   من أي ولاية أنت؟
                 </h2>
+
                 <p className="text-xs text-slate-500">
                   موقعك الجغرافي يساعدنا في اقتراح المشاريع المناسبة لولايتك
                 </p>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700">اختر الولاية:</label>
+                <label className="text-xs font-bold text-slate-700">
+                  اختر الولاية:
+                </label>
+
                 <select
                   value={wilayaId || ""}
                   onChange={(e) => setWilayaId(Number(e.target.value))}
@@ -242,52 +316,71 @@ export default function VisitorOnboarding() {
                   <option value="" disabled>
                     -- اختر ولايتك --
                   </option>
+
                   {wilayasList.map((w) => (
                     <option key={w.id} value={w.id}>
                       {w.code} - {w.nameAr} ({w.nameFr})
                     </option>
                   ))}
                 </select>
+
                 <p className="text-[11px] text-slate-400">
-                  تم تغطية جميع الولايات الـ 58 رسمياً
+                  اختر ولايتك من القائمة
                 </p>
               </div>
             </div>
           )}
 
-          {/* STEP 3: CONTACT (OPTIONAL) */}
+          {/* STEP 3: CONTACT */}
           {step === 3 && (
             <div className="space-y-5 animate-fadeIn">
               <div className="text-center space-y-1">
                 <h2 className="text-lg font-extrabold text-slate-900 flex items-center justify-center gap-2">
                   <Sparkles className="w-5 h-5 text-indigo-600" />
-                  معلومات إضافية (اختيارية)
+                  معلومات التواصل
                 </h2>
+
                 <p className="text-xs text-slate-500">
-                  بريدك أو رقم هاتفك يساعدان في حفظ نتائجك بشكل آمن
+                  رقم الهاتف مطلوب، والبريد الإلكتروني اختياري
                 </p>
               </div>
 
               <div className="space-y-3">
+                {/* PHONE - REQUIRED */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 flex items-center gap-1">
                     <Phone className="w-3.5 h-3.5" />
-                    رقم الهاتف (اختياري)
+                    رقم الهاتف <span className="text-rose-600">*</span>
                   </label>
+
                   <input
                     type="tel"
+                    inputMode="numeric"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="0555 123 456"
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "");
+                      setPhone(value.slice(0, 10));
+                      setErrorMsg("");
+                    }}
+                    placeholder="0555123456"
+                    maxLength={10}
                     className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-bold font-mono"
+                    required
                   />
+
+                  <p className="text-[11px] text-slate-400">
+                    أدخل رقم هاتف جزائري محمول من 10 أرقام بدون مسافات
+                  </p>
                 </div>
 
+                {/* EMAIL - OPTIONAL */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 flex items-center gap-1">
                     <Mail className="w-3.5 h-3.5" />
-                    البريد الإلكتروني (اختياري)
+                    البريد الإلكتروني{" "}
+                    <span className="text-slate-400">(اختياري)</span>
                   </label>
+
                   <input
                     type="email"
                     value={email}
@@ -299,15 +392,18 @@ export default function VisitorOnboarding() {
 
                 <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-[11px] text-indigo-800 flex items-start gap-2">
                   <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+
                   <span>
-                    بياناتك مشفّرة ومحمية بالكامل. لن نشاركها مع أي طرف ثالث.
+                    بياناتك محمية ونستخدمها فقط لتخصيص تجربتك داخل NABDA.
                   </span>
                 </div>
 
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 flex items-start gap-2">
                   <Lock className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
+
                   <span>
-                    يمكنك تخطي هذه الخطوة والمتابعة مباشرة. سنحفظ نتائجك في متصفحك.
+                    رقم الهاتف مطلوب لإكمال التسجيل، أما البريد الإلكتروني
+                    فهو اختياري.
                   </span>
                 </div>
               </div>
@@ -324,21 +420,34 @@ export default function VisitorOnboarding() {
           {/* Success Summary at step 3 */}
           {step === 3 && (
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-              <span className="text-xs font-bold text-slate-500 block">ملخص بياناتك:</span>
+              <span className="text-xs font-bold text-slate-500 block">
+                ملخص بياناتك:
+              </span>
+
               <div className="grid grid-cols-2 gap-2 text-xs font-bold">
                 <div className="flex items-center gap-1 text-slate-700">
                   <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>الاسم: {firstName} {lastName}</span>
+                  <span>
+                    الاسم: {firstName} {lastName}
+                  </span>
                 </div>
+
                 <div className="flex items-center gap-1 text-slate-700">
                   <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
                   <span>العمر: {age} سنة</span>
                 </div>
+
                 <div className="flex items-center gap-1 text-slate-700 col-span-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
                   <span>
-                    الولاية: {wilayasList.find((w) => w.id === wilayaId)?.nameAr}
+                    الولاية:{" "}
+                    {wilayasList.find((w) => w.id === wilayaId)?.nameAr}
                   </span>
+                </div>
+
+                <div className="flex items-center gap-1 text-slate-700 col-span-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>الهاتف: {phone}</span>
                 </div>
               </div>
             </div>
@@ -391,3 +500,4 @@ export default function VisitorOnboarding() {
     </div>
   );
 }
+```
