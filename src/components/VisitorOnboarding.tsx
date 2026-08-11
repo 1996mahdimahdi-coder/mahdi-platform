@@ -29,7 +29,7 @@ export default function VisitorOnboarding() {
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [age, setAge] = useState<string>("");
+  const [age, setAge] = useState("");
   const [wilayaId, setWilayaId] = useState<number | null>(null);
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -46,16 +46,23 @@ export default function VisitorOnboarding() {
         document.body.style.overflow = "hidden";
 
         fetch("/api/wilayas")
-          .then((res) => res.json())
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error("Failed to load wilayas");
+            }
+            return res.json();
+          })
           .then((data) => {
-            if (data.success && data.wilayas) {
+            if (data?.success && Array.isArray(data.wilayas)) {
               setWilayasList(data.wilayas);
             }
           })
-          .catch(console.error);
+          .catch((error) => {
+            console.error("Wilayas loading error:", error);
+          });
       }
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error("Visitor onboarding error:", error);
     }
 
     return () => {
@@ -64,20 +71,24 @@ export default function VisitorOnboarding() {
   }, []);
 
   const validateStep1 = () => {
-    if (!firstName.trim() || firstName.trim().length < 2) {
-      setErrorMsg("الرجاء إدخال الاسم الأول (حرفين على الأقل)");
+    setErrorMsg("");
+
+    const cleanFirstName = firstName.trim();
+    const cleanLastName = lastName.trim();
+    const ageNumber = Number(age);
+
+    if (cleanFirstName.length < 2) {
+      setErrorMsg("الرجاء إدخال الاسم الأول بشكل صحيح");
       return false;
     }
 
-    if (!lastName.trim() || lastName.trim().length < 2) {
-      setErrorMsg("الرجاء إدخال اللقب (حرفين على الأقل)");
+    if (cleanLastName.length < 2) {
+      setErrorMsg("الرجاء إدخال اللقب بشكل صحيح");
       return false;
     }
 
-    const ageNum = Number(age);
-
-    if (!ageNum || ageNum < 14 || ageNum > 90) {
-      setErrorMsg("الرجاء إدخال عمر صحيح بين 14 و 90 سنة");
+    if (!Number.isInteger(ageNumber) || ageNumber < 14 || ageNumber > 90) {
+      setErrorMsg("الرجاء إدخال عمر صحيح بين 14 و90 سنة");
       return false;
     }
 
@@ -85,7 +96,9 @@ export default function VisitorOnboarding() {
   };
 
   const validateStep2 = () => {
-    if (!wilayaId) {
+    setErrorMsg("");
+
+    if (wilayaId === null || wilayaId <= 0) {
       setErrorMsg("الرجاء اختيار ولايتك من القائمة");
       return false;
     }
@@ -94,18 +107,27 @@ export default function VisitorOnboarding() {
   };
 
   const validateStep3 = () => {
-    const phoneValue = phone.trim();
+    setErrorMsg("");
 
-    if (!phoneValue) {
-      setErrorMsg("الرجاء إدخال رقم الهاتف");
+    const cleanPhone = phone.trim();
+
+    if (!cleanPhone) {
+      setErrorMsg("رقم الهاتف إجباري لإكمال التسجيل");
       return false;
     }
 
-    // رقم هاتف جزائري محمول:
-    // 10 أرقام، يبدأ بـ 05 أو 06 أو 07، وبدون مسافات.
-    if (!/^0(5|6|7)[0-9]{8}$/.test(phoneValue)) {
+    /*
+      أرقام المحمول الجزائرية:
+      05XXXXXXXX
+      06XXXXXXXX
+      07XXXXXXXX
+
+      المجموع = 10 أرقام
+      بدون مسافات أو رموز.
+    */
+    if (!/^0[567][0-9]{8}$/.test(cleanPhone)) {
       setErrorMsg(
-        "الرجاء إدخال رقم هاتف جزائري صحيح من 10 أرقام، مثال: 0555123456"
+        "أدخل رقم هاتف جزائري صحيح من 10 أرقام بدون مسافات، مثال: 0555123456"
       );
       return false;
     }
@@ -120,7 +142,10 @@ export default function VisitorOnboarding() {
       if (validateStep1()) {
         setStep(2);
       }
-    } else if (step === 2) {
+      return;
+    }
+
+    if (step === 2) {
       if (validateStep2()) {
         setStep(3);
       }
@@ -130,15 +155,19 @@ export default function VisitorOnboarding() {
   const handleBack = () => {
     setErrorMsg("");
 
-    if (step > 1) {
-      setStep((step - 1) as 1 | 2);
+    if (step === 2) {
+      setStep(1);
+      return;
+    }
+
+    if (step === 3) {
+      setStep(2);
     }
   };
 
   const handleSubmit = async () => {
     setErrorMsg("");
 
-    // حماية إضافية: لا يمكن الحفظ بدون هاتف صحيح.
     if (!validateStep3()) {
       return;
     }
@@ -146,7 +175,7 @@ export default function VisitorOnboarding() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/visitor", {
+      const response = await fetch("/api/visitor", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -161,9 +190,14 @@ export default function VisitorOnboarding() {
         }),
       });
 
-      const data = await res.json();
+      const data = await response.json();
 
-      if (data.success && data.visitor) {
+      if (!response.ok) {
+        setErrorMsg(data?.error || "حدث خطأ أثناء حفظ البيانات");
+        return;
+      }
+
+      if (data?.success && data?.visitor) {
         localStorage.setItem(
           "nabda_visitor",
           JSON.stringify(data.visitor)
@@ -171,10 +205,12 @@ export default function VisitorOnboarding() {
 
         setIsOpen(false);
         document.body.style.overflow = "";
-      } else {
-        setErrorMsg(data.error || "حدث خطأ أثناء حفظ البيانات");
+        return;
       }
-    } catch (e) {
+
+      setErrorMsg(data?.error || "حدث خطأ أثناء حفظ البيانات");
+    } catch (error) {
+      console.error("Visitor submit error:", error);
       setErrorMsg("خطأ في الاتصال بالخادم. حاول مرة أخرى.");
     } finally {
       setLoading(false);
@@ -185,11 +221,18 @@ export default function VisitorOnboarding() {
     return null;
   }
 
+  const selectedWilaya = wilayasList.find(
+    (wilaya) => wilaya.id === wilayaId
+  );
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-fadeIn">
+    <div
+      dir="rtl"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-fadeIn"
+    >
       <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[95vh] overflow-y-auto border-2 border-indigo-500/30">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 text-white p-6 sm:p-8 space-y-3 border-b-4 border-indigo-500">
+        {/* HEADER */}
+        <div className="bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 text-white p-6 sm:p-8 space-y-4 border-b-4 border-indigo-500">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-fuchsia-500 text-white flex items-center justify-center font-black shadow-md text-xs">
               NB
@@ -206,11 +249,13 @@ export default function VisitorOnboarding() {
             </div>
           </div>
 
-          {/* Progress Bar */}
-          <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden pt-2">
+          {/* PROGRESS */}
+          <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
             <div
               className="bg-gradient-to-r from-indigo-500 to-fuchsia-500 h-full transition-all duration-500"
-              style={{ width: `${(step / 3) * 100}%` }}
+              style={{
+                width: `${(step / 3) * 100}%`,
+              }}
             />
           </div>
 
@@ -219,9 +264,9 @@ export default function VisitorOnboarding() {
           </div>
         </div>
 
-        {/* Body */}
+        {/* BODY */}
         <div className="p-6 sm:p-8 space-y-6">
-          {/* STEP 1: NAME & AGE */}
+          {/* STEP 1 */}
           {step === 1 && (
             <div className="space-y-5 animate-fadeIn">
               <div className="text-center space-y-1">
@@ -236,49 +281,64 @@ export default function VisitorOnboarding() {
               </div>
 
               <div className="grid grid-cols-2 gap-3">
+                {/* FIRST NAME */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700">
-                    الاسم الأول
+                    الاسم الأول *
                   </label>
 
                   <input
                     type="text"
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    onChange={(event) => {
+                      setFirstName(event.target.value);
+                      setErrorMsg("");
+                    }}
                     placeholder="محمد"
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-bold"
+                    autoComplete="given-name"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold"
                     autoFocus
                   />
                 </div>
 
+                {/* LAST NAME */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700">
-                    اللقب
+                    اللقب *
                   </label>
 
                   <input
                     type="text"
                     value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    onChange={(event) => {
+                      setLastName(event.target.value);
+                      setErrorMsg("");
+                    }}
                     placeholder="بن علي"
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-bold"
+                    autoComplete="family-name"
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold"
                   />
                 </div>
               </div>
 
+              {/* AGE */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">
-                  العمر
+                  العمر *
                 </label>
 
                 <input
                   type="number"
-                  min="14"
-                  max="90"
+                  min={14}
+                  max={90}
+                  step={1}
                   value={age}
-                  onChange={(e) => setAge(e.target.value)}
+                  onChange={(event) => {
+                    setAge(event.target.value);
+                    setErrorMsg("");
+                  }}
                   placeholder="مثال: 28"
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-bold font-mono"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold font-mono"
                 />
 
                 <p className="text-[11px] text-slate-400">
@@ -288,7 +348,7 @@ export default function VisitorOnboarding() {
             </div>
           )}
 
-          {/* STEP 2: WILAYA */}
+          {/* STEP 2 */}
           {step === 2 && (
             <div className="space-y-5 animate-fadeIn">
               <div className="text-center space-y-1">
@@ -304,25 +364,35 @@ export default function VisitorOnboarding() {
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-slate-700">
-                  اختر الولاية:
+                  اختر الولاية *
                 </label>
 
-                <select
-                  value={wilayaId || ""}
-                  onChange={(e) => setWilayaId(Number(e.target.value))}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-bold bg-white max-h-60"
-                  size={Math.min(8, wilayasList.length)}
-                >
-                  <option value="" disabled>
-                    -- اختر ولايتك --
-                  </option>
-
-                  {wilayasList.map((w) => (
-                    <option key={w.id} value={w.id}>
-                      {w.code} - {w.nameAr} ({w.nameFr})
+                {wilayasList.length > 0 ? (
+                  <select
+                    value={wilayaId ?? ""}
+                    onChange={(event) => {
+                      const value = Number(event.target.value);
+                      setWilayaId(value > 0 ? value : null);
+                      setErrorMsg("");
+                    }}
+                    className="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold bg-white"
+                  >
+                    <option value="" disabled>
+                      -- اختر ولايتك --
                     </option>
-                  ))}
-                </select>
+
+                    {wilayasList.map((wilaya) => (
+                      <option key={wilaya.id} value={wilaya.id}>
+                        {wilaya.code} - {wilaya.nameAr}
+                        {wilaya.nameFr ? ` (${wilaya.nameFr})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500">
+                    جاري تحميل قائمة الولايات...
+                  </div>
+                )}
 
                 <p className="text-[11px] text-slate-400">
                   اختر ولايتك من القائمة
@@ -331,7 +401,7 @@ export default function VisitorOnboarding() {
             </div>
           )}
 
-          {/* STEP 3: CONTACT */}
+          {/* STEP 3 */}
           {step === 3 && (
             <div className="space-y-5 animate-fadeIn">
               <div className="text-center space-y-1">
@@ -341,55 +411,72 @@ export default function VisitorOnboarding() {
                 </h2>
 
                 <p className="text-xs text-slate-500">
-                  رقم الهاتف مطلوب، والبريد الإلكتروني اختياري
+                  رقم الهاتف إجباري، والبريد الإلكتروني اختياري
                 </p>
               </div>
 
-              <div className="space-y-3">
-                {/* PHONE - REQUIRED */}
+              <div className="space-y-4">
+                {/* PHONE */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                    <Phone className="w-3.5 h-3.5" />
-                    رقم الهاتف <span className="text-rose-600">*</span>
+                    <Phone className="w-3.5 h-3.5 text-indigo-600" />
+                    رقم الهاتف
+                    <span className="text-rose-600">*</span>
                   </label>
 
                   <input
                     type="tel"
                     inputMode="numeric"
                     value={phone}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, "");
-                      setPhone(value.slice(0, 10));
+                    onChange={(event) => {
+                      const onlyNumbers = event.target.value.replace(
+                        /[^0-9]/g,
+                        ""
+                      );
+
+                      setPhone(onlyNumbers.slice(0, 10));
                       setErrorMsg("");
                     }}
                     placeholder="0555123456"
                     maxLength={10}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-bold font-mono"
+                    autoComplete="tel"
+                    className="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold font-mono tracking-wider"
                     required
                   />
 
                   <p className="text-[11px] text-slate-400">
-                    أدخل رقم هاتف جزائري محمول من 10 أرقام بدون مسافات
+                    10 أرقام بدون مسافات — مثال: 0555123456
                   </p>
+
+                  {phone.length > 0 && phone.length < 10 && (
+                    <p className="text-[11px] text-amber-600 font-bold">
+                      أدخل {10 - phone.length} أرقام إضافية
+                    </p>
+                  )}
                 </div>
 
-                {/* EMAIL - OPTIONAL */}
+                {/* EMAIL */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                    <Mail className="w-3.5 h-3.5" />
-                    البريد الإلكتروني{" "}
+                    <Mail className="w-3.5 h-3.5 text-indigo-600" />
+                    البريد الإلكتروني
                     <span className="text-slate-400">(اختياري)</span>
                   </label>
 
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(event) => {
+                      setEmail(event.target.value);
+                      setErrorMsg("");
+                    }}
                     placeholder="name@example.com"
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-bold"
+                    autoComplete="email"
+                    className="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-bold"
                   />
                 </div>
 
+                {/* SECURITY */}
                 <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-[11px] text-indigo-800 flex items-start gap-2">
                   <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
 
@@ -403,21 +490,21 @@ export default function VisitorOnboarding() {
 
                   <span>
                     رقم الهاتف مطلوب لإكمال التسجيل، أما البريد الإلكتروني
-                    فهو اختياري.
+                    فهو اختياري ويمكنك تركه فارغاً.
                   </span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Error Message */}
+          {/* ERROR */}
           {errorMsg && (
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold animate-fadeIn">
               {errorMsg}
             </div>
           )}
 
-          {/* Success Summary at step 3 */}
+          {/* SUMMARY */}
           {step === 3 && (
             <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
               <span className="text-xs font-bold text-slate-500 block">
@@ -426,41 +513,51 @@ export default function VisitorOnboarding() {
 
               <div className="grid grid-cols-2 gap-2 text-xs font-bold">
                 <div className="flex items-center gap-1 text-slate-700">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                   <span>
                     الاسم: {firstName} {lastName}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-1 text-slate-700">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
                   <span>العمر: {age} سنة</span>
                 </div>
 
                 <div className="flex items-center gap-1 text-slate-700 col-span-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+
                   <span>
                     الولاية:{" "}
-                    {wilayasList.find((w) => w.id === wilayaId)?.nameAr}
+                    {selectedWilaya?.nameAr || "غير محددة"}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-1 text-slate-700 col-span-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
-                  <span>الهاتف: {phone}</span>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+
+                  <span>الهاتف: {phone || "غير محدد"}</span>
                 </div>
+
+                {email.trim() && (
+                  <div className="flex items-center gap-1 text-slate-700 col-span-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+
+                    <span>البريد: {email}</span>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          {/* Navigation Buttons */}
+          {/* NAVIGATION */}
           <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-100">
             {step > 1 ? (
               <button
                 type="button"
                 onClick={handleBack}
                 disabled={loading}
-                className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200 transition-colors"
+                className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200 transition-colors disabled:opacity-50"
               >
                 السابق
               </button>
@@ -472,7 +569,8 @@ export default function VisitorOnboarding() {
               <button
                 type="button"
                 onClick={handleNext}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white font-extrabold text-sm hover:from-indigo-700 hover:to-fuchsia-700 transition-all shadow-md flex items-center gap-1.5"
+                disabled={step === 2 && wilayasList.length === 0}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white font-extrabold text-sm hover:from-indigo-700 hover:to-fuchsia-700 transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span>التالي</span>
                 <ChevronLeft className="w-4 h-4" />
@@ -482,7 +580,7 @@ export default function VisitorOnboarding() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={loading}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white font-extrabold text-sm hover:from-indigo-700 hover:to-fuchsia-700 transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50"
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white font-extrabold text-sm hover:from-indigo-700 hover:to-fuchsia-700 transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <span>جاري الحفظ...</span>
