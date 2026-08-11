@@ -1,0 +1,17 @@
+<svg width="1200" height="675" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675">
+    <defs>
+      <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#000"/>
+        <stop offset="100%" stop-color="#1f2937"/>
+      </linearGradient>
+    </defs>
+    <rect width="1200" height="675" fill="url(#g3)"/>
+    <g transform="translate(600,300)">
+      <rect x="-100" y="-150" width="200" height="300" rx="30" fill="#111827" stroke="#10b981" stroke-width="4"/>
+      <rect x="-80" y="-130" width="160" height="220" rx="6" fill="#000"/>
+      <text x="0" y="20" text-anchor="middle" font-family="Arial" font-size="48" font-weight="bold" fill="#10b981">10M+</text>
+      <text x="0" y="50" text-anchor="middle" font-family="Arial" font-size="14" fill="#10b981">مستخدم</text>
+    </g>
+    <text x="600" y="100" text-anchor="middle" font-family="Arial" font-size="42" font-weight="bold" fill="#fff">دروس من Yassir و Heetch</text>
+    <text x="600" y="600" text-anchor="middle" font-family="Arial" font-size="18" fill="#9ca3af">كيف تطبقها في مشروعك الصغير</text>
+  </svg>

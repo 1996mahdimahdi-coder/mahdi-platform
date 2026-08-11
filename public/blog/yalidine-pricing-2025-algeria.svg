@@ -1,0 +1,18 @@
+<svg width="1200" height="675" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675">
+    <defs>
+      <linearGradient id="g5" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#dc2626"/>
+        <stop offset="100%" stop-color="#991b1b"/>
+      </linearGradient>
+    </defs>
+    <rect width="1200" height="675" fill="url(#g5)"/>
+    <g transform="translate(600,300)">
+      <rect x="-200" y="-100" width="400" height="200" rx="12" fill="#fff" opacity="0.95"/>
+      <text x="0" y="-50" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold" fill="#dc2626">Yalidine Express</text>
+      <text x="0" y="0" text-anchor="middle" font-family="Arial" font-size="36" font-weight="bold" fill="#1e293b">400-700 دج</text>
+      <text x="0" y="30" text-anchor="middle" font-family="Arial" font-size="14" fill="#64748b">0-1 كغ | 58 ولاية</text>
+      <text x="0" y="60" text-anchor="middle" font-family="Arial" font-size="14" fill="#64748b">COD: 4% | 24-72 ساعة</text>
+    </g>
+    <text x="600" y="80" text-anchor="middle" font-family="Arial" font-size="38" font-weight="bold" fill="#fff">شركات التوصيل في الجزائر</text>
+    <text x="600" y="120" text-anchor="middle" font-family="Arial" font-size="20" fill="#fecaca">مقارنة 2025</text>
+  </svg>

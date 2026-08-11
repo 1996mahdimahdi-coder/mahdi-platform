@@ -1,0 +1,27 @@
+<svg width="1200" height="675" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675">
+    <defs>
+      <linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#ec4899"/>
+        <stop offset="50%" stop-color="#a855f7"/>
+        <stop offset="100%" stop-color="#3b82f6"/>
+      </linearGradient>
+      <linearGradient id="tt" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#000"/>
+        <stop offset="100%" stop-color="#1f2937"/>
+      </linearGradient>
+    </defs>
+    <rect width="600" height="675" fill="url(#ig)"/>
+    <rect x="600" width="600" height="675" fill="url(#tt)"/>
+    <g transform="translate(300,300)">
+      <text x="0" y="-50" text-anchor="middle" font-family="Arial" font-size="80" font-weight="bold" fill="#fff">IG</text>
+      <text x="0" y="20" text-anchor="middle" font-family="Arial" font-size="32" font-weight="bold" fill="#fff">11M</text>
+      <text x="0" y="50" text-anchor="middle" font-family="Arial" font-size="14" fill="#fff">مستخدم جزائري</text>
+    </g>
+    <g transform="translate(900,300)">
+      <text x="0" y="-50" text-anchor="middle" font-family="Arial" font-size="80" font-weight="bold" fill="#fff">TT</text>
+      <text x="0" y="20" text-anchor="middle" font-family="Arial" font-size="32" font-weight="bold" fill="#fff">8.5M</text>
+      <text x="0" y="50" text-anchor="middle" font-family="Arial" font-size="14" fill="#cbd5e1">مستخدم جزائري</text>
+    </g>
+    <text x="300" y="100" text-anchor="middle" font-family="Arial" font-size="36" font-weight="bold" fill="#fff">Instagram</text>
+    <text x="900" y="100" text-anchor="middle" font-family="Arial" font-size="36" font-weight="bold" fill="#fff">TikTok</text>
+  </svg>

@@ -1,0 +1,690 @@
+﻿import jsPDF from "jspdf";
+
+export interface ProjectPdfData {
+  projectName: string;
+  projectId?: string;
+  category?: string;
+  description?: string;
+  minCapital?: number;
+  recommendedCapital?: number;
+  maxCapital?: number;
+  riskLevel?: string;
+  difficulty?: string;
+  scalability?: string;
+  timeRequired?: string;
+  homeBased?: boolean;
+  onlinePossible?: boolean;
+  transportRequired?: boolean;
+  seasonality?: string;
+  competitionLevel?: string;
+  targetArea?: string;
+  advantages?: string[];
+  risks?: string[];
+  launchPlan?: string[];
+  calc?: {
+    grossRevenue?: number;
+    totalExpenses?: number;
+    netProfitMonthly?: number;
+    breakEvenUnits?: number;
+    profitMarginPercent?: number;
+  };
+  scenarios?: {
+    conservative?: { netProfitMonthly?: number };
+    base?: { netProfitMonthly?: number };
+    optimistic?: { netProfitMonthly?: number };
+  };
+  capitalAllocation?: unknown;
+  shouldIStart?: {
+    verdict?: string;
+    explanation?: string;
+  };
+  selectedCapital?: number;
+}
+
+export interface ResultsPdfData {
+  userInput: Record<string, unknown>;
+  top5Results: Array<{
+    project: {
+      projectName: string;
+      projectId?: string;
+      category?: string;
+      recommendedCapital?: number;
+    };
+    totalScore?: number;
+    recommendation?: string;
+    reasons?: string[];
+  }>;
+  explanationText?: string;
+}
+
+let arabicFontLoaded = false;
+
+async function loadArabicFont(pdf: jsPDF) {
+  if (arabicFontLoaded) {
+    pdf.setFont("NotoNaskhArabic", "normal");
+    return;
+  }
+
+  const regularResponse = await fetch(
+    "/fonts/static/NotoNaskhArabic-Regular.ttf"
+  );
+
+  const boldResponse = await fetch(
+    "/fonts/static/NotoNaskhArabic-Bold.ttf"
+  );
+
+  if (!regularResponse.ok || !boldResponse.ok) {
+    throw new Error("Arabic font files could not be loaded");
+  }
+
+  const regularBuffer = await regularResponse.arrayBuffer();
+  const boldBuffer = await boldResponse.arrayBuffer();
+
+  pdf.addFileToVFS(
+    "NotoNaskhArabic-Regular.ttf",
+    arrayBufferToBase64(regularBuffer)
+  );
+
+  pdf.addFont(
+    "NotoNaskhArabic-Regular.ttf",
+    "NotoNaskhArabic",
+    "normal"
+  );
+
+  pdf.addFileToVFS(
+    "NotoNaskhArabic-Bold.ttf",
+    arrayBufferToBase64(boldBuffer)
+  );
+
+  pdf.addFont(
+    "NotoNaskhArabic-Bold.ttf",
+    "NotoNaskhArabic",
+    "bold"
+  );
+
+  arabicFontLoaded = true;
+  pdf.setFont("NotoNaskhArabic", "normal");
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 0x8000;
+
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode(
+      ...bytes.subarray(i, i + chunkSize)
+    );
+  }
+
+  return btoa(binary);
+}
+
+function value(value: unknown): string {
+  if (value === undefined || value === null || value === "") {
+    return "—";
+  }
+
+  if (typeof value === "number") {
+    return new Intl.NumberFormat("ar-DZ").format(value);
+  }
+
+  return String(value);
+}
+
+function addWrappedText(
+  pdf: jsPDF,
+  text: string,
+  x: number,
+  y: number,
+  width: number
+): number {
+  const lines = pdf.splitTextToSize(String(text), width);
+
+  pdf.text(lines, x, y, {
+    align: "right",
+  });
+
+  return y + lines.length * 6;
+}
+
+function cleanFileName(name: string): string {
+  return String(name || "report")
+    .replace(/[<>:"/\\|?*]+/g, "-")
+    .trim();
+}
+
+export async function downloadProjectPdf(
+  data: ProjectPdfData
+): Promise<void> {
+  const pdf = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+
+  await loadArabicFont(pdf);
+
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 18;
+  const contentWidth = pageWidth - margin * 2;
+
+  let y = 20;
+
+  const space = (amount: number) => {
+    if (y + amount > pageHeight - 20) {
+      pdf.addPage();
+      pdf.setFont("NotoNaskhArabic", "normal");
+      y = 20;
+    }
+  };
+
+  pdf.setFont("NotoNaskhArabic", "bold");
+  pdf.setFontSize(20);
+
+  pdf.text(
+    value(data.projectName),
+    pageWidth - margin,
+    y,
+    { align: "right" }
+  );
+
+  y += 12;
+
+  pdf.setFont("NotoNaskhArabic", "normal");
+  pdf.setFontSize(10);
+
+  if (data.projectId) {
+    pdf.text(
+      `رقم المشروع: ${value(data.projectId)}`,
+      pageWidth - margin,
+      y,
+      { align: "right" }
+    );
+
+    y += 8;
+  }
+
+  if (data.description) {
+    space(25);
+
+    pdf.setFont("NotoNaskhArabic", "bold");
+    pdf.setFontSize(13);
+
+    pdf.text(
+      "وصف المشروع",
+      pageWidth - margin,
+      y,
+      { align: "right" }
+    );
+
+    y += 8;
+
+    pdf.setFont("NotoNaskhArabic", "normal");
+    pdf.setFontSize(10);
+
+    y = addWrappedText(
+      pdf,
+      data.description,
+      pageWidth - margin,
+      y,
+      contentWidth
+    );
+
+    y += 5;
+  }
+
+  space(35);
+
+  pdf.setFont("NotoNaskhArabic", "bold");
+  pdf.setFontSize(13);
+
+  pdf.text(
+    "المعلومات الأساسية",
+    pageWidth - margin,
+    y,
+    { align: "right" }
+  );
+
+  y += 9;
+
+  pdf.setFont("NotoNaskhArabic", "normal");
+  pdf.setFontSize(10);
+
+  const info = [
+    `الفئة: ${value(data.category)}`,
+    `رأس المال الأدنى: ${value(data.minCapital)}`,
+    `رأس المال المقترح: ${value(data.recommendedCapital)}`,
+    `رأس المال الأقصى: ${value(data.maxCapital)}`,
+    `مستوى المخاطرة: ${value(data.riskLevel)}`,
+    `درجة الصعوبة: ${value(data.difficulty)}`,
+    `قابلية التوسع: ${value(data.scalability)}`,
+    `الوقت المطلوب: ${value(data.timeRequired)}`,
+    `المنطقة المستهدفة: ${value(data.targetArea)}`,
+    `الموسمية: ${value(data.seasonality)}`,
+    `المنافسة: ${value(data.competitionLevel)}`,
+  ];
+
+  for (const item of info) {
+    space(10);
+
+    y = addWrappedText(
+      pdf,
+      item,
+      pageWidth - margin,
+      y,
+      contentWidth
+    );
+
+    y += 2;
+  }
+
+  if (data.calc) {
+    space(40);
+
+    pdf.setFont("NotoNaskhArabic", "bold");
+    pdf.setFontSize(13);
+
+    pdf.text(
+      "التحليل المالي",
+      pageWidth - margin,
+      y,
+      { align: "right" }
+    );
+
+    y += 9;
+
+    pdf.setFont("NotoNaskhArabic", "normal");
+    pdf.setFontSize(10);
+
+    const financial = [
+      `الإيرادات الشهرية: ${value(data.calc.grossRevenue)}`,
+      `إجمالي المصاريف: ${value(data.calc.totalExpenses)}`,
+      `صافي الربح الشهري: ${value(data.calc.netProfitMonthly)}`,
+      `نقطة التعادل: ${value(data.calc.breakEvenUnits)}`,
+      `هامش الربح: ${value(data.calc.profitMarginPercent)}%`,
+    ];
+
+    for (const item of financial) {
+      space(10);
+
+      y = addWrappedText(
+        pdf,
+        item,
+        pageWidth - margin,
+        y,
+        contentWidth
+      );
+
+      y += 2;
+    }
+  }
+
+  if (data.scenarios) {
+    space(35);
+
+    pdf.setFont("NotoNaskhArabic", "bold");
+    pdf.setFontSize(13);
+
+    pdf.text(
+      "سيناريوهات الربح",
+      pageWidth - margin,
+      y,
+      { align: "right" }
+    );
+
+    y += 9;
+
+    pdf.setFont("NotoNaskhArabic", "normal");
+    pdf.setFontSize(10);
+
+    const scenarios = [
+      `المحافظ: ${value(data.scenarios.conservative?.netProfitMonthly)}`,
+      `الأساسي: ${value(data.scenarios.base?.netProfitMonthly)}`,
+      `المتفائل: ${value(data.scenarios.optimistic?.netProfitMonthly)}`,
+    ];
+
+    for (const item of scenarios) {
+      space(10);
+
+      y = addWrappedText(
+        pdf,
+        item,
+        pageWidth - margin,
+        y,
+        contentWidth
+      );
+
+      y += 2;
+    }
+  }
+
+  if (data.advantages?.length) {
+    space(25);
+
+    pdf.setFont("NotoNaskhArabic", "bold");
+    pdf.setFontSize(13);
+
+    pdf.text(
+      "مزايا المشروع",
+      pageWidth - margin,
+      y,
+      { align: "right" }
+    );
+
+    y += 8;
+
+    pdf.setFont("NotoNaskhArabic", "normal");
+    pdf.setFontSize(10);
+
+    for (const item of data.advantages) {
+      space(10);
+
+      y = addWrappedText(
+        pdf,
+        `• ${item}`,
+        pageWidth - margin,
+        y,
+        contentWidth
+      );
+
+      y += 2;
+    }
+  }
+
+  if (data.risks?.length) {
+    space(25);
+
+    pdf.setFont("NotoNaskhArabic", "bold");
+    pdf.setFontSize(13);
+
+    pdf.text(
+      "المخاطر",
+      pageWidth - margin,
+      y,
+      { align: "right" }
+    );
+
+    y += 8;
+
+    pdf.setFont("NotoNaskhArabic", "normal");
+    pdf.setFontSize(10);
+
+    for (const item of data.risks) {
+      space(10);
+
+      y = addWrappedText(
+        pdf,
+        `• ${item}`,
+        pageWidth - margin,
+        y,
+        contentWidth
+      );
+
+      y += 2;
+    }
+  }
+
+  if (data.launchPlan?.length) {
+    space(25);
+
+    pdf.setFont("NotoNaskhArabic", "bold");
+    pdf.setFontSize(13);
+
+    pdf.text(
+      "خطة الإطلاق",
+      pageWidth - margin,
+      y,
+      { align: "right" }
+    );
+
+    y += 8;
+
+    pdf.setFont("NotoNaskhArabic", "normal");
+    pdf.setFontSize(10);
+
+    data.launchPlan.forEach((item, index) => {
+      space(10);
+
+      y = addWrappedText(
+        pdf,
+        `${index + 1}. ${item}`,
+        pageWidth - margin,
+        y,
+        contentWidth
+      );
+
+      y += 2;
+    });
+  }
+
+  if (data.shouldIStart) {
+    space(30);
+
+    pdf.setFont("NotoNaskhArabic", "bold");
+    pdf.setFontSize(13);
+
+    pdf.text(
+      "قرار البدء",
+      pageWidth - margin,
+      y,
+      { align: "right" }
+    );
+
+    y += 8;
+
+    pdf.setFont("NotoNaskhArabic", "normal");
+    pdf.setFontSize(10);
+
+    y = addWrappedText(
+      pdf,
+      `القرار: ${value(data.shouldIStart.verdict)}`,
+      pageWidth - margin,
+      y,
+      contentWidth
+    );
+
+    y += 4;
+
+    if (data.shouldIStart.explanation) {
+      y = addWrappedText(
+        pdf,
+        data.shouldIStart.explanation,
+        pageWidth - margin,
+        y,
+        contentWidth
+      );
+    }
+  }
+
+  pdf.setFont("NotoNaskhArabic", "normal");
+  pdf.setFontSize(9);
+
+  pdf.text(
+    "تم إنشاء هذا التقرير بواسطة منصة دراسة المشاريع.",
+    pageWidth - margin,
+    pageHeight - 12,
+    { align: "right" }
+  );
+
+  const name = cleanFileName(data.projectName);
+
+  pdf.save(`project-${name || "report"}.pdf`);
+}
+
+export async function downloadResultsPdf(
+  data: ResultsPdfData
+): Promise<void> {
+  const pdf = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+
+  await loadArabicFont(pdf);
+
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 18;
+  const contentWidth = pageWidth - margin * 2;
+
+  let y = 20;
+
+  const space = (amount: number) => {
+    if (y + amount > pageHeight - 20) {
+      pdf.addPage();
+      pdf.setFont("NotoNaskhArabic", "normal");
+      y = 20;
+    }
+  };
+
+  pdf.setFont("NotoNaskhArabic", "bold");
+  pdf.setFontSize(20);
+
+  pdf.text(
+    "نتائج تقييم المشروع",
+    pageWidth - margin,
+    y,
+    { align: "right" }
+  );
+
+  y += 14;
+
+  pdf.setFont("NotoNaskhArabic", "normal");
+  pdf.setFontSize(10);
+
+  if (data.explanationText) {
+    space(30);
+
+    pdf.setFont("NotoNaskhArabic", "bold");
+    pdf.setFontSize(13);
+
+    pdf.text(
+      "التحليل",
+      pageWidth - margin,
+      y,
+      { align: "right" }
+    );
+
+    y += 8;
+
+    pdf.setFont("NotoNaskhArabic", "normal");
+    pdf.setFontSize(10);
+
+    y = addWrappedText(
+      pdf,
+      data.explanationText,
+      pageWidth - margin,
+      y,
+      contentWidth
+    );
+
+    y += 6;
+  }
+
+  if (data.top5Results?.length) {
+    space(30);
+
+    pdf.setFont("NotoNaskhArabic", "bold");
+    pdf.setFontSize(13);
+
+    pdf.text(
+      "أفضل المشاريع المقترحة",
+      pageWidth - margin,
+      y,
+      { align: "right" }
+    );
+
+    y += 9;
+
+    data.top5Results.forEach((result, index) => {
+      space(35);
+
+      pdf.setFont("NotoNaskhArabic", "bold");
+      pdf.setFontSize(12);
+
+      pdf.text(
+        `${index + 1}. ${value(result.project?.projectName)}`,
+        pageWidth - margin,
+        y,
+        { align: "right" }
+      );
+
+      y += 7;
+
+      pdf.setFont("NotoNaskhArabic", "normal");
+      pdf.setFontSize(10);
+
+      y = addWrappedText(
+        pdf,
+        `التصنيف: ${value(result.project?.category)}`,
+        pageWidth - margin,
+        y,
+        contentWidth
+      );
+
+      y += 2;
+
+      y = addWrappedText(
+        pdf,
+        `رأس المال المقترح: ${value(result.project?.recommendedCapital)}`,
+        pageWidth - margin,
+        y,
+        contentWidth
+      );
+
+      y += 2;
+
+      y = addWrappedText(
+        pdf,
+        `النقاط: ${value(result.totalScore)}`,
+        pageWidth - margin,
+        y,
+        contentWidth
+      );
+
+      y += 2;
+
+      y = addWrappedText(
+        pdf,
+        `التوصية: ${value(result.recommendation)}`,
+        pageWidth - margin,
+        y,
+        contentWidth
+      );
+
+      y += 3;
+
+      if (result.reasons?.length) {
+        for (const reason of result.reasons) {
+          space(10);
+
+          y = addWrappedText(
+            pdf,
+            `• ${reason}`,
+            pageWidth - margin,
+            y,
+            contentWidth
+          );
+
+          y += 2;
+        }
+      }
+
+      y += 4;
+    });
+  }
+
+  pdf.setFont("NotoNaskhArabic", "normal");
+  pdf.setFontSize(9);
+
+  pdf.text(
+    "تم إنشاء هذا التقرير بواسطة منصة دراسة المشاريع.",
+    pageWidth - margin,
+    pageHeight - 12,
+    { align: "right" }
+  );
+
+  pdf.save(`NABDA-Assessment-${Date.now()}.pdf`);
+}

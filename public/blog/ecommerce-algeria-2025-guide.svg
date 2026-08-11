@@ -1,0 +1,23 @@
+<svg width="1200" height="675" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675">
+    <defs>
+      <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#0f172a"/>
+        <stop offset="100%" stop-color="#1e1b4b"/>
+      </linearGradient>
+    </defs>
+    <rect width="1200" height="675" fill="url(#g1)"/>
+    <circle cx="900" cy="200" r="150" fill="#6366f1" opacity="0.2"/>
+    <circle cx="200" cy="500" r="200" fill="#a855f7" opacity="0.15"/>
+    <g transform="translate(600,337)">
+      <rect x="-200" y="-130" width="400" height="260" rx="20" fill="#1e293b" stroke="#6366f1" stroke-width="3"/>
+      <rect x="-180" y="-110" width="360" height="20" rx="4" fill="#6366f1"/>
+      <rect x="-180" y="-70" width="150" height="100" rx="6" fill="#334155"/>
+      <text x="-105" y="-15" text-anchor="middle" font-family="Arial" font-size="14" fill="#cbd5e1">منتج 1</text>
+      <rect x="-20" y="-70" width="150" height="100" rx="6" fill="#334155"/>
+      <text x="55" y="-15" text-anchor="middle" font-family="Arial" font-size="14" fill="#cbd5e1">منتج 2</text>
+      <rect x="-180" y="40" width="310" height="40" rx="6" fill="#10b981"/>
+      <text x="-25" y="65" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#fff">اطلب الآن - 2,500 دج</text>
+    </g>
+    <text x="600" y="120" text-anchor="middle" font-family="Arial" font-size="48" font-weight="bold" fill="#fff">التجارة الإلكترونية في الجزائر</text>
+    <text x="600" y="160" text-anchor="middle" font-family="Arial" font-size="20" fill="#94a3b8">دليل شامل 2025</text>
+  </svg>

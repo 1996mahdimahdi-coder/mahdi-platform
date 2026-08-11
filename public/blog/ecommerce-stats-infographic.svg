@@ -1,0 +1,61 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0f172a" />
+          <stop offset="100%" stop-color="#1e293b" />
+        </linearGradient>
+        <linearGradient id="indigo" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#6366f1" />
+          <stop offset="100%" stop-color="#a855f7" />
+        </linearGradient>
+      </defs>
+      <rect width="1200" height="800" fill="url(#bg)" />
+      <text x="600" y="80" text-anchor="middle" font-family="Arial" font-size="42" font-weight="bold" fill="#fff">التجارة الإلكترونية في الجزائر 2025</text>
+      <text x="600" y="120" text-anchor="middle" font-family="Arial" font-size="20" fill="#94a3b8">أرقام رسمية من وزارة البريد والـ ONS</text>
+      <g transform="translate(100, 200)">
+        <rect x="0" y="0" width="280" height="180" rx="20" fill="url(#indigo)" />
+        <text x="140" y="60" text-anchor="middle" font-family="Arial" font-size="24" font-weight="bold" fill="#fff">حجم السوق</text>
+        <text x="140" y="120" text-anchor="middle" font-family="Arial" font-size="48" font-weight="bold" fill="#fff">3.2 مليار $</text>
+        <text x="140" y="150" text-anchor="middle" font-family="Arial" font-size="14" fill="#cbd5e1">2024</text>
+      </g>
+      <g transform="translate(460, 200)">
+        <rect x="0" y="0" width="280" height="180" rx="20" fill="#10b981" />
+        <text x="140" y="60" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold" fill="#fff">معدل النمو</text>
+        <text x="140" y="120" text-anchor="middle" font-family="Arial" font-size="48" font-weight="bold" fill="#fff">23%</text>
+        <text x="140" y="150" text-anchor="middle" font-family="Arial" font-size="14" fill="#d1fae5">سنوياً</text>
+      </g>
+      <g transform="translate(820, 200)">
+        <rect x="0" y="0" width="280" height="180" rx="20" fill="#f59e0b" />
+        <text x="140" y="60" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold" fill="#fff">المتسوقون</text>
+        <text x="140" y="120" text-anchor="middle" font-family="Arial" font-size="48" font-weight="bold" fill="#fff">8.5 مليون</text>
+        <text x="140" y="150" text-anchor="middle" font-family="Arial" font-size="14" fill="#fef3c7">شخص</text>
+      </g>
+      <g transform="translate(100, 430)">
+        <rect x="0" y="0" width="500" height="280" rx="20" fill="#1e293b" stroke="#475569" stroke-width="2" />
+        <text x="250" y="50" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold" fill="#fff">طرق الدفع المفضلة</text>
+        <text x="60" y="120" font-family="Arial" font-size="18" fill="#cbd5e1">الدفع عند الاستلام (COD)</text>
+        <rect x="60" y="140" width="380" height="30" rx="6" fill="#475569" />
+        <rect x="60" y="140" width="323" height="30" rx="6" fill="#6366f1" />
+        <text x="450" y="161" text-anchor="end" font-family="Arial" font-size="16" font-weight="bold" fill="#fff">85%</text>
+        <text x="60" y="210" font-family="Arial" font-size="18" fill="#cbd5e1">البطاقة الذهبية (CIB)</text>
+        <rect x="60" y="230" width="380" height="30" rx="6" fill="#475569" />
+        <rect x="60" y="230" width="46" height="30" rx="6" fill="#10b981" />
+        <text x="450" y="251" text-anchor="end" font-family="Arial" font-size="16" font-weight="bold" fill="#fff">12%</text>
+      </g>
+      <g transform="translate(620, 430)">
+        <rect x="0" y="0" width="480" height="280" rx="20" fill="#1e293b" stroke="#475569" stroke-width="2" />
+        <text x="240" y="50" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold" fill="#fff">شركات التوصيل الرئيسية</text>
+        <text x="50" y="100" font-family="Arial" font-size="20" font-weight="bold" fill="#fff">Yalidine</text>
+        <rect x="200" y="80" width="220" height="20" rx="4" fill="#475569" />
+        <rect x="200" y="80" width="180" height="20" rx="4" fill="#6366f1" />
+        <text x="385" y="95" text-anchor="end" font-family="Arial" font-size="14" font-weight="bold" fill="#fff">42%</text>
+        <text x="50" y="160" font-family="Arial" font-size="20" font-weight="bold" fill="#fff">Maystro</text>
+        <rect x="200" y="140" width="220" height="20" rx="4" fill="#475569" />
+        <rect x="200" y="140" width="120" height="20" rx="4" fill="#10b981" />
+        <text x="385" y="155" text-anchor="end" font-family="Arial" font-size="14" font-weight="bold" fill="#fff">28%</text>
+        <text x="50" y="220" font-family="Arial" font-size="20" font-weight="bold" fill="#fff">ZR Express</text>
+        <rect x="200" y="200" width="220" height="20" rx="4" fill="#475569" />
+        <rect x="200" y="200" width="75" height="20" rx="4" fill="#f59e0b" />
+        <text x="385" y="215" text-anchor="end" font-family="Arial" font-size="14" font-weight="bold" fill="#fff">18%</text>
+      </g>
+    </svg>

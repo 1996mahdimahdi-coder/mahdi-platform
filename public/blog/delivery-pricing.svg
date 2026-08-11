@@ -1,0 +1,58 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="red" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#dc2626" />
+          <stop offset="100%" stop-color="#ef4444" />
+        </linearGradient>
+        <linearGradient id="blue" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#2563eb" />
+          <stop offset="100%" stop-color="#3b82f6" />
+        </linearGradient>
+        <linearGradient id="orange" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#ea580c" />
+          <stop offset="100%" stop-color="#f97316" />
+        </linearGradient>
+      </defs>
+      <rect width="1200" height="800" fill="#f8fafc" />
+      <text x="600" y="60" text-anchor="middle" font-family="Arial" font-size="36" font-weight="bold" fill="#0f172a">مقارنة شركات التوصيل الجزائرية 2025</text>
+      <text x="600" y="95" text-anchor="middle" font-family="Arial" font-size="18" fill="#64748b">الأسعار الفعلية المحدثة</text>
+      <g transform="translate(50, 160)">
+        <rect x="0" y="0" width="1100" height="80" rx="16" fill="url(#red)" />
+        <text x="40" y="50" font-family="Arial" font-size="24" font-weight="bold" fill="#fff">Yalidine Express</text>
+        <text x="600" y="50" text-anchor="middle" font-family="Arial" font-size="18" fill="#fff">0-1 كغ: 400-700 دج</text>
+        <text x="850" y="50" text-anchor="end" font-family="Arial" font-size="18" font-weight="bold" fill="#fff">42% حصة سوقية</text>
+        <text x="1060" y="50" text-anchor="end" font-family="Arial" font-size="14" fill="#fecaca">عمولة COD: 4%</text>
+      </g>
+      <g transform="translate(50, 270)">
+        <rect x="0" y="0" width="1100" height="80" rx="16" fill="url(#blue)" />
+        <text x="40" y="50" font-family="Arial" font-size="24" font-weight="bold" fill="#fff">Maystro Delivery</text>
+        <text x="600" y="50" text-anchor="middle" font-family="Arial" font-size="18" fill="#fff">0-2 كغ: 450 دج</text>
+        <text x="850" y="50" text-anchor="end" font-family="Arial" font-size="18" font-weight="bold" fill="#fff">28% حصة سوقية</text>
+        <text x="1060" y="50" text-anchor="end" font-family="Arial" font-size="14" fill="#dbeafe">عمولة COD: 3%</text>
+      </g>
+      <g transform="translate(50, 380)">
+        <rect x="0" y="0" width="1100" height="80" rx="16" fill="url(#orange)" />
+        <text x="40" y="50" font-family="Arial" font-size="24" font-weight="bold" fill="#fff">ZR Express</text>
+        <text x="600" y="50" text-anchor="middle" font-family="Arial" font-size="18" fill="#fff">0-2 كغ: 350 دج</text>
+        <text x="850" y="50" text-anchor="end" font-family="Arial" font-size="18" font-weight="bold" fill="#fff">18% حصة سوقية</text>
+        <text x="1060" y="50" text-anchor="end" font-family="Arial" font-size="14" fill="#fed7aa">عمولة COD: 3.5%</text>
+      </g>
+      <g transform="translate(50, 520)">
+        <rect x="0" y="0" width="1100" height="200" rx="20" fill="#fff" stroke="#e2e8f0" stroke-width="2" />
+        <text x="550" y="50" text-anchor="middle" font-family="Arial" font-size="22" font-weight="bold" fill="#0f172a">مثال: تكلفة طلب بسعر 2,500 دج (1 كغ)</text>
+        <g transform="translate(50, 80)">
+          <text x="0" y="25" font-family="Arial" font-size="16" fill="#0f172a">المنتج</text>
+          <text x="200" y="25" font-family="Arial" font-size="16" font-weight="bold" fill="#0f172a">1,200 دج</text>
+          <text x="0" y="60" font-family="Arial" font-size="16" fill="#0f172a">التوصيل (Yalidine)</text>
+          <text x="200" y="60" font-family="Arial" font-size="16" font-weight="bold" fill="#0f172a">400 دج</text>
+          <text x="0" y="95" font-family="Arial" font-size="16" fill="#0f172a">عمولة COD (4%)</text>
+          <text x="200" y="95" font-family="Arial" font-size="16" font-weight="bold" fill="#0f172a">100 دج</text>
+          <text x="500" y="25" font-family="Arial" font-size="16" fill="#0f172a">التغليف</text>
+          <text x="700" y="25" font-family="Arial" font-size="16" font-weight="bold" fill="#0f172a">50 دج</text>
+          <text x="500" y="60" font-family="Arial" font-size="16" fill="#0f172a">الإعلان (CAC)</text>
+          <text x="700" y="60" font-family="Arial" font-size="16" font-weight="bold" fill="#0f172a">300 دج</text>
+          <text x="500" y="95" font-family="Arial" font-size="16" font-weight="bold" fill="#10b981">صافي الربح</text>
+          <text x="700" y="95" font-family="Arial" font-size="18" font-weight="bold" fill="#10b981">450 دج (18%)</text>
+        </g>
+      </g>
+    </svg>

@@ -1,0 +1,242 @@
+@import "tailwindcss";
+
+/* ============================================
+   NABDA PRINT STYLES - Information Only
+   Hides all UI chrome (navbar, footer, buttons,
+   modals, sidebars) and keeps only the essential
+   project content when printing or saving as PDF.
+   ============================================ */
+
+@media print {
+  /* Reset page setup for A4 */
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 11pt !important;
+    line-height: 1.45 !important;
+  }
+
+  /* Hide all chrome elements */
+  header,
+  footer,
+  nav,
+  aside,
+  .print\:hidden,
+  button,
+  [role="dialog"],
+  [role="navigation"] {
+    display: none !important;
+  }
+
+  /* Hide the visitor onboarding modal completely */
+  body > div.fixed.inset-0.z-\[100\] {
+    display: none !important;
+  }
+
+  /* Hide welcome banner */
+  .bg-gradient-to-r.from-indigo-600 {
+    display: none !important;
+  }
+
+  /* Reset main container to full width */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .max-w-6xl,
+  .max-w-7xl,
+  .max-w-5xl,
+  .max-w-4xl,
+  .max-w-3xl,
+  .max-w-2xl {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Reset padding/margins on all wrappers */
+  div[class*="px-"],
+  div[class*="py-"] {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Adjust main content area */
+  body {
+    padding: 0 !important;
+  }
+
+  /* Force all backgrounds to white & text to black for clean print */
+  * {
+    -webkit-print-color-adjust: economy !important;
+    print-color-adjust: economy !important;
+  }
+
+  /* Make important headings more prominent */
+  h1 {
+    font-size: 20pt !important;
+    color: #0f172a !important;
+    margin-bottom: 8pt !important;
+    font-weight: 900 !important;
+    page-break-after: avoid;
+  }
+
+  h2 {
+    font-size: 14pt !important;
+    color: #1e293b !important;
+    margin-top: 12pt !important;
+    margin-bottom: 6pt !important;
+    font-weight: 800 !important;
+    page-break-after: avoid;
+    border-bottom: 1.5pt solid #cbd5e1;
+    padding-bottom: 4pt;
+  }
+
+  h3 {
+    font-size: 12pt !important;
+    color: #334155 !important;
+    margin-top: 8pt !important;
+    margin-bottom: 4pt !important;
+    font-weight: 700 !important;
+    page-break-after: avoid;
+  }
+
+  p,
+  li,
+  span,
+  td,
+  th {
+    color: #1e293b !important;
+    font-size: 10.5pt !important;
+  }
+
+  /* Force background colors to white for boxes/cards */
+  .bg-white,
+  .bg-slate-50,
+  .bg-slate-100,
+  .bg-slate-900,
+  .bg-slate-800,
+  .bg-slate-700,
+  .bg-indigo-50,
+  .bg-indigo-100,
+  .bg-indigo-900,
+  .bg-sky-50,
+  .bg-sky-100,
+  .bg-amber-50,
+  .bg-amber-100,
+  .bg-amber-900,
+  .bg-emerald-50,
+  .bg-emerald-100,
+  .bg-rose-50,
+  .bg-rose-100,
+  .bg-orange-100,
+  .bg-cyan-50,
+  .bg-teal-50 {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    border: 0.8pt solid #cbd5e1 !important;
+    box-shadow: none !important;
+  }
+
+  /* Specifically preserve the dark financial simulation box but invert text */
+  .bg-slate-900 .text-white,
+  .bg-slate-800 .text-white,
+  .bg-slate-900 .text-slate-300,
+  .bg-slate-800 .text-slate-300 {
+    color: #0f172a !important;
+  }
+
+  /* Tables should print cleanly */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: avoid;
+  }
+
+  th,
+  td {
+    border: 0.5pt solid #cbd5e1 !important;
+    padding: 4pt 6pt !important;
+    text-align: right;
+  }
+
+  /* Page break controls */
+  .page-break-before {
+    page-break-before: always;
+  }
+
+  .page-break-after {
+    page-break-after: always;
+  }
+
+  /* Avoid breaking inside important content */
+  .no-break,
+  article,
+  section {
+    page-break-inside: avoid;
+  }
+
+  /* Make borders more visible for print */
+  .border,
+  .border-slate-200,
+  .border-slate-300,
+  .border-slate-700,
+  .border-indigo-200,
+  .border-indigo-300 {
+    border: 0.8pt solid #94a3b8 !important;
+  }
+
+  /* Print header - only on first page */
+  .print-header {
+    display: block !important;
+    text-align: center;
+    border-bottom: 2pt solid #0f172a;
+    padding-bottom: 8pt;
+    margin-bottom: 12pt;
+  }
+
+  .print-header h1 {
+    font-size: 22pt !important;
+    margin: 0 !important;
+    border: none !important;
+  }
+
+  .print-header p {
+    font-size: 10pt !important;
+    color: #475569 !important;
+    margin: 2pt 0 !important;
+  }
+
+  /* Show print-only elements */
+  .print\:block {
+    display: block !important;
+  }
+
+  /* Force link URLs to show */
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 8pt;
+    color: #64748b;
+  }
+
+  /* Hide internal navigation links */
+  a[href^="/"]::after {
+    content: "";
+  }
+
+  /* Better spacing for cards */
+  .rounded-3xl,
+  .rounded-2xl,
+  .rounded-xl {
+    border-radius: 4pt !important;
+    margin-bottom: 8pt !important;
+  }
+}

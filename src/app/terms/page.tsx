@@ -1,0 +1,32 @@
+export default function TermsPage() {
+  return (
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6 text-xs sm:text-sm text-slate-700 leading-relaxed">
+        <h1 className="text-2xl font-black text-slate-900 border-b border-slate-100 pb-3">
+          الشروط والأحكام الاستخدام
+        </h1>
+
+        <div className="space-y-4">
+          <p>
+            مرحباً بك في منصة <strong>NABDA – نابدا</strong>. باستعمالك للموقع، فإنك توافق على الالتزام بالشروط والأحكام التالية:
+          </p>
+
+          <h2 className="font-extrabold text-slate-900">1. طبيعة النتائج والمحاكاة المالية</h2>
+          <p>
+            جميع نتائج التقييم، درجات الملاءمة، وحسابات نقطة التعادل المقدمة عبر منصة NABDA هي عبارة عن تقديرات ومحاكاة رقمية خاضعة لمعطيات السوق، وليست ضماناً قانونياً أو ماليًا للربح المؤكد.
+          </p>
+
+          <h2 className="font-extrabold text-slate-900">2. المسؤولية الاستثمارية</h2>
+          <p>
+            قرار إطلاق المشروع، شراء البضائع، أو إبرام العقود التجارية هو مسؤولية كاملة للمستخدم وحده.
+          </p>
+
+          <h2 className="font-extrabold text-slate-900">3. الملكية الفكرية</h2>
+          <p>
+            جميع قواعد البيانات، النصوص، وخوارزمية Scoring System هي ملك حصري لمنصة NABDA.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

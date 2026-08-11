@@ -1,0 +1,16 @@
+<svg width="1200" height="675" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675">
+    <defs>
+      <radialGradient id="ramadan" cx="50%" cy="50%" r="60%">
+        <stop offset="0%" stop-color="#fbbf24"/>
+        <stop offset="100%" stop-color="#7c2d12"/>
+      </radialGradient>
+    </defs>
+    <rect width="1200" height="675" fill="url(#ramadan)"/>
+    <g transform="translate(600,300)">
+      <path d="M 0,-80 Q 80,-80 80,0 Q 80,80 0,80 Q -80,80 -80,0 Q -80,-80 0,-80 Z" fill="#fef3c7" opacity="0.3"/>
+      <circle cx="0" cy="0" r="60" fill="#fbbf24"/>
+      <path d="M -30,-30 L 0,0 L 30,-30" stroke="#7c2d12" stroke-width="3" fill="none"/>
+    </g>
+    <text x="600" y="100" text-anchor="middle" font-family="Arial" font-size="48" font-weight="bold" fill="#fff">مشاريع رمضان 2025</text>
+    <text x="600" y="140" text-anchor="middle" font-family="Arial" font-size="24" fill="#fde68a">فرص ذهبية للشهر الكريم</text>
+  </svg>

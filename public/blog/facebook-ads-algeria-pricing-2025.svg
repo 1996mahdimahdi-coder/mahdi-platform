@@ -1,0 +1,17 @@
+<svg width="1200" height="675" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675">
+    <defs>
+      <linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#1877f2"/>
+        <stop offset="100%" stop-color="#0c4eaf"/>
+      </linearGradient>
+    </defs>
+    <rect width="1200" height="675" fill="url(#g4)"/>
+    <g transform="translate(600,300)">
+      <rect x="-220" y="-100" width="440" height="200" rx="12" fill="#fff" opacity="0.95"/>
+      <text x="0" y="-60" text-anchor="middle" font-family="Arial" font-size="18" font-weight="bold" fill="#1e293b">إعلانات فيسبوك</text>
+      <text x="0" y="0" text-anchor="middle" font-family="Arial" font-size="48" font-weight="bold" fill="#1877f2">CPM: 180-350 دج</text>
+      <text x="0" y="50" text-anchor="middle" font-family="Arial" font-size="16" fill="#64748b">CPC: 8-25 دج | CTR: 1.8-3.2%</text>
+    </g>
+    <text x="600" y="80" text-anchor="middle" font-family="Arial" font-size="40" font-weight="bold" fill="#fff">أسعار إعلانات فيسبوك</text>
+    <text x="600" y="120" text-anchor="middle" font-family="Arial" font-size="22" fill="#dbeafe">الجزائر 2025 - أرقام رسمية</text>
+  </svg>

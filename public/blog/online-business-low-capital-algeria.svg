@@ -1,0 +1,22 @@
+<svg width="1200" height="675" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675">
+    <defs>
+      <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#10b981"/>
+        <stop offset="100%" stop-color="#059669"/>
+      </linearGradient>
+    </defs>
+    <rect width="1200" height="675" fill="url(#g2)"/>
+    <g transform="translate(600,300)">
+      <rect x="-180" y="-100" width="360" height="200" rx="12" fill="#fff"/>
+      <rect x="-160" y="-80" width="320" height="30" rx="4" fill="#10b981"/>
+      <text x="0" y="-60" text-anchor="middle" font-family="Arial" font-size="16" font-weight="bold" fill="#fff">متجرك الأونلاين</text>
+      <rect x="-160" y="-30" width="100" height="80" rx="6" fill="#e5e7eb"/>
+      <rect x="-50" y="-30" width="100" height="80" rx="6" fill="#e5e7eb"/>
+      <rect x="60" y="-30" width="100" height="80" rx="6" fill="#e5e7eb"/>
+    </g>
+    <text x="600" y="100" text-anchor="middle" font-family="Arial" font-size="40" font-weight="bold" fill="#fff">20,000 دج فقط لبداية</text>
+    <text x="600" y="140" text-anchor="middle" font-family="Arial" font-size="22" fill="#d1fae5">مشروع أونلاين من المنزل</text>
+    <g transform="translate(600,580)">
+      <text x="0" y="0" text-anchor="middle" font-family="Arial" font-size="18" font-weight="bold" fill="#fff">💰 رأس مال منخفض | ⏰ مرونة كاملة | 🌍 سوق 58 ولاية</text>
+    </g>
+  </svg>

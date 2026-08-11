@@ -1,0 +1,46 @@
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="indigo" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#6366f1" />
+          <stop offset="100%" stop-color="#a855f7" />
+        </linearGradient>
+      </defs>
+      <rect width="1200" height="800" fill="#f8fafc" />
+      <text x="600" y="60" text-anchor="middle" font-family="Arial" font-size="36" font-weight="bold" fill="#0f172a">أسعار إعلانات فيسبوك في الجزائر 2025</text>
+      <text x="600" y="95" text-anchor="middle" font-family="Arial" font-size="18" fill="#64748b">متوسط CPM و CPC حسب الفئة العمرية</text>
+      <g transform="translate(100, 180)">
+        <rect x="0" y="0" width="1000" height="500" fill="#fff" stroke="#e2e8f0" stroke-width="2" rx="16" />
+        <text x="500" y="40" text-anchor="middle" font-family="Arial" font-size="20" font-weight="bold" fill="#0f172a">CPM (دج لكل 1000 ظهور)</text>
+        <g transform="translate(60, 80)">
+          <text x="0" y="20" font-family="Arial" font-size="16" font-weight="bold" fill="#0f172a">18-24 سنة</text>
+          <rect x="200" y="0" width="700" height="30" rx="6" fill="#e2e8f0" />
+          <rect x="200" y="0" width="150" height="30" rx="6" fill="#10b981" />
+          <text x="920" y="22" font-family="Arial" font-size="14" font-weight="bold" fill="#0f172a">120-180 دج</text>
+        </g>
+        <g transform="translate(60, 140)">
+          <text x="0" y="20" font-family="Arial" font-size="16" font-weight="bold" fill="#0f172a">25-34 سنة</text>
+          <rect x="200" y="0" width="700" height="30" rx="6" fill="#e2e8f0" />
+          <rect x="200" y="0" width="320" height="30" rx="6" fill="#6366f1" />
+          <text x="920" y="22" font-family="Arial" font-size="14" font-weight="bold" fill="#0f172a">180-280 دج</text>
+        </g>
+        <g transform="translate(60, 200)">
+          <text x="0" y="20" font-family="Arial" font-size="16" font-weight="bold" fill="#0f172a">35-44 سنة</text>
+          <rect x="200" y="0" width="700" height="30" rx="6" fill="#e2e8f0" />
+          <rect x="200" y="0" width="400" height="30" rx="6" fill="#f59e0b" />
+          <text x="920" y="22" font-family="Arial" font-size="14" font-weight="bold" fill="#0f172a">220-320 دج</text>
+        </g>
+        <g transform="translate(60, 260)">
+          <text x="0" y="20" font-family="Arial" font-size="16" font-weight="bold" fill="#0f172a">45-54 سنة</text>
+          <rect x="200" y="0" width="700" height="30" rx="6" fill="#e2e8f0" />
+          <rect x="200" y="0" width="290" height="30" rx="6" fill="#a855f7" />
+          <text x="920" y="22" font-family="Arial" font-size="14" font-weight="bold" fill="#0f172a">180-260 دج</text>
+        </g>
+        <g transform="translate(60, 320)">
+          <text x="0" y="20" font-family="Arial" font-size="16" font-weight="bold" fill="#0f172a">55+ سنة</text>
+          <rect x="200" y="0" width="700" height="30" rx="6" fill="#e2e8f0" />
+          <rect x="200" y="0" width="220" height="30" rx="6" fill="#06b6d4" />
+          <text x="920" y="22" font-family="Arial" font-size="14" font-weight="bold" fill="#0f172a">150-200 دج</text>
+        </g>
+        <text x="500" y="450" text-anchor="middle" font-family="Arial" font-size="16" fill="#64748b">المصدر: Meta Business Suite - ديسمبر 2024</text>
+      </g>
+    </svg>
