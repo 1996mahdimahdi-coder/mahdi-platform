@@ -4,3 +4,34 @@
 *.dump
 *.sql
 tsconfig.tsbuildinfo
+
+# Local recovery artifacts
+*.backup
+*.backup.*
+*.before-*
+*.BEFORE-*
+*.SAFETY-*
+*corrupted*
+*tainted*
+*.recovered-test.*
+*.ENCODING-TEST.*
+*.REPAIR-TEST.*
+*.git-check.*
+*.git-original.*
+*.git-raw.*
+*GIT-ORIGINAL*
+*.zip
+GIT-RECOVERY-ARCHIVE/
+seed_backup.txt
+check-seed-final.js
+rebuild-projects.mjs
+repair-wilayas.cjs
+restore-*.js
+restore-*.mjs
+.vercel/
+
+# Additional local recovery files
+*.GIT-*
+*.encoding-backup
+src/db/seedData.test.ts
+src/lib/scoringEngine.fixed.ts

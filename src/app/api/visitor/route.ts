@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { visitorProfiles, wilayas } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { seedDatabase } from "@/db/seed";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +43,7 @@ export async function POST(request: Request) {
     // Ensure database is seeded
     const existingWilayas = await db.select().from(wilayas).limit(1);
     if (existingWilayas.length === 0) {
-      await seedDatabase();
+      // Automatic database seeding is disabled in request handlers.
     }
 
     // Get wilaya details

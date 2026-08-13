@@ -1,4 +1,4 @@
-export interface FinancialCalcInputs {
+﻿export interface FinancialCalcInputs {
   purchasePrice: number; // سعر الشراء للقطعة أو الخدمة
   salePrice: number;     // سعر البيع للقطعة أو الخدمة
   monthlySalesUnits: number; // عدد المبيعات المتوقعة شهرياً
@@ -55,13 +55,32 @@ export function calculateFinancials(inputs: FinancialCalcInputs): FinancialCalcR
   const netProfitMonthly = grossRevenue - totalExpenses;
   const profitMarginPercent = grossRevenue > 0 ? Math.round((netProfitMonthly / grossRevenue) * 100) : 0;
 
-  const unitProfitMargin = sale - (purchase + delivery + packaging);
+  // Expected return cost per sold unit.
+  // This keeps profit and break-even calculations consistent.
+  const expectedReturnCostPerUnit =
+    returnRate > 0
+      ? (delivery + packaging + purchase * 0.2) * (returnRate / 100)
+      : 0;
 
-  // Break-even calculation
-  // Total fixed overheads = adSpend + fixed
+  // Real contribution margin per sold unit.
+  const unitProfitMargin =
+    sale -
+    purchase -
+    delivery -
+    packaging -
+    expectedReturnCostPerUnit;
+
+  // Break-even must use the same contribution margin used by the
+  // monthly profit calculation.
   const totalFixedOverheads = adSpend + fixed;
-  const breakEvenUnits = unitProfitMargin > 0 ? Math.ceil(totalFixedOverheads / unitProfitMargin) : 0;
-  const breakEvenRevenue = breakEvenUnits * sale;
+
+  const breakEvenUnits =
+    unitProfitMargin > 0
+      ? Math.ceil(totalFixedOverheads / unitProfitMargin)
+      : 0;
+
+  const breakEvenRevenue =
+    breakEvenUnits * sale;
 
   return {
     purchasePrice: purchase,

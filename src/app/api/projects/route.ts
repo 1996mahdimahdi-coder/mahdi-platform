@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { projects } from "@/db/schema";
-import { seedDatabase } from "@/db/seed";
 import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +17,7 @@ export async function GET(request: Request) {
     // Auto-seed if empty
     const check = await db.select().from(projects).limit(1);
     if (check.length === 0) {
-      await seedDatabase();
+      // Automatic database seeding is disabled in request handlers.
     }
 
     let allProjects = await db.select().from(projects);

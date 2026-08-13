@@ -1,7 +1,8 @@
-export interface UserAssessmentInput {
+﻿export interface UserAssessmentInput {
   capital: number;
   workspace: string; // من المنزل, محل أملكه, محل بالإيجار, أونلاين, متنقل, لا أعرف
   wilayaId?: number;
+  communeId?: number;
   wilayaName?: string;
   communeName?: string;
   availableHours: string; // أقل من ساعتين يوميًا, 2–4 ساعات, 4–6 ساعات, أكثر من 6 ساعات, دوام كامل

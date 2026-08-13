@@ -2,7 +2,6 @@
 import { db } from "@/db";
 import { wilayas, communes } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { seedDatabase } from "@/db/seed";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +16,7 @@ export async function GET(request: Request) {
       .limit(1);
 
     if (wilayaCount.length === 0) {
-      await seedDatabase();
+      // Automatic database seeding is disabled in request handlers.
     }
 
     if (wilayaId) {
