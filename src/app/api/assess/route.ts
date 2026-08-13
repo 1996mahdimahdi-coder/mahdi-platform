@@ -464,7 +464,7 @@ export async function POST(request: Request) {
 
     const errorMessage =
       error instanceof Error
-        ? error.message
+        ? "\u062d\u062f\u062b \u062e\u0637\u0623 \u062f\u0627\u062e\u0644\u064a. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649 \u0644\u0627\u062d\u0642\u064b\u0627."
         : "Assessment error";
 
     return NextResponse.json(
