@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { projects } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import {
+  forbiddenResponse,
+  getSession,
+  unauthorizedResponse,
+} from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +53,16 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const session = await getSession();
+
+  if (!session) {
+    return unauthorizedResponse();
+  }
+
+  if (session.role !== "admin") {
+    return forbiddenResponse();
+  }
+
   try {
     const body = await request.json();
     if (!body.projectName || !body.projectId || !body.minCapital) {

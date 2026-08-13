@@ -431,28 +431,31 @@ export default function TestPage() {
     setLoading(true);
     setErrorMsg("");
 
-    let storedUser:
+    let sessionUser:
       | { id?: number | string }
       | null = null;
 
     try {
-      const rawUser =
-        localStorage.getItem(
-          "nabda_user"
-        );
+      const meRes = await fetch(
+        "/api/auth/me",
+        { cache: "no-store" }
+      );
 
-      if (rawUser) {
-        try {
-          storedUser = JSON.parse(
-            rawUser
-          );
-        } catch {
-          storedUser = null;
+      if (meRes.status === 401) {
+        sessionUser = null;
+      } else if (meRes.ok) {
+        const meData = await meRes.json();
+        if (meData.success && meData.user) {
+          sessionUser = meData.user;
         }
       }
+    } catch {
+      sessionUser = null;
+    }
 
+    try {
       const payload = {
-        userId: storedUser?.id ?? null,
+        userId: sessionUser?.id ?? null,
 
         capital: getEffectiveCapital(),
 

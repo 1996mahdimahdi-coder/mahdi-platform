@@ -42,30 +42,39 @@ export default function DashboardPage() {
   useEffect(() => {
     const loadDashboard = async () => {
       try {
-        const storedUser = localStorage.getItem("nabda_user");
+        const meRes = await fetch("/api/auth/me", {
+          cache: "no-store",
+        });
 
-        if (!storedUser) {
-          router.push("/login");
+        if (meRes.status === 401 || !meRes.ok) {
+          router.replace("/login");
           return;
         }
 
-        const currentUser: User = JSON.parse(storedUser);
+        const meData = await meRes.json();
 
-        if (!currentUser?.id) {
-          router.push("/login");
+        if (!meData.success || !meData.user?.id) {
+          router.replace("/login");
           return;
         }
+
+        const currentUser: User = meData.user;
 
         setUser(currentUser);
 
         // جلب آخر تحليل من PostgreSQL
         const response = await fetch(
-          `/api/dashboard?userId=${currentUser.id}`,
+          `/api/dashboard`,
           {
             method: "GET",
             cache: "no-store",
           }
         );
+
+        if (response.status === 401) {
+          router.replace("/login");
+          return;
+        }
 
         const data: DashboardResult = await response.json();
 
@@ -122,7 +131,12 @@ export default function DashboardPage() {
     loadDashboard();
   }, [router]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch (e) {
+      console.error(e);
+    }
     localStorage.removeItem("nabda_user");
     router.push("/");
   };

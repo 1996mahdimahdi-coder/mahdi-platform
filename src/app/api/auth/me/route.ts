@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { analysisResults } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { users } from "@/db/schema";
+import { eq } from "drizzle-orm";
 import {
   getSession,
   PRIVATE_NO_STORE_HEADERS,
@@ -18,32 +18,28 @@ export async function GET() {
   }
 
   try {
-    const [latestAnalysis] = await db
-      .select()
-      .from(analysisResults)
-      .where(
-        eq(
-          analysisResults.userId,
-          session.userId
-        )
-      )
-      .orderBy(desc(analysisResults.id))
+    const [user] = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        role: users.role,
+        phone: users.phone,
+      })
+      .from(users)
+      .where(eq(users.id, session.userId))
       .limit(1);
 
+    if (!user) {
+      return unauthorizedResponse();
+    }
+
     return NextResponse.json(
-      {
-        success: true,
-        analysis: latestAnalysis || null,
-      },
-      {
-        headers: PRIVATE_NO_STORE_HEADERS,
-      }
+      { success: true, user },
+      { headers: PRIVATE_NO_STORE_HEADERS }
     );
   } catch (error) {
-    console.error(
-      "Dashboard analysis error:",
-      error
-    );
+    console.error("Session user error:", error);
 
     return NextResponse.json(
       {

@@ -1,9 +1,24 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { projects } from "@/db/schema";
-import { eq, or } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { forbiddenResponse, getSession, unauthorizedResponse } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
+
+async function requireAdmin() {
+  const session = await getSession();
+
+  if (!session) {
+    return unauthorizedResponse();
+  }
+
+  if (session.role !== "admin") {
+    return forbiddenResponse();
+  }
+
+  return null;
+}
 
 export async function GET(
   request: Request,
@@ -38,6 +53,12 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = await requireAdmin();
+
+  if (authError) {
+    return authError;
+  }
+
   try {
     const { id } = await params;
     const body = await request.json();
@@ -70,6 +91,12 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = await requireAdmin();
+
+  if (authError) {
+    return authError;
+  }
+
   try {
     const { id } = await params;
     const isNumeric = !isNaN(Number(id));

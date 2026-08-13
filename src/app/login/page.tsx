@@ -31,7 +31,7 @@ export default function LoginPage() {
 
       const data = await res.json();
       if (data.success && data.user) {
-        localStorage.setItem("nabda_user", JSON.stringify(data.user));
+        localStorage.removeItem("nabda_user");
         if (data.user.role === "admin") {
           router.push("/admin");
         } else {

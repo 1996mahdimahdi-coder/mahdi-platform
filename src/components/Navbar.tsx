@@ -19,16 +19,52 @@ import {
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<{ name: string; role: string } | null>(null);
+  const [authLoaded, setAuthLoaded] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("nabda_user");
-      if (stored) {
-        setUser(JSON.parse(stored));
+    let cancelled = false;
+
+    const loadUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me", {
+          cache: "no-store",
+        });
+
+        if (res.status === 401) {
+          if (cancelled) return;
+          setUser(null);
+          return;
+        }
+
+        const data = await res.json();
+
+        if (!cancelled) {
+          if (data.success && data.user) {
+            setUser({
+              name: data.user.name,
+              role: data.user.role,
+            });
+          } else {
+            setUser(null);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+        if (!cancelled) {
+          setUser(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setAuthLoaded(true);
+        }
       }
-    } catch (e) {
-      console.error(e);
-    }
+    };
+
+    loadUser();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -111,7 +147,7 @@ export default function Navbar() {
 
           {/* Right Actions / Auth */}
           <div className="hidden lg:flex items-center gap-3">
-            {user ? (
+            {authLoaded && (user ? (
               <div className="flex items-center gap-2">
                 {user.role === "admin" && (
                   <Link
@@ -137,7 +173,7 @@ export default function Navbar() {
               >
                 تسجيل الدخول
               </Link>
-            )}
+            ))}
           </div>
 
           {/* Mobile Menu Toggle Button */}
@@ -217,7 +253,11 @@ export default function Navbar() {
           </div>
 
           <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
-            {user ? (
+            {!authLoaded ? (
+              <div className="w-full text-center py-2.5 text-xs text-slate-400 font-medium">
+                جاري التحميل...
+              </div>
+            ) : user ? (
               <>
                 {user.role === "admin" && (
                   <Link

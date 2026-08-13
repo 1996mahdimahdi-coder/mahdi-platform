@@ -62,32 +62,62 @@ export default function AdminDashboardPage() {
   });
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("nabda_user");
-      if (stored) {
-        const u = JSON.parse(stored);
-        if (u.role !== "admin") {
-          router.push("/dashboard");
+    let cancelled = false;
+
+    const init = async () => {
+      try {
+        const meRes = await fetch("/api/auth/me", {
+          cache: "no-store",
+        });
+
+        if (meRes.status === 401 || !meRes.ok) {
+          router.replace("/login");
           return;
         }
-        setUser(u);
-      } else {
-        router.push("/login");
-        return;
-      }
-    } catch (e) {
-      router.push("/login");
-      return;
-    }
 
-    fetchStats();
-    fetchProjects();
-    fetchWeights();
+        const meData = await meRes.json();
+
+        if (!meData.success || !meData.user) {
+          router.replace("/login");
+          return;
+        }
+
+        if (meData.user.role !== "admin") {
+          router.replace("/dashboard");
+          return;
+        }
+
+        if (cancelled) return;
+        setUser(meData.user);
+        fetchStats();
+        fetchProjects();
+        fetchWeights();
+      } catch (e) {
+        console.error(e);
+        if (!cancelled) {
+          router.replace("/login");
+        }
+      }
+    };
+
+    init();
+
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   const fetchStats = async () => {
     try {
       const res = await fetch("/api/admin/stats");
+      if (res.status === 401) {
+        router.replace("/login");
+        return;
+      }
+      if (res.status === 403) {
+        router.replace("/dashboard");
+        return;
+      }
       const data = await res.json();
       if (data.success) setStats(data.stats);
     } catch (e) {
@@ -98,6 +128,14 @@ export default function AdminDashboardPage() {
   const fetchProjects = async () => {
     try {
       const res = await fetch("/api/projects");
+      if (res.status === 401) {
+        router.replace("/login");
+        return;
+      }
+      if (res.status === 403) {
+        router.replace("/dashboard");
+        return;
+      }
       const data = await res.json();
       if (data.success) setProjects(data.projects || []);
     } catch (e) {
@@ -108,6 +146,14 @@ export default function AdminDashboardPage() {
   const fetchWeights = async () => {
     try {
       const res = await fetch("/api/admin/weights");
+      if (res.status === 401) {
+        router.replace("/login");
+        return;
+      }
+      if (res.status === 403) {
+        router.replace("/dashboard");
+        return;
+      }
       const data = await res.json();
       if (data.success && data.weights) setWeights(data.weights);
     } catch (e) {
@@ -122,6 +168,14 @@ export default function AdminDashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(weights),
       });
+      if (res.status === 401) {
+        router.replace("/login");
+        return;
+      }
+      if (res.status === 403) {
+        router.replace("/dashboard");
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setWeightsSaved(true);
@@ -136,6 +190,14 @@ export default function AdminDashboardPage() {
     if (!confirm("هل أنت تأكد من إرادة حذف هذا المشروع؟")) return;
     try {
       const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
+      if (res.status === 401) {
+        router.replace("/login");
+        return;
+      }
+      if (res.status === 403) {
+        router.replace("/dashboard");
+        return;
+      }
       const data = await res.json();
       if (data.success) fetchProjects();
     } catch (e) {
@@ -172,6 +234,15 @@ export default function AdminDashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      if (res.status === 401) {
+        router.replace("/login");
+        return;
+      }
+      if (res.status === 403) {
+        router.replace("/dashboard");
+        return;
+      }
 
       const data = await res.json();
       if (data.success) {
