@@ -72,6 +72,22 @@ export const DEFAULT_WEIGHTS: ScoringWeightsConfig = {
   timeWeight: 5,
 };
 
+export const normalizeRiskLevel = (level: string): string => {
+  switch (level) {
+    case "منخفض":
+    case "منخفضة":
+      return "منخفض";
+    case "متوسط":
+    case "متوسطة":
+      return "متوسط";
+    case "مرتفع":
+    case "مرتفعة":
+      return "مرتفع";
+    default:
+      return level;
+  }
+};
+
 export interface ScoredProjectResult {
   project: ProjectData;
   totalScore: number;
@@ -175,13 +191,13 @@ export function evaluateProjectScore(
 
   // 5. Risk Match Score (max riskWeight e.g. 10)
   let riskScore = 0;
-  const userRisk = user.riskLevel || "متوسط";
-  const projRisk = project.riskLevel;
+  const userRisk = normalizeRiskLevel(user.riskLevel || "متوسط");
+  const projRisk = normalizeRiskLevel(project.riskLevel);
 
-  if (userRisk === projRisk || (userRisk === "مرتفع")) {
+  if (userRisk === projRisk || userRisk === "مرتفع") {
     riskScore = weights.riskWeight;
-    reasons.push(`مستوى مخاطرة المشروع (${projRisk}) متناسب مع قدرتك على تحمل المخاطر.`);
-  } else if (userRisk === "منخفض" && projRisk === "متوسطة") {
+    reasons.push(`مستوى مخاطرة المشروع (${project.riskLevel}) متناسب مع قدرتك على تحمل المخاطر.`);
+  } else if (userRisk === "منخفض" && projRisk === "متوسط") {
     riskScore = Math.round(weights.riskWeight * 0.7);
   } else if (userRisk === "منخفض" && projRisk === "مرتفع") {
     riskScore = Math.round(weights.riskWeight * 0.3);

@@ -153,9 +153,10 @@ export default function WilayaDetailPage({
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {communes.map((commune) => (
-                <div
+                <Link
                   key={commune.id}
-                  className="border border-slate-200 rounded-2xl p-4 bg-slate-50 hover:bg-white hover:shadow-sm transition"
+                  href={`/communes/${commune.id}`}
+                  className="block border border-slate-200 rounded-2xl p-4 bg-slate-50 hover:bg-white hover:shadow-sm transition"
                 >
                   <h3 className="font-black text-slate-900">
                     {commune.nameAr}
@@ -164,7 +165,7 @@ export default function WilayaDetailPage({
                   <p className="text-sm text-slate-500 mt-1">
                     {commune.nameFr}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           )}

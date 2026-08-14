@@ -33,7 +33,22 @@ export async function POST(request: Request) {
     // 0. قراءة بيانات الطلب
     // ============================================================
 
-    const body = await request.json();
+    let body: Record<string, unknown>;
+
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "البيانات المرسلة غير صحيحة.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
 
     // userId must come exclusively from the authenticated session.
     // The client-supplied body.userId is ignored entirely so an
@@ -80,54 +95,216 @@ export async function POST(request: Request) {
     // 1. تجهيز بيانات المستخدم
     // ============================================================
 
+    const validIntegerId = (
+      v: unknown
+    ): number | undefined | null => {
+      if (
+        v === undefined ||
+        v === null ||
+        v === ""
+      ) {
+        return undefined;
+      }
+
+      const n = Number(v);
+
+      if (
+        !Number.isInteger(n) ||
+        n <= 0
+      ) {
+        return null;
+      }
+
+      return n;
+    };
+
+    const cleanString = (
+      v: unknown,
+      max: number
+    ): string | undefined =>
+      typeof v === "string" &&
+      v.trim().length > 0 &&
+      v.trim().length <= max
+        ? v.trim()
+        : undefined;
+
+    const ALLOWED = {
+      workspace: new Set([
+        "من المنزل",
+        "محل أملكه",
+        "محل بالإيجار",
+        "أونلاين",
+        "متنقل",
+        "لا أعرف",
+      ]),
+      availableHours: new Set([
+        "أقل من ساعتين يوميًا",
+        "2–4 ساعات",
+        "4–6 ساعات",
+        "أكثر من 6 ساعات",
+        "دوام كامل",
+      ]),
+      riskLevel: new Set([
+        "منخفض",
+        "متوسط",
+        "مرتفع",
+      ]),
+      transport: new Set([
+        "سيارة",
+        "دراجة نارية",
+        "نقل عمومي",
+        "لا أملك وسيلة نقل",
+      ]),
+      existingIncome: new Set([
+        "نعم",
+        "لا",
+      ]),
+      objective: new Set([
+        "دخل إضافي",
+        "مشروع رئيسي",
+        "ترك الوظيفة مستقبلًا",
+        "مشروع صغير قابل للتوسع",
+        "لا أعرف",
+      ]),
+      preferredMode: new Set([
+        "بيع منتجات",
+        "تقديم خدمات",
+        "مشروع أونلاين",
+        "مشروع محلي",
+        "مشروع من المنزل",
+        "مشروع يحتاج محل",
+        "لا أعرف",
+      ]),
+    } as const;
+
+    const pickEnum = (
+      v: unknown,
+      set: ReadonlySet<string>,
+      fallback: string
+    ): string => {
+      const s = cleanString(v, 50);
+
+      return s !== undefined && set.has(s)
+        ? s
+        : fallback;
+    };
+
+    const invalidRequest = (
+      message: string
+    ) =>
+      NextResponse.json(
+        {
+          success: false,
+          error: message,
+        },
+        {
+          status: 400,
+        }
+      );
+
+    const capital = Number(body.capital);
+
+    if (
+      !Number.isFinite(capital) ||
+      capital <= 0 ||
+      capital > 100_000_000
+    ) {
+      return invalidRequest(
+        "الرجاء إدخال رأس مال صحيح (بين 0 و 100 مليون دج)."
+      );
+    }
+
+    const wilayaId = validIntegerId(
+      body.wilayaId
+    );
+
+    if (wilayaId === null) {
+      return invalidRequest(
+        "معرف الولاية غير صحيح."
+      );
+    }
+
+    const communeId = validIntegerId(
+      body.communeId
+    );
+
+    if (communeId === null) {
+      return invalidRequest(
+        "معرف البلدية غير صحيح."
+      );
+    }
+
+    const skills = Array.isArray(body.skills)
+      ? (body.skills as unknown[])
+          .filter(
+            (s): s is string =>
+              typeof s === "string" &&
+              s.trim().length > 0 &&
+              s.trim().length <= 40
+          )
+          .map((s) => s.trim())
+          .slice(0, 20)
+      : [];
+
     const userInput: UserAssessmentInput = {
-      capital: Number(body.capital) || 50000,
+      capital,
 
-      workspace:
-        body.workspace || "من المنزل",
+      workspace: pickEnum(
+        body.workspace,
+        ALLOWED.workspace,
+        "من المنزل"
+      ),
 
-      wilayaId:
-        body.wilayaId !== undefined &&
-        body.wilayaId !== null &&
-        body.wilayaId !== ""
-          ? Number(body.wilayaId)
-          : undefined,
+      wilayaId,
+      communeId,
 
-      communeId:
-        body.communeId !== undefined &&
-        body.communeId !== null &&
-        body.communeId !== ""
-          ? Number(body.communeId)
-          : undefined,
+      wilayaName: cleanString(
+        body.wilayaName,
+        100
+      ),
 
-      wilayaName:
-        body.wilayaName || undefined,
+      communeName: cleanString(
+        body.communeName,
+        100
+      ),
 
-      communeName:
-        body.communeName || undefined,
+      availableHours: pickEnum(
+        body.availableHours,
+        ALLOWED.availableHours,
+        "2–4 ساعات"
+      ),
 
-      availableHours:
-        body.availableHours || "2–4 ساعات",
+      skills,
 
-      skills:
-        Array.isArray(body.skills)
-          ? body.skills
-          : [],
+      preferredMode: pickEnum(
+        body.preferredMode,
+        ALLOWED.preferredMode,
+        "لا أعرف"
+      ),
 
-      preferredMode:
-        body.preferredMode || "لا أعرف",
+      riskLevel: pickEnum(
+        body.riskLevel,
+        ALLOWED.riskLevel,
+        "متوسط"
+      ),
 
-      riskLevel:
-        body.riskLevel || "متوسط",
+      transport: pickEnum(
+        body.transport,
+        ALLOWED.transport,
+        "لا أملك وسيلة نقل"
+      ),
 
-      transport:
-        body.transport || "لا أملك وسيلة نقل",
+      existingIncome: pickEnum(
+        body.existingIncome,
+        ALLOWED.existingIncome,
+        "لا"
+      ),
 
-      existingIncome:
-        body.existingIncome || "لا",
-
-      objective:
-        body.objective || "لا أعرف",
+      objective: pickEnum(
+        body.objective,
+        ALLOWED.objective,
+        "لا أعرف"
+      ),
     };
 
     // ============================================================

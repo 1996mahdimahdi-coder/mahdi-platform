@@ -445,10 +445,10 @@ export default function HomePage() {
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
               <h3 className="font-bold text-slate-900 flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
-                هل البيانات تشمل جميع ولايات بلديات الجزائر 58؟
+                هل البيانات تشمل جميع ولايات بلديات الجزائر؟
               </h3>
               <p className="text-slate-600 leading-relaxed">
-                نعم، قاعدة بيانات NABDA تحتوي على الـ 58 ولاية مع البلديات التابعة لها لتحديد نطاق الملاءمة الجغرافية والمنطقة (مدن كبرى، بلديات صحراوية، ساحلية، أو زراعية).
+                نعم، قاعدة بيانات NABDA تحتوي على 69 ولاية مع البلديات التابعة لها لتحديد نطاق الملاءمة الجغرافية والمنطقة (مدن كبرى، بلديات صحراوية، ساحلية، أو زراعية).
               </p>
             </div>
           </div>

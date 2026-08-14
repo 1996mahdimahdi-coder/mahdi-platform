@@ -78,12 +78,12 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/blog/project-with-50k-dzd" className="hover:text-indigo-400 transition-colors">
+                <Link href="/projects" className="hover:text-indigo-400 transition-colors">
                   مشاريع بـ 5 ملايين سنتيم (50 ألف دج)
                 </Link>
               </li>
               <li>
-                <Link href="/blog/project-with-100k-dzd" className="hover:text-indigo-400 transition-colors">
+                <Link href="/projects" className="hover:text-indigo-400 transition-colors">
                   مشاريع بـ 10 ملايين سنتيم (100 ألف دج)
                 </Link>
               </li>

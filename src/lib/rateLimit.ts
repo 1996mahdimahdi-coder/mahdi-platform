@@ -220,7 +220,7 @@ export function clientIpKey(
 ): string {
   const ip = getClientIp(request) ?? "unknown";
 
-  return `${scope}:ip:${ip}`;
+  return `${scope}:ip:${normalizeIpKey(ip)}`;
 }
 
 export function normalizeIpKey(
