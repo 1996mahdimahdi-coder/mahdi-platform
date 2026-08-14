@@ -1,5 +1,11 @@
 import { NextResponse } from "next/server";
 import { analyzeCustomIdea } from "@/lib/aiExplanation";
+import {
+  checkRateLimit,
+  clientIpKey,
+  RATE_LIMITS,
+  rateLimitExceededResponse,
+} from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +46,20 @@ function badRequest(error: string) {
 }
 
 export async function POST(request: Request) {
+  // H1 rate limiting: this endpoint can call OpenAI when a key is set,
+  // so anonymous bursts are bounded per IP.
+  const ipLimit = RATE_LIMITS.ideaTest.ip;
+
+  const ipCheck = await checkRateLimit({
+    key: clientIpKey(request, "idea-test"),
+    limit: ipLimit.limit,
+    windowSeconds: ipLimit.windowSeconds,
+  });
+
+  if (!ipCheck.allowed) {
+    return rateLimitExceededResponse(ipCheck);
+  }
+
   let body: unknown;
 
   try {

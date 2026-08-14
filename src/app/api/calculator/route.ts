@@ -1,9 +1,28 @@
 import { NextResponse } from "next/server";
 import { calculateFinancials, calculateScenarios, calculateCapitalAllocation, evaluateShouldIStart } from "@/lib/financialCalc";
+import {
+  checkRateLimit,
+  clientIpKey,
+  RATE_LIMITS,
+  rateLimitExceededResponse,
+} from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  // H1 rate limiting: cheap computation but fully public, bounded per IP.
+  const ipLimit = RATE_LIMITS.calculator.ip;
+
+  const ipCheck = await checkRateLimit({
+    key: clientIpKey(request, "calculator"),
+    limit: ipLimit.limit,
+    windowSeconds: ipLimit.windowSeconds,
+  });
+
+  if (!ipCheck.allowed) {
+    return rateLimitExceededResponse(ipCheck);
+  }
+
   try {
     const body = await request.json();
     const purchasePrice = Number(body.purchasePrice) || 0;

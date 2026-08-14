@@ -4,6 +4,9 @@ import {
 } from "node:crypto";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
+import { db } from "@/db";
+import { users } from "@/db/schema";
 
 export const SESSION_COOKIE_NAME =
   "nabda_session";
@@ -145,7 +148,36 @@ export async function getSession():
     SESSION_COOKIE_NAME
   )?.value;
 
-  return verifySessionToken(token);
+  const verified = verifySessionToken(token);
+
+  if (!verified) return null;
+
+  try {
+    const [user] = await db
+      .select({
+        id: users.id,
+        role: users.role,
+      })
+      .from(users)
+      .where(eq(users.id, verified.userId))
+      .limit(1);
+
+    if (!user || user.role === "disabled") {
+      return null;
+    }
+
+    // Permissions always come from the current database role,
+    // never from the role embedded in the cookie token. A token
+    // that is still cryptographically valid is not enough: the
+    // account must still exist and be enabled in the database.
+    return {
+      ...verified,
+      role: user.role,
+    };
+  } catch (error) {
+    console.error("Session verification DB error:", error);
+    return null;
+  }
 }
 
 export function getSessionCookieOptions() {

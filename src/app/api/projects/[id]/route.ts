@@ -2,22 +2,34 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { projects } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { forbiddenResponse, getSession, unauthorizedResponse } from "@/lib/auth";
+import {
+  forbiddenResponse,
+  getSession,
+  unauthorizedResponse,
+} from "@/lib/auth";
+import {
+  checkRateLimit,
+  RATE_LIMITS,
+  rateLimitExceededResponse,
+} from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
-async function requireAdmin() {
+async function requireAdmin(): Promise<
+  | { session: NonNullable<Awaited<ReturnType<typeof getSession>>>; error: null }
+  | { session: null; error: Response }
+> {
   const session = await getSession();
 
   if (!session) {
-    return unauthorizedResponse();
+    return { session: null, error: unauthorizedResponse() };
   }
 
   if (session.role !== "admin") {
-    return forbiddenResponse();
+    return { session: null, error: forbiddenResponse() };
   }
 
-  return null;
+  return { session, error: null };
 }
 
 export async function GET(
@@ -53,10 +65,22 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAdmin();
+  const auth = await requireAdmin();
 
-  if (authError) {
-    return authError;
+  if (auth.error) {
+    return auth.error;
+  }
+
+  const writeLimit = RATE_LIMITS.adminWrite.user;
+
+  const writeCheck = await checkRateLimit({
+    key: `admin:write:user:${auth.session.userId}`,
+    limit: writeLimit.limit,
+    windowSeconds: writeLimit.windowSeconds,
+  });
+
+  if (!writeCheck.allowed) {
+    return rateLimitExceededResponse(writeCheck);
   }
 
   try {
@@ -91,10 +115,22 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAdmin();
+  const auth = await requireAdmin();
 
-  if (authError) {
-    return authError;
+  if (auth.error) {
+    return auth.error;
+  }
+
+  const writeLimit = RATE_LIMITS.adminWrite.user;
+
+  const writeCheck = await checkRateLimit({
+    key: `admin:write:user:${auth.session.userId}`,
+    limit: writeLimit.limit,
+    windowSeconds: writeLimit.windowSeconds,
+  });
+
+  if (!writeCheck.allowed) {
+    return rateLimitExceededResponse(writeCheck);
   }
 
   try {

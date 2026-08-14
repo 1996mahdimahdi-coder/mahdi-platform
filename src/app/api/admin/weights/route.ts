@@ -9,6 +9,11 @@ import {
   PRIVATE_NO_STORE_HEADERS,
   unauthorizedResponse,
 } from "@/lib/auth";
+import {
+  checkRateLimit,
+  RATE_LIMITS,
+  rateLimitExceededResponse,
+} from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -100,6 +105,18 @@ export async function PUT(request: Request) {
 
   if (auth.response) {
     return auth.response;
+  }
+
+  const writeLimit = RATE_LIMITS.adminWrite.user;
+
+  const writeCheck = await checkRateLimit({
+    key: `admin:write:user:${auth.session.userId}`,
+    limit: writeLimit.limit,
+    windowSeconds: writeLimit.windowSeconds,
+  });
+
+  if (!writeCheck.allowed) {
+    return rateLimitExceededResponse(writeCheck);
   }
 
   let body: unknown;

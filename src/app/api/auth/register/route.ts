@@ -8,6 +8,12 @@ import {
   getSessionCookieOptions,
   SESSION_COOKIE_NAME,
 } from "@/lib/auth";
+import {
+  checkRateLimit,
+  clientIpKey,
+  RATE_LIMITS,
+  rateLimitExceededResponse,
+} from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +41,19 @@ function jsonError(
 }
 
 export async function POST(request: Request) {
+  // H1 rate limiting: 3 registrations / hour / IP (prevents account spam).
+  const ipLimit = RATE_LIMITS.register.ip;
+
+  const ipCheck = await checkRateLimit({
+    key: clientIpKey(request, "register"),
+    limit: ipLimit.limit,
+    windowSeconds: ipLimit.windowSeconds,
+  });
+
+  if (!ipCheck.allowed) {
+    return rateLimitExceededResponse(ipCheck);
+  }
+
   let body: unknown;
 
   try {

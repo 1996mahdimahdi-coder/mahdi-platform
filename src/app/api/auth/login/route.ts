@@ -8,6 +8,13 @@ import {
   getSessionCookieOptions,
   SESSION_COOKIE_NAME,
 } from "@/lib/auth";
+import {
+  checkRateLimit,
+  clientIpKey,
+  normalizeEmail,
+  RATE_LIMITS,
+  rateLimitExceededResponse,
+} from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +39,19 @@ function jsonError(
 }
 
 export async function POST(request: Request) {
+  // H1 rate limiting: per-IP first so even malformed floods are bounded.
+  const ipLimit = RATE_LIMITS.login.ip;
+
+  const ipCheck = await checkRateLimit({
+    key: clientIpKey(request, "login"),
+    limit: ipLimit.limit,
+    windowSeconds: ipLimit.windowSeconds,
+  });
+
+  if (!ipCheck.allowed) {
+    return rateLimitExceededResponse(ipCheck);
+  }
+
   let body: unknown;
 
   try {
@@ -88,6 +108,21 @@ export async function POST(request: Request) {
       "\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u063a\u064a\u0631 \u0635\u0627\u0644\u062d\u0629.",
       400
     );
+  }
+
+  // H1 rate limiting: per-account (email) limit protects the account
+  // even when many hosts share one IP (NAT) without blocking the whole
+  // network. The email is normalized (trim + lowercase) before use.
+  const emailLimit = RATE_LIMITS.login.email;
+
+  const emailCheck = await checkRateLimit({
+    key: `login:email:${normalizeEmail(email)}`,
+    limit: emailLimit.limit,
+    windowSeconds: emailLimit.windowSeconds,
+  });
+
+  if (!emailCheck.allowed) {
+    return rateLimitExceededResponse(emailCheck);
   }
 
   try {

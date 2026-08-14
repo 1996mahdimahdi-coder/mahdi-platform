@@ -8,6 +8,11 @@ import {
   PRIVATE_NO_STORE_HEADERS,
   unauthorizedResponse,
 } from "@/lib/auth";
+import {
+  checkRateLimit,
+  RATE_LIMITS,
+  rateLimitExceededResponse,
+} from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +25,18 @@ export async function GET() {
 
   if (session.role !== "admin") {
     return forbiddenResponse();
+  }
+
+  const statsLimit = RATE_LIMITS.adminStats.user;
+
+  const statsCheck = await checkRateLimit({
+    key: `admin:stats:user:${session.userId}`,
+    limit: statsLimit.limit,
+    windowSeconds: statsLimit.windowSeconds,
+  });
+
+  if (!statsCheck.allowed) {
+    return rateLimitExceededResponse(statsCheck);
   }
 
   try {

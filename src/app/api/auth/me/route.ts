@@ -7,6 +7,11 @@ import {
   PRIVATE_NO_STORE_HEADERS,
   unauthorizedResponse,
 } from "@/lib/auth";
+import {
+  checkRateLimit,
+  RATE_LIMITS,
+  rateLimitExceededResponse,
+} from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +20,18 @@ export async function GET() {
 
   if (!session) {
     return unauthorizedResponse();
+  }
+
+  const meLimit = RATE_LIMITS.me.user;
+
+  const meCheck = await checkRateLimit({
+    key: `me:user:${session.userId}`,
+    limit: meLimit.limit,
+    windowSeconds: meLimit.windowSeconds,
+  });
+
+  if (!meCheck.allowed) {
+    return rateLimitExceededResponse(meCheck);
   }
 
   try {

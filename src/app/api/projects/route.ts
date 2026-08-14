@@ -7,6 +7,11 @@ import {
   getSession,
   unauthorizedResponse,
 } from "@/lib/auth";
+import {
+  checkRateLimit,
+  RATE_LIMITS,
+  rateLimitExceededResponse,
+} from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +66,19 @@ export async function POST(request: Request) {
 
   if (session.role !== "admin") {
     return forbiddenResponse();
+  }
+
+  // H1 rate limiting: admin write operations are keyed by admin userId.
+  const writeLimit = RATE_LIMITS.adminWrite.user;
+
+  const writeCheck = await checkRateLimit({
+    key: `admin:write:user:${session.userId}`,
+    limit: writeLimit.limit,
+    windowSeconds: writeLimit.windowSeconds,
+  });
+
+  if (!writeCheck.allowed) {
+    return rateLimitExceededResponse(writeCheck);
   }
 
   try {

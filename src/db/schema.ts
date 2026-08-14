@@ -1,4 +1,4 @@
-﻿import { pgTable, serial, text, integer, timestamp, jsonb, numeric, boolean } from "drizzle-orm/pg-core";
+﻿import { pgTable, serial, text, integer, timestamp, jsonb, numeric, boolean, bigint } from "drizzle-orm/pg-core";
 
 
 
@@ -129,6 +129,19 @@ export const analysisResults = pgTable("analysis_results", {
     reasons: string[];
   }[]>().notNull(),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Rate limiting counters (H1) — PostgreSQL fixed-window rate limiter.
+// Rows are upserted atomically by src/lib/rateLimit.ts
+// (`INSERT ... ON CONFLICT (key) DO UPDATE`). Each row tracks one
+// namespaced key (e.g. "login:ip:1.2.3.4", "login:email:user@x.com")
+// within a single fixed window whose start is stored in window_start.
+export const rateLimits = pgTable("rate_limits", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  count: integer("count").notNull().default(0),
+  windowStart: bigint("window_start", { mode: "number" }).notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Verification sources for legal / financial facts

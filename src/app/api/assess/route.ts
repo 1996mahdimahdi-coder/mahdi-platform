@@ -17,6 +17,13 @@ import {
 } from "@/lib/scoringEngine";
 
 import { generateAnalysisExplanation } from "@/lib/aiExplanation";
+import { getSession } from "@/lib/auth";
+import {
+  checkRateLimit,
+  clientIpKey,
+  RATE_LIMITS,
+  rateLimitExceededResponse,
+} from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -28,12 +35,46 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    const userId =
-      body.userId !== undefined &&
-      body.userId !== null &&
-      body.userId !== ""
-        ? Number(body.userId)
-        : null;
+    // userId must come exclusively from the authenticated session.
+    // The client-supplied body.userId is ignored entirely so an
+    // attacker can never target another user's profile or analysis
+    // results (IDOR / mass assignment via /api/assess).
+    const session = await getSession();
+
+    const userId = session ? session.userId : null;
+
+    // ============================================================
+    // 0.1. H1 rate limiting — before any DB write or AI call.
+    //      Authenticated users are keyed by userId; anonymous requests
+    //      are keyed by IP (falling back to a shared "unknown" bucket
+    //      when no IP is available).
+    // ============================================================
+
+    if (session) {
+      const userLimit = RATE_LIMITS.assess.user;
+
+      const userCheck = await checkRateLimit({
+        key: `assess:user:${session.userId}`,
+        limit: userLimit.limit,
+        windowSeconds: userLimit.windowSeconds,
+      });
+
+      if (!userCheck.allowed) {
+        return rateLimitExceededResponse(userCheck);
+      }
+    } else {
+      const anonLimit = RATE_LIMITS.assess.anonymous;
+
+      const anonCheck = await checkRateLimit({
+        key: clientIpKey(request, "assess"),
+        limit: anonLimit.limit,
+        windowSeconds: anonLimit.windowSeconds,
+      });
+
+      if (!anonCheck.allowed) {
+        return rateLimitExceededResponse(anonCheck);
+      }
+    }
 
     // ============================================================
     // 1. تجهيز بيانات المستخدم

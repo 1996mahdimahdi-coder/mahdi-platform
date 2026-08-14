@@ -40,29 +40,49 @@ export default function VisitorOnboarding() {
     try {
       const stored = localStorage.getItem("nabda_visitor");
 
-      if (!stored) {
-        setIsOpen(true);
-        document.body.style.overflow = "hidden";
+      if (stored) {
+        const parsed = JSON.parse(stored) || {};
+        const sanitized = {
+          firstName: parsed.firstName ?? null,
+          wilayaName: parsed.wilayaName ?? null,
+        };
 
-        fetch("/api/wilayas")
-          .then((res) => {
-            if (!res.ok) {
-              throw new Error("Failed to load wilayas");
-            }
+        if (
+          parsed.sessionToken ||
+          JSON.stringify(sanitized) !== stored
+        ) {
+          localStorage.setItem(
+            "nabda_visitor",
+            JSON.stringify(sanitized)
+          );
+        }
 
-            return res.json();
-          })
-          .then((data) => {
-            if (data.success && Array.isArray(data.wilayas)) {
-              setWilayasList(data.wilayas);
-            } else {
-              setErrorMsg("تعذر تحميل قائمة الولايات");
-            }
-          })
-          .catch(() => {
-            setErrorMsg("تعذر تحميل قائمة الولايات");
-          });
+        setIsOpen(false);
+        document.body.style.overflow = "";
+        return;
       }
+
+      setIsOpen(true);
+      document.body.style.overflow = "hidden";
+
+      fetch("/api/wilayas")
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("Failed to load wilayas");
+          }
+
+          return res.json();
+        })
+        .then((data) => {
+          if (data.success && Array.isArray(data.wilayas)) {
+            setWilayasList(data.wilayas);
+          } else {
+            setErrorMsg("تعذر تحميل قائمة الولايات");
+          }
+        })
+        .catch(() => {
+          setErrorMsg("تعذر تحميل قائمة الولايات");
+        });
     } catch {
       console.error("Unable to access localStorage");
     }
@@ -193,7 +213,10 @@ export default function VisitorOnboarding() {
       if (data.success && data.visitor) {
         localStorage.setItem(
           "nabda_visitor",
-          JSON.stringify(data.visitor)
+          JSON.stringify({
+            firstName: data.visitor.firstName,
+            wilayaName: data.visitor.wilayaName,
+          })
         );
 
         setIsOpen(false);
