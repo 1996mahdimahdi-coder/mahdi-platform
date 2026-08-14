@@ -163,6 +163,11 @@ export const dataSources = pgTable("data_sources", {
   url: text("url"),
   category: text("category").notNull(), // population, area, economy, market, transport, projects, legal, other
   confidenceGrade: text("confidence_grade").notNull().default("U"), // A, B, C, D, U
+  documentTitle: text("document_title"),
+  documentYear: integer("document_year"),
+  documentType: text("document_type"), // census, report, law, decree, dataset, portal, other
+  accessedAt: timestamp("accessed_at"),
+  published: boolean("published").notNull().default(false), // public visibility flag
   notes: text("notes"),
   lastVerifiedAt: timestamp("last_verified_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

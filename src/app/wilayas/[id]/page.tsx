@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import {
+  SourcedStatCard,
+  DensityCard,
+  type StatDetail,
+  type DensityDetail,
+} from "@/components/SourcedStatCard";
 
 type Wilaya = {
   id: number;
@@ -24,6 +30,9 @@ export default function WilayaDetailPage({
 }) {
   const [wilaya, setWilaya] = useState<Wilaya | null>(null);
   const [communes, setCommunes] = useState<Commune[]>([]);
+  const [population, setPopulation] = useState<StatDetail | null>(null);
+  const [area, setArea] = useState<StatDetail | null>(null);
+  const [density, setDensity] = useState<DensityDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -32,36 +41,21 @@ export default function WilayaDetailPage({
       try {
         const { id } = await params;
 
-        const response = await fetch("/api/wilayas");
+        const response = await fetch(`/api/wilayas/${id}`, {
+          cache: "no-store",
+        });
+
         const data = await response.json();
 
-        if (!data.success) {
-          throw new Error(data.error || "فشل تحميل الولايات");
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || "فشل تحميل الولاية");
         }
 
-        const found = data.wilayas?.find(
-          (item: Wilaya) =>
-            String(item.id) === String(id) ||
-            String(item.code) === String(id)
-        );
-
-        if (!found) {
-          setError("الولاية غير موجودة");
-          setLoading(false);
-          return;
-        }
-
-        setWilaya(found);
-
-        const communesResponse = await fetch(
-          `/api/wilayas?wilayaId=${found.id}`
-        );
-
-        const communesData = await communesResponse.json();
-
-        if (communesData.success) {
-          setCommunes(communesData.communes || []);
-        }
+        setWilaya(data.wilaya);
+        setCommunes(data.communes || []);
+        setPopulation(data.population);
+        setArea(data.area);
+        setDensity(data.density);
       } catch (err) {
         setError(
           err instanceof Error
@@ -116,10 +110,10 @@ export default function WilayaDetailPage({
           href="/wilayas"
           className="inline-block mb-6 text-indigo-600 font-bold"
         >
-          ? العودة إلى الولايات
+          ← العودة إلى الولايات
         </Link>
 
-        <section className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 mb-8">
+        <section className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 mb-6">
           <div className="flex flex-col gap-2">
             <span className="text-sm text-slate-500">
               الولاية رقم {wilaya.code}
@@ -132,6 +126,68 @@ export default function WilayaDetailPage({
             <p className="text-slate-500">
               {wilaya.nameFr}
             </p>
+          </div>
+        </section>
+
+        {/* Demographic & area data */}
+        <section className="mb-6">
+          <div className="mb-4">
+            <h2 className="text-2xl font-black text-slate-900">
+              البيانات الديموغرافية والجغرافية
+            </h2>
+
+            <p className="text-sm text-slate-500 mt-1">
+              كل رقم مرتبط بمصدر موثق وسنة، أو لا يُعرض أصلًا.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {population ? (
+              <SourcedStatCard
+                title="عدد السكان"
+                detail={population}
+                format={(value) =>
+                  `${Number(value).toLocaleString("ar-DZ")} نسمة`
+                }
+              />
+            ) : (
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                <p className="text-sm text-slate-500 font-bold">عدد السكان</p>
+                <p className="text-sm font-bold text-slate-400 mt-3 leading-6">
+                  لا تتوفر حاليًا بيانات رسمية موثقة قابلة للتحقق.
+                </p>
+              </div>
+            )}
+
+            {area ? (
+              <SourcedStatCard
+                title="المساحة"
+                detail={area}
+                format={(value) => `${value} كم²`}
+              />
+            ) : (
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                <p className="text-sm text-slate-500 font-bold">المساحة</p>
+                <p className="text-sm font-bold text-slate-400 mt-3 leading-6">
+                  لا تتوفر حاليًا بيانات رسمية موثقة قابلة للتحقق.
+                </p>
+              </div>
+            )}
+
+            {density ? (
+              <DensityCard
+                detail={density}
+                populationValue={population?.value ?? null}
+                areaValue={area?.value ?? null}
+              />
+            ) : (
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                <p className="text-sm text-slate-500 font-bold">الكثافة السكانية</p>
+                <p className="text-sm font-bold text-slate-400 mt-3 leading-6">
+                  لا تتوفر حاليًا بيانات رسمية موثقة قابلة للتحقق.
+                </p>
+              </div>
+            )}
           </div>
         </section>
 

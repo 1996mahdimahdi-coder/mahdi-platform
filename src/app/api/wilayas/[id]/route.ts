@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { communes, wilayas, communeStats, dataSources } from "@/db/schema";
+import { wilayas, communes, wilayaStats, dataSources } from "@/db/schema";
 import {
   buildDensity,
   buildStatDetail,
   toSourceRef,
 } from "@/lib/sourceStats";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
   request: Request,
@@ -14,36 +16,39 @@ export async function GET(
 ) {
   try {
     const { id } = await context.params;
-    const communeId = Number(id);
+    const wilayaId = Number(id);
 
-    if (!Number.isInteger(communeId) || communeId <= 0) {
+    if (!Number.isInteger(wilayaId) || wilayaId <= 0) {
       return NextResponse.json(
-        { success: false, error: "معرف البلدية غير صحيح" },
+        { success: false, error: "معرف الولاية غير صحيح" },
         { status: 400 }
       );
     }
 
-    const result = await db
-      .select({
-        commune: communes,
-        wilaya: wilayas,
-        stats: communeStats,
-      })
-      .from(communes)
-      .leftJoin(wilayas, eq(communes.wilayaId, wilayas.id))
-      .leftJoin(communeStats, eq(communes.id, communeStats.communeId))
-      .where(eq(communes.id, communeId))
+    const [wilaya] = await db
+      .select()
+      .from(wilayas)
+      .where(eq(wilayas.id, wilayaId))
       .limit(1);
 
-    if (result.length === 0) {
+    if (!wilaya) {
       return NextResponse.json(
-        { success: false, error: "البلدية غير موجودة" },
+        { success: false, error: "الولاية غير موجودة" },
         { status: 404 }
       );
     }
 
-    const row = result[0];
-    const stats = row.stats;
+    const communeList = await db
+      .select()
+      .from(communes)
+      .where(eq(communes.wilayaId, wilayaId))
+      .orderBy(communes.nameAr);
+
+    const [stats] = await db
+      .select()
+      .from(wilayaStats)
+      .where(eq(wilayaStats.wilayaId, wilayaId))
+      .limit(1);
 
     let populationSource = null;
     let areaSource = null;
@@ -94,20 +99,20 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      commune: row.commune,
-      wilaya: row.wilaya,
-      stats: row.stats,
+      wilaya,
+      communes: communeList,
+      stats: stats ?? null,
       population,
       area,
       density,
     });
   } catch (error) {
-    console.error("GET /api/communes/[id] error:", error);
+    console.error("GET /api/wilayas/[id] error:", error);
 
     return NextResponse.json(
       {
         success: false,
-        error: "حدث خطأ أثناء تحميل بيانات البلدية",
+        error: "حدث خطأ أثناء تحميل بيانات الولاية",
       },
       { status: 500 }
     );

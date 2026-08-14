@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   ShieldCheck,
   Plus,
@@ -300,6 +301,14 @@ export default function AdminDashboardPage() {
             أوزان التقييم (Weights)
           </button>
         </div>
+
+        <Link
+          href="/admin/sources"
+          className="px-4 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-extrabold text-xs flex items-center gap-1.5 shadow-md hover:bg-amber-400 transition-colors"
+        >
+          <FileText className="w-4 h-4" />
+          إدارة المصادر
+        </Link>
       </div>
 
       {/* TAB 1: STATS OVERVIEW */}

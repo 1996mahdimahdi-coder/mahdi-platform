@@ -2,6 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import DataBadge from "@/components/DataBadge";
+import {
+  DensityCard,
+  NO_VERIFIED_DATA_TEXT,
+  formatNumber,
+  SourcedStatCard,
+  type DensityDetail,
+  type StatDetail,
+} from "@/components/SourcedStatCard";
 
 type Commune = {
   id: number;
@@ -72,11 +81,6 @@ type Stats = {
   lastVerifiedAt: string | null;
 };
 
-function formatNumber(value: number | null | undefined) {
-  if (value == null) return "غير متوفر";
-  return value.toLocaleString("ar-DZ");
-}
-
 function scoreLabel(value: number | null) {
   if (value == null) return "غير متوفر";
   return `${value}/100`;
@@ -90,41 +94,6 @@ function scoreWidth(value: number | null) {
 function sourceText(source: string | null, year?: number | null) {
   if (!source) return "المصدر غير متوفر حاليًا";
   return year ? `${source} — سنة ${year}` : source;
-}
-
-function DataBadge({
-  type,
-}: {
-  type: "official" | "calculated" | "analytical" | "estimated";
-}) {
-  const config = {
-    official: {
-      label: "بيان رسمي",
-      className: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    },
-    calculated: {
-      label: "محسوب",
-      className: "bg-blue-50 text-blue-700 border-blue-200",
-    },
-    analytical: {
-      label: "مؤشر تحليلي",
-      className: "bg-amber-50 text-amber-700 border-amber-200",
-    },
-    estimated: {
-      label: "تقديري",
-      className: "bg-orange-50 text-orange-700 border-orange-200",
-    },
-  };
-
-  const item = config[type];
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold ${item.className}`}
-    >
-      {item.label}
-    </span>
-  );
 }
 
 function InfoCard({
@@ -210,6 +179,9 @@ export default function CommuneDetailPage({
   const [commune, setCommune] = useState<Commune | null>(null);
   const [wilaya, setWilaya] = useState<Wilaya | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [population, setPopulation] = useState<StatDetail | null>(null);
+  const [area, setArea] = useState<StatDetail | null>(null);
+  const [density, setDensity] = useState<DensityDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -233,6 +205,9 @@ export default function CommuneDetailPage({
         setCommune(data.commune);
         setWilaya(data.wilaya);
         setStats(data.stats);
+        setPopulation(data.population);
+        setArea(data.area);
+        setDensity(data.density);
       } catch (err) {
         setError(
           err instanceof Error
@@ -373,15 +348,20 @@ export default function CommuneDetailPage({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-            <InfoCard
-              title="عدد السكان"
-              value={formatNumber(stats?.population)}
-              source={sourceText(
-                stats?.populationSource ?? null,
-                stats?.populationYear
-              )}
-              badge="official"
-            />
+            {population ? (
+              <SourcedStatCard
+                title="عدد السكان"
+                detail={population}
+                format={(value) => `${formatNumber(Number(value))} نسمة`}
+              />
+            ) : (
+              <InfoCard
+                title="عدد السكان"
+                value="غير متوفر"
+                source={NO_VERIFIED_DATA_TEXT}
+                badge="official"
+              />
+            )}
 
             <InfoCard
               title="الدائرة"
@@ -393,34 +373,35 @@ export default function CommuneDetailPage({
               badge="official"
             />
 
-            <InfoCard
-              title="المساحة"
-              value={
-                stats?.areaKm2
-                  ? `${stats.areaKm2} كم²`
-                  : "غير متوفر"
-              }
-              source={sourceText(
-                stats?.areaSource ?? null,
-                stats?.areaYear
-              )}
-              badge="official"
-            />
+            {area ? (
+              <SourcedStatCard
+                title="المساحة"
+                detail={area}
+                format={(value) => `${value} كم²`}
+              />
+            ) : (
+              <InfoCard
+                title="المساحة"
+                value="غير متوفر"
+                source={NO_VERIFIED_DATA_TEXT}
+                badge="official"
+              />
+            )}
 
-            <InfoCard
-              title="الكثافة السكانية"
-              value={
-                stats?.density
-                  ? `${stats.density} نسمة/كم²`
-                  : "غير متوفر"
-              }
-              source={
-                stats?.densityType === "calculated"
-                  ? "محسوبة من عدد السكان ÷ المساحة"
-                  : "مصدر الكثافة غير متوفر حاليًا"
-              }
-              badge="calculated"
-            />
+            {density ? (
+              <DensityCard
+                detail={density}
+                populationValue={population?.value ?? null}
+                areaValue={area?.value ?? null}
+              />
+            ) : (
+              <InfoCard
+                title="الكثافة السكانية"
+                value="غير متوفر"
+                source={NO_VERIFIED_DATA_TEXT}
+                badge="calculated"
+              />
+            )}
 
           </div>
         </section>

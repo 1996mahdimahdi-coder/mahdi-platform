@@ -92,6 +92,16 @@ export default function Footer() {
                   مدونة NABDA
                 </Link>
               </li>
+              <li>
+                <Link href="/sources" className="hover:text-indigo-400 transition-colors">
+                  مصادرنا الموثوقة
+                </Link>
+              </li>
+              <li>
+                <Link href="/methodology" className="hover:text-indigo-400 transition-colors">
+                  منهجية البيانات
+                </Link>
+              </li>
               <li className="pt-1">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-[11px] font-bold border border-indigo-500/30">
                   ✨ المنصة مجانية بالكامل
