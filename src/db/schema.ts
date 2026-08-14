@@ -154,6 +154,21 @@ export const verificationSources = pgTable("verification_sources", {
   lastVerified: timestamp("last_verified").defaultNow(),
 });
 
+// Central registry of data sources (Phase 0 - Transparency & Credibility)
+export const dataSources = pgTable("data_sources", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  institution: text("institution").notNull(),
+  sourceType: text("source_type").notNull(), // official, institutional, secondary, estimated
+  url: text("url"),
+  category: text("category").notNull(), // population, area, economy, market, transport, projects, legal, other
+  confidenceGrade: text("confidence_grade").notNull().default("U"), // A, B, C, D, U
+  notes: text("notes"),
+  lastVerifiedAt: timestamp("last_verified_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Blog Posts for SEO content
 export const blogPosts = pgTable("blog_posts", {
   id: serial("id").primaryKey(),
@@ -194,10 +209,14 @@ export const communeStats = pgTable("commune_stats", {
   population: integer("population"),
   populationSource: text("population_source"),
   populationYear: integer("population_year"),
+  populationConfidence: text("population_confidence"), // A, B, C, D, U
+  populationSourceId: integer("population_source_id").references(() => dataSources.id, { onDelete: "set null" }),
 
   areaKm2: numeric("area_km2", { precision: 12, scale: 2 }),
   areaSource: text("area_source"),
   areaYear: integer("area_year"),
+  areaConfidence: text("area_confidence"), // A, B, C, D, U
+  areaSourceId: integer("area_source_id").references(() => dataSources.id, { onDelete: "set null" }),
 
   density: numeric("density", { precision: 12, scale: 2 }),
   densityType: text("density_type").default("calculated"),
@@ -241,4 +260,23 @@ export const communeStats = pgTable("commune_stats", {
   lastVerifiedAt: timestamp("last_verified_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Wilaya-level demographic and area statistics (Phase 0 - Transparency & Credibility)
+export const wilayaStats = pgTable("wilaya_stats", {
+  id: serial("id").primaryKey(),
+  wilayaId: integer("wilaya_id").notNull().unique().references(() => wilayas.id, { onDelete: "cascade" }),
+  population: integer("population"),
+  populationSourceId: integer("population_source_id").references(() => dataSources.id, { onDelete: "set null" }),
+  populationYear: integer("population_year"),
+  populationConfidence: text("population_confidence"), // A, B, C, D, U
+  areaKm2: numeric("area_km2", { precision: 12, scale: 2 }),
+  areaSourceId: integer("area_source_id").references(() => dataSources.id, { onDelete: "set null" }),
+  areaYear: integer("area_year"),
+  areaConfidence: text("area_confidence"), // A, B, C, D, U
+  density: numeric("density", { precision: 12, scale: 2 }),
+  densityType: text("density_type").default("calculated"), // calculated, official
+  lastVerifiedAt: timestamp("last_verified_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
