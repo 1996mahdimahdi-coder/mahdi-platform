@@ -4,9 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   SourcedStatCard,
-  DensityCard,
   type StatDetail,
-  type DensityDetail,
 } from "@/components/SourcedStatCard";
 
 type Wilaya = {
@@ -31,8 +29,6 @@ export default function WilayaDetailPage({
   const [wilaya, setWilaya] = useState<Wilaya | null>(null);
   const [communes, setCommunes] = useState<Commune[]>([]);
   const [population, setPopulation] = useState<StatDetail | null>(null);
-  const [area, setArea] = useState<StatDetail | null>(null);
-  const [density, setDensity] = useState<DensityDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -54,8 +50,6 @@ export default function WilayaDetailPage({
         setWilaya(data.wilaya);
         setCommunes(data.communes || []);
         setPopulation(data.population);
-        setArea(data.area);
-        setDensity(data.density);
       } catch (err) {
         setError(
           err instanceof Error
@@ -141,7 +135,7 @@ export default function WilayaDetailPage({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {population ? (
               <SourcedStatCard
                 title="عدد السكان"
@@ -153,36 +147,6 @@ export default function WilayaDetailPage({
             ) : (
               <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
                 <p className="text-sm text-slate-500 font-bold">عدد السكان</p>
-                <p className="text-sm font-bold text-slate-400 mt-3 leading-6">
-                  لا تتوفر حاليًا بيانات رسمية موثقة قابلة للتحقق.
-                </p>
-              </div>
-            )}
-
-            {area ? (
-              <SourcedStatCard
-                title="المساحة"
-                detail={area}
-                format={(value) => `${value} كم²`}
-              />
-            ) : (
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-                <p className="text-sm text-slate-500 font-bold">المساحة</p>
-                <p className="text-sm font-bold text-slate-400 mt-3 leading-6">
-                  لا تتوفر حاليًا بيانات رسمية موثقة قابلة للتحقق.
-                </p>
-              </div>
-            )}
-
-            {density ? (
-              <DensityCard
-                detail={density}
-                populationValue={population?.value ?? null}
-                areaValue={area?.value ?? null}
-              />
-            ) : (
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-                <p className="text-sm text-slate-500 font-bold">الكثافة السكانية</p>
                 <p className="text-sm font-bold text-slate-400 mt-3 leading-6">
                   لا تتوفر حاليًا بيانات رسمية موثقة قابلة للتحقق.
                 </p>

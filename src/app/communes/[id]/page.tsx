@@ -4,11 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import DataBadge from "@/components/DataBadge";
 import {
-  DensityCard,
   NO_VERIFIED_DATA_TEXT,
   formatNumber,
   SourcedStatCard,
-  type DensityDetail,
   type StatDetail,
 } from "@/components/SourcedStatCard";
 
@@ -180,8 +178,6 @@ export default function CommuneDetailPage({
   const [wilaya, setWilaya] = useState<Wilaya | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [population, setPopulation] = useState<StatDetail | null>(null);
-  const [area, setArea] = useState<StatDetail | null>(null);
-  const [density, setDensity] = useState<DensityDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -206,8 +202,6 @@ export default function CommuneDetailPage({
         setWilaya(data.wilaya);
         setStats(data.stats);
         setPopulation(data.population);
-        setArea(data.area);
-        setDensity(data.density);
       } catch (err) {
         setError(
           err instanceof Error
@@ -346,7 +340,7 @@ export default function CommuneDetailPage({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
             {population ? (
               <SourcedStatCard
@@ -372,36 +366,6 @@ export default function CommuneDetailPage({
               }
               badge="official"
             />
-
-            {area ? (
-              <SourcedStatCard
-                title="المساحة"
-                detail={area}
-                format={(value) => `${value} كم²`}
-              />
-            ) : (
-              <InfoCard
-                title="المساحة"
-                value="غير متوفر"
-                source={NO_VERIFIED_DATA_TEXT}
-                badge="official"
-              />
-            )}
-
-            {density ? (
-              <DensityCard
-                detail={density}
-                populationValue={population?.value ?? null}
-                areaValue={area?.value ?? null}
-              />
-            ) : (
-              <InfoCard
-                title="الكثافة السكانية"
-                value="غير متوفر"
-                source={NO_VERIFIED_DATA_TEXT}
-                badge="calculated"
-              />
-            )}
 
           </div>
         </section>
