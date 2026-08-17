@@ -277,6 +277,23 @@ export default async function NoCapitalProjectPage(props: {
           </div>
         </section>
 
+        <section className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-3xl p-6">
+          <h2 className="font-black text-sm text-slate-900 flex items-center gap-2 mb-2">
+            <span className="text-lg">🤖</span>
+            اسأل مساعد NABDA عن هذا المشروع
+          </h2>
+          <p className="text-xs text-slate-600 mb-3">
+            اسأل مساعد NABDA عن خطوات هذا المشروع، التسويق، أو أي استفسار آخر.
+          </p>
+          <Link
+            href={`/ai?context=project:${slug}`}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-extrabold hover:bg-emerald-700 transition-colors shadow-md"
+          >
+            ابدأ محادثة
+            <ChevronLeft className="w-4 h-4" />
+          </Link>
+        </section>
+
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
           <Link
             href="/no-capital/plans"
