@@ -140,7 +140,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5 text-indigo-500" />
-                <span>contact@nabda.dz</span>
+                <span>YOUR-REAL-EMAIL@gmail.com</span>
               </div>
             </div>
           </div>
