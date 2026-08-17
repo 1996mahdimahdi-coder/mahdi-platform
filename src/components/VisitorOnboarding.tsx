@@ -37,55 +37,65 @@ export default function VisitorOnboarding() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("nabda_visitor");
+    void Promise.resolve().then(() => {
+      try {
+        const stored = localStorage.getItem("nabda_visitor");
 
-      if (stored) {
-        const parsed = JSON.parse(stored) || {};
-        const sanitized = {
-          firstName: parsed.firstName ?? null,
-          wilayaName: parsed.wilayaName ?? null,
-        };
+        if (stored) {
+          const parsed = JSON.parse(stored) || {};
+          const sanitized = {
+            firstName: parsed.firstName ?? null,
+            wilayaName: parsed.wilayaName ?? null,
+          };
 
-        if (
-          parsed.sessionToken ||
-          JSON.stringify(sanitized) !== stored
-        ) {
-          localStorage.setItem(
-            "nabda_visitor",
-            JSON.stringify(sanitized)
-          );
+          if (
+            parsed.sessionToken ||
+            JSON.stringify(sanitized) !== stored
+          ) {
+            localStorage.setItem(
+              "nabda_visitor",
+              JSON.stringify(sanitized)
+            );
+          }
+
+          setIsOpen(false);
+          document.body.style.overflow = "";
+          return;
         }
 
-        setIsOpen(false);
-        document.body.style.overflow = "";
-        return;
-      }
+        const skipped = localStorage.getItem("nabda_visitor_skipped");
 
-      setIsOpen(true);
-      document.body.style.overflow = "hidden";
+        if (skipped) {
+          setIsOpen(false);
+          document.body.style.overflow = "";
+          return;
+        }
 
-      fetch("/api/wilayas")
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error("Failed to load wilayas");
-          }
+        setIsOpen(true);
+        document.body.style.overflow = "hidden";
 
-          return res.json();
-        })
-        .then((data) => {
-          if (data.success && Array.isArray(data.wilayas)) {
-            setWilayasList(data.wilayas);
-          } else {
+        fetch("/api/wilayas")
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error("Failed to load wilayas");
+            }
+
+            return res.json();
+          })
+          .then((data) => {
+            if (data.success && Array.isArray(data.wilayas)) {
+              setWilayasList(data.wilayas);
+            } else {
+              setErrorMsg("تعذر تحميل قائمة الولايات");
+            }
+          })
+          .catch(() => {
             setErrorMsg("تعذر تحميل قائمة الولايات");
-          }
-        })
-        .catch(() => {
-          setErrorMsg("تعذر تحميل قائمة الولايات");
-        });
-    } catch {
-      console.error("Unable to access localStorage");
-    }
+          });
+      } catch {
+        console.error("Unable to access localStorage");
+      }
+    });
 
     return () => {
       document.body.style.overflow = "";
@@ -175,6 +185,17 @@ export default function VisitorOnboarding() {
     } else if (step === 2) {
       setStep(1);
     }
+  };
+
+  const handleSkip = () => {
+    try {
+      localStorage.setItem("nabda_visitor_skipped", "1");
+    } catch {
+      // localStorage unavailable
+    }
+
+    setIsOpen(false);
+    document.body.style.overflow = "";
   };
 
   const handleSubmit = async () => {
@@ -549,9 +570,7 @@ export default function VisitorOnboarding() {
               </button>
             ) : (
               <div />
-            )}
-
-            {step < 3 ? (
+            )}            {step < 3 ? (
               <button
                 type="button"
                 onClick={handleNext}
@@ -579,6 +598,15 @@ export default function VisitorOnboarding() {
               </button>
             )}
           </div>
+
+          <button
+            type="button"
+            onClick={handleSkip}
+            disabled={loading}
+            className="w-full text-center text-[11px] text-slate-400 hover:text-slate-600 font-bold py-1 transition-colors disabled:opacity-50"
+          >
+            تخطي التسجيل الآن والتصفح بحرية
+          </button>
         </div>
       </div>
     </div>

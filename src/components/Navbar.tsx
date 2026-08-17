@@ -13,7 +13,9 @@ import {
   User,
   ShieldCheck,
   TrendingUp,
-  FileText
+  FileText,
+  Rocket,
+  GraduationCap
 } from "lucide-react";
 
 export default function Navbar() {
@@ -94,6 +96,20 @@ export default function Navbar() {
             >
               <Sparkles className="w-4 h-4 text-indigo-600" />
               اختبر وضعي
+            </Link>
+            <Link
+              href="/no-capital"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors font-bold"
+            >
+              <Rocket className="w-4 h-4 text-emerald-600" />
+              بدون رأس مال
+            </Link>
+            <Link
+              href="/learn"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+            >
+              <GraduationCap className="w-4 h-4 text-slate-500" />
+              تعلم
             </Link>
             <Link
               href="/projects"
@@ -197,6 +213,22 @@ export default function Navbar() {
           >
             <Sparkles className="w-5 h-5" />
             اختبر وضعي الآن
+          </Link>
+          <Link
+            href="/no-capital"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-emerald-600 text-white font-bold"
+          >
+            <Rocket className="w-5 h-5" />
+            ابدأ بدون رأس مال
+          </Link>
+          <Link
+            href="/learn"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800 font-medium"
+          >
+            <GraduationCap className="w-4 h-4 text-slate-500" />
+            تعلم وأنشئ محتوى
           </Link>
           <Link
             href="/projects"

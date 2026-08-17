@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { downloadResultsPdf } from "@/lib/pdfExport";
 import DownloadProgress from "@/components/DownloadProgress";
+import ConsentGate from "@/components/ConsentGate";
+import { getOrCreateSessionId } from "@/lib/session";
 
 type DownloadStage =
   | "preparing"
@@ -75,6 +77,10 @@ export default function ResultsPage() {
   const router = useRouter();
 
   const [resultData, setResultData] = useState<ResultData | null>(null);
+
+  const [consentGranted, setConsentGranted] = useState(false);
+
+  const sessionId = getOrCreateSessionId();
 
   const [downloadState, setDownloadState] = useState<DownloadState>({
     visible: false,
@@ -226,6 +232,16 @@ export default function ResultsPage() {
           </p>
         </div>
       </div>
+    );
+  }
+
+  if (!consentGranted) {
+    return (
+      <ConsentGate
+        purpose="assessment"
+        sessionId={sessionId}
+        onGranted={() => setConsentGranted(true)}
+      />
     );
   }
 

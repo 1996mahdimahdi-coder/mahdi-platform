@@ -1,6 +1,11 @@
-﻿import { pgTable, serial, text, integer, timestamp, jsonb, numeric, boolean, bigint } from "drizzle-orm/pg-core";
-
-
+﻿import { pgTable, serial, text, integer, timestamp, jsonb, numeric, boolean, bigint, index, unique } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import type {
+  NoCapitalOption,
+  NoCapitalAnswer,
+  NoCapitalRecommendationSummary,
+  ExecutionPhase,
+} from "@/lib/noCapital/types";
 
 // Wilayas table
 export const wilayas = pgTable("wilayas", {
@@ -285,3 +290,356 @@ export const wilayaStats = pgTable("wilaya_stats", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+// ============================================================================
+// NABDA growth architecture — categories/domains, no-capital path, courses,
+// content creation, hook library, videos and legal consent gate.
+// NOTE: these tables are added to the schema but the corresponding migration
+// is NOT applied to Production yet. API routes fall back to code defaults
+// whenever a table does not exist (PostgreSQL error 42P01).
+// ============================================================================
+
+// Categories / Domains — hierarchical reference (domain → category)
+export const categories = pgTable("categories", {
+  id: serial("id").primaryKey(),
+  parentId: integer("parent_id"), // NULL for top-level domains
+  slug: text("slug").notNull().unique(),
+  nameAr: text("name_ar").notNull(),
+  nameFr: text("name_fr").notNull(),
+  type: text("type").notNull().default("category"), // domain, category
+  icon: text("icon"),
+  description: text("description"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// No-capital test — flexible question bank (admin managed, defaults in code)
+export const noCapitalQuestions = pgTable(
+  "no_capital_questions",
+  {
+    id: serial("id").primaryKey(),
+    questionKey: text("question_key").notNull().unique(),
+    type: text("type").notNull().default("single"), // single, multi, text
+    title: text("title").notNull(),
+    subtitle: text("subtitle"),
+    required: boolean("required").notNull().default(true),
+    order: integer("order").notNull().default(0),
+    options: jsonb("options")
+      .$type<NoCapitalOption[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [index("idx_nocap_questions_active").on(t.active)],
+);
+
+// No-capital project profiles — table stays EMPTY until curated by the team.
+export const noCapitalProjects = pgTable(
+  "no_capital_projects",
+  {
+    id: serial("id").primaryKey(),
+    slug: text("slug").notNull().unique(),
+    nameAr: text("name_ar").notNull(),
+    nameFr: text("name_fr"),
+    categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),
+    domainId: integer("domain_id").references(() => categories.id, { onDelete: "set null" }),
+    description: text("description").notNull(),
+    effortLevel: text("effort_level").notNull().default("متوسط"), // منخفض, متوسط, مرتفع
+    timeRequired: text("time_required").notNull().default("2-4 ساعات"),
+    skillsRequired: jsonb("skills_required").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    toolsNeeded: jsonb("tools_needed").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    startCostEstimate: text("start_cost_estimate").notNull().default("0 دج"),
+    tags: jsonb("tags").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    risks: jsonb("risks").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    advantages: jsonb("advantages").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    disadvantages: jsonb("disadvantages").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    steps: jsonb("steps").$type<{ title: string; detail: string }[]>().notNull().default(sql`'[]'::jsonb`),
+    legalNotes: text("legal_notes"),
+    source: text("source").default("دراسة ميدانية وسوق جزائري 2025"),
+    active: boolean("active").notNull().default(true),
+    lastUpdated: timestamp("last_updated").defaultNow(),
+  },
+  (t) => [
+    index("idx_nocap_projects_category").on(t.categoryId),
+    index("idx_nocap_projects_domain").on(t.domainId),
+    index("idx_nocap_projects_active").on(t.active),
+  ],
+);
+
+// Recommendation rules — extra control over the no-capital matching engine
+export const noCapitalRecommendationRules = pgTable(
+  "no_capital_recommendation_rules",
+  {
+    id: serial("id").primaryKey(),
+    questionKey: text("question_key").notNull(),
+    optionValue: text("option_value").notNull(),
+    tag: text("tag").notNull(),
+    weight: integer("weight").notNull().default(1),
+    note: text("note"),
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [unique("uq_rules_question_option_tag").on(t.questionKey, t.optionValue, t.tag)],
+);
+
+// Anonymous no-capital test results (no personal data, only answers + output)
+export const noCapitalTestResults = pgTable(
+  "no_capital_test_results",
+  {
+    id: serial("id").primaryKey(),
+    sessionId: text("session_id").notNull(),
+    answers: jsonb("answers").$type<Record<string, NoCapitalAnswer>>().notNull(),
+    recommendations: jsonb("recommendations")
+      .$type<NoCapitalRecommendationSummary[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [index("idx_nocap_test_session").on(t.sessionId)],
+);
+
+// 90-day execution plans (3 months, weekly phases)
+export const executionPlans = pgTable(
+  "execution_plans",
+  {
+    id: serial("id").primaryKey(),
+    slug: text("slug").notNull().unique(),
+    title: text("title").notNull(),
+    subtitle: text("subtitle"),
+    domainId: integer("domain_id").references(() => categories.id, { onDelete: "set null" }),
+    noCapitalProjectId: integer("no_capital_project_id").references(() => noCapitalProjects.id, { onDelete: "set null" }),
+    durationDays: integer("duration_days").notNull().default(90),
+    objective: text("objective"),
+    phases: jsonb("phases")
+      .$type<ExecutionPhase[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    kpis: jsonb("kpis").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    version: text("version").notNull().default("1.0"),
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [
+    index("idx_exec_plans_domain").on(t.domainId),
+    index("idx_exec_plans_project").on(t.noCapitalProjectId),
+  ],
+);
+
+// First customer / first order plans
+export const firstOrderPlans = pgTable(
+  "first_order_plans",
+  {
+    id: serial("id").primaryKey(),
+    slug: text("slug").notNull().unique(),
+    title: text("title").notNull(),
+    domainId: integer("domain_id").references(() => categories.id, { onDelete: "set null" }),
+    noCapitalProjectId: integer("no_capital_project_id").references(() => noCapitalProjects.id, { onDelete: "set null" }),
+    targetAudience: text("target_audience"),
+    valueProposition: text("value_proposition"),
+    channels: jsonb("channels").$type<{ channel: string; effort: string; notes: string }[]>().notNull().default(sql`'[]'::jsonb`),
+    outreachSteps: jsonb("outreach_steps").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    scriptText: text("script_text"),
+    successMetrics: jsonb("success_metrics").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [
+    index("idx_first_order_domain").on(t.domainId),
+    index("idx_first_order_project").on(t.noCapitalProjectId),
+  ],
+);
+
+// Marketing plans (budget-tagged channel mixes)
+export const marketingPlans = pgTable(
+  "marketing_plans",
+  {
+    id: serial("id").primaryKey(),
+    slug: text("slug").notNull().unique(),
+    title: text("title").notNull(),
+    domainId: integer("domain_id").references(() => categories.id, { onDelete: "set null" }),
+    noCapitalProjectId: integer("no_capital_project_id").references(() => noCapitalProjects.id, { onDelete: "set null" }),
+    budgetLevel: text("budget_level").notNull().default("low"), // low, medium, high
+    goals: jsonb("goals").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    channels: jsonb("channels")
+      .$type<{ channel: string; priority: string; cost: string; effort: string; notes: string }[]>()
+      .notNull()
+      .default(sql`'[]'::jsonb`),
+    timelineWeeks: jsonb("timeline_weeks").$type<{ week: string; focus: string; tasks: string[] }[]>().notNull().default(sql`'[]'::jsonb`),
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [
+    index("idx_marketing_domain").on(t.domainId),
+    index("idx_marketing_project").on(t.noCapitalProjectId),
+  ],
+);
+
+// Free courses + lessons
+export const courses = pgTable(
+  "courses",
+  {
+    id: serial("id").primaryKey(),
+    slug: text("slug").notNull().unique(),
+    title: text("title").notNull(),
+    summary: text("summary").notNull(),
+    description: text("description"),
+    categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),
+    level: text("level").notNull().default("مبتدئ"),
+    durationMinutes: integer("duration_minutes").notNull().default(30),
+    lessonsCount: integer("lessons_count").notNull().default(0),
+    coverImage: text("cover_image"),
+    published: boolean("published").notNull().default(false),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [index("idx_courses_category").on(t.categoryId)],
+);
+
+export const courseLessons = pgTable(
+  "course_lessons",
+  {
+    id: serial("id").primaryKey(),
+    courseId: integer("course_id").notNull().references(() => courses.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    summary: text("summary"),
+    content: text("content"),
+    order: integer("order").notNull().default(0),
+    durationMinutes: integer("duration_minutes").notNull().default(5),
+    videoUrl: text("video_url"),
+    published: boolean("published").notNull().default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [index("idx_course_lessons_course").on(t.courseId)],
+);
+
+// Content creation — ideas, scripts, reference types and publishing plan
+export const contentIdeas = pgTable(
+  "content_ideas",
+  {
+    id: serial("id").primaryKey(),
+    title: text("title").notNull(),
+    categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),
+    contentType: text("content_type").notNull().default("idea"), // idea, topic
+    platform: text("platform"), // tiktok, instagram, youtube, facebook
+    niche: text("niche"),
+    angle: text("angle"),
+    outline: jsonb("outline").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    cta: text("cta"),
+    published: boolean("published").notNull().default(false),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [index("idx_content_ideas_category").on(t.categoryId)],
+);
+
+export const contentScripts = pgTable("content_scripts", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  contentType: text("content_type").notNull().default("reel"), // reel, short, long
+  platform: text("platform"),
+  hook: text("hook"),
+  format: jsonb("format").$type<{ section: string; duration: string; text: string }[]>().notNull().default(sql`'[]'::jsonb`),
+  cta: text("cta"),
+  durationSeconds: integer("duration_seconds").notNull().default(30),
+  published: boolean("published").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const contentTypes = pgTable("content_types", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  nameAr: text("name_ar").notNull(),
+  description: text("description"),
+  bestPractices: jsonb("best_practices").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+  example: text("example"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const contentPublishingPlans = pgTable(
+  "content_publishing_plans",
+  {
+    id: serial("id").primaryKey(),
+    platform: text("platform").notNull().unique(),
+    cadence: text("cadence"),
+    bestTimes: jsonb("best_times").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    tips: jsonb("tips").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+    active: boolean("active").notNull().default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [index("idx_publishing_plans_active").on(t.active)],
+);
+
+// 100+ hook library — table stays EMPTY until the content team curates it.
+export const hookLibrary = pgTable(
+  "hook_library",
+  {
+    id: serial("id").primaryKey(),
+    title: text("title").notNull(),
+    hookText: text("hook_text").notNull(),
+    type: text("type").notNull().default("question"), // question, number, curiosity, contrast, story
+    niche: text("niche"),
+    categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),
+    usageContext: text("usage_context"),
+    strength: text("strength").notNull().default("medium"), // low, medium, high
+    example: text("example"),
+    published: boolean("published").notNull().default(false),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [index("idx_hooks_category").on(t.categoryId)],
+);
+
+// Videos system
+export const videos = pgTable(
+  "videos",
+  {
+    id: serial("id").primaryKey(),
+    slug: text("slug").notNull().unique(),
+    title: text("title").notNull(),
+    videoUrl: text("video_url"),
+    embedUrl: text("embed_url"),
+    durationSeconds: integer("duration_seconds").notNull().default(0),
+    categoryId: integer("category_id").references(() => categories.id, { onDelete: "set null" }),
+    description: text("description"),
+    thumbnailUrl: text("thumbnail_url"),
+    transcript: text("transcript"),
+    published: boolean("published").notNull().default(false),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (t) => [index("idx_videos_category").on(t.categoryId)],
+);
+
+// Legal consent gate — versioned consent text + signed records
+export const consentVersions = pgTable("consent_versions", {
+  id: serial("id").primaryKey(),
+  version: text("version").notNull().unique(),
+  title: text("title").notNull(),
+  text: text("text").notNull(),
+  required: boolean("required").notNull().default(true),
+  active: boolean("active").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const consentRecords = pgTable(
+  "consent_records",
+  {
+    id: serial("id").primaryKey(),
+    sessionId: text("session_id").notNull(),
+    consentVersionId: integer("consent_version_id").references(() => consentVersions.id, { onDelete: "restrict" }),
+    purpose: text("purpose").notNull().default("assessment"), // assessment, no-capital, plan
+    signedAt: timestamp("signed_at").defaultNow().notNull(),
+  },
+  (t) => [
+    index("idx_consent_records_session").on(t.sessionId),
+    index("idx_consent_records_version").on(t.consentVersionId),
+  ],
+);

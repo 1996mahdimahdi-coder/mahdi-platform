@@ -24,6 +24,7 @@ import {
   RATE_LIMITS,
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
+import { loadActiveConsent } from "@/lib/noCapital/publicData";
 
 export const dynamic = "force-dynamic";
 
@@ -94,6 +95,33 @@ export async function POST(request: Request) {
     // ============================================================
     // 1. تجهيز بيانات المستخدم
     // ============================================================
+
+    const consentVersion =
+      typeof body.consentVersion === "string" && body.consentVersion
+        ? body.consentVersion
+        : null;
+
+    let activeConsent;
+
+    try {
+      activeConsent = await loadActiveConsent();
+    } catch {
+      activeConsent = null;
+    }
+
+    if (
+      !consentVersion ||
+      !activeConsent ||
+      consentVersion !== activeConsent.consent.version
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "يجب الموافقة على شروط عرض النتائج أولاً.",
+        },
+        { status: 403 }
+      );
+    }
 
     const validIntegerId = (
       v: unknown

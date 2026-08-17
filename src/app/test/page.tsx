@@ -18,6 +18,8 @@ import {
   ShieldCheck,
   MapPin,
 } from "lucide-react";
+import ConsentGate from "@/components/ConsentGate";
+import { getOrCreateSessionId } from "@/lib/session";
 
 interface WilayaItem {
   id: number;
@@ -54,6 +56,8 @@ export default function TestPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [showConsent, setShowConsent] = useState(false);
+  const sessionId = getOrCreateSessionId();
 
   const [wilayasList, setWilayasList] = useState<WilayaItem[]>([]);
   const [communesList, setCommunesList] = useState<CommuneItem[]>([]);
@@ -381,7 +385,7 @@ export default function TestPage() {
       return;
     }
 
-    submitAssessment();
+    setShowConsent(true);
   };
 
   // ============================================================
@@ -409,7 +413,7 @@ export default function TestPage() {
   // إرسال التقييم
   // ============================================================
 
-  const submitAssessment = async () => {
+  const submitAssessment = async (consentVersion: string) => {
     if (!validateCurrentStep()) {
       return;
     }
@@ -480,6 +484,10 @@ export default function TestPage() {
         existingIncome,
 
         objective,
+
+        sessionId,
+
+        consentVersion,
       };
 
       const response = await fetch(
@@ -535,6 +543,15 @@ export default function TestPage() {
 
       setLoading(false);
     }
+  };
+
+  const handleConsentGranted = (version: string) => {
+    setShowConsent(false);
+    submitAssessment(version);
+  };
+
+  const handleConsentCancel = () => {
+    setShowConsent(false);
   };
 
   const capitalOptions = [
@@ -672,6 +689,17 @@ export default function TestPage() {
     "مشروع صغير قابل للتوسع",
     "لا أعرف",
   ];
+
+  if (showConsent) {
+    return (
+      <ConsentGate
+        purpose="assessment"
+        sessionId={sessionId}
+        onGranted={handleConsentGranted}
+        onCancel={handleConsentCancel}
+      />
+    );
+  }
 
   return (
     <div

@@ -11,7 +11,9 @@ import {
   ArrowLeft,
   DollarSign,
   Target,
-  BarChart3
+  BarChart3,
+  Rocket,
+  GraduationCap
 } from "lucide-react";
 
 export default function HomePage() {
@@ -76,6 +78,108 @@ export default function HomePage() {
               </span>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* What Do You Want To Do? */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center space-y-2 mb-8">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+            ماذا تريد أن تفعل؟
+          </h2>
+          <p className="text-sm text-slate-600">
+            اختر وضعك المالي وسنوجّهك نحو المسار الأنسب لك
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {/* Capital Path */}
+          <Link
+            href="/test"
+            className="group p-7 rounded-3xl bg-white border border-slate-200 hover:border-indigo-500 hover:shadow-lg transition-all flex flex-col gap-4"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+              <Target className="w-7 h-7" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                عندي رأس مال ومحتار
+              </h3>
+              <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                املأ اختبار الوضع لتحصل على أفضل 5 مشاريع مناسبة لرأس مالك وولايتك ومهاراتك، مع محاكاة مالية وخطة تنفيذ عملية.
+              </p>
+            </div>
+            <div className="mt-auto flex items-center gap-1.5 text-sm font-bold text-indigo-600 pt-2">
+              <span>اختبر وضعي الآن</span>
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            </div>
+          </Link>
+
+          {/* No-Capital Path */}
+          <Link
+            href="/no-capital"
+            className="group p-7 rounded-3xl bg-white border border-slate-200 hover:border-emerald-500 hover:shadow-lg transition-all flex flex-col gap-4"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+              <Rocket className="w-7 h-7" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">
+                ما عنديش رأس مال
+              </h3>
+              <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                ابدأ مشروعك بدون رأس مال: أجب على 7 أسئلة قصيرة واحصل على مشاريع مبادلة مهارات، مع خطط 90 يومًا وخطة أول عميل وتسويق عملي.
+              </p>
+            </div>
+            <div className="mt-auto flex items-center gap-1.5 text-sm font-bold text-emerald-600 pt-2">
+              <span>ابدأ بدون رأس مال</span>
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            </div>
+          </Link>
+
+          {/* Learn Path */}
+          <Link
+            href="/learn"
+            className="group p-7 rounded-3xl bg-white border border-slate-200 hover:border-fuchsia-500 hover:shadow-lg transition-all flex flex-col gap-4"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-fuchsia-50 text-fuchsia-600 flex items-center justify-center group-hover:bg-fuchsia-600 group-hover:text-white transition-colors">
+              <GraduationCap className="w-7 h-7" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-slate-900 group-hover:text-fuchsia-600 transition-colors">
+                بغيت نتعلم
+              </h3>
+              <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                تصفح دورات قصيرة، دروس، أفكار محتوى، عناوين جاهزة وفيديوهات عملية لتطوير مهاراتك قبل الإطلاق.
+              </p>
+            </div>
+            <div className="mt-auto flex items-center gap-1.5 text-sm font-bold text-fuchsia-600 pt-2">
+              <span>تصفح مركز التعلم</span>
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            </div>
+          </Link>
+
+          {/* Explore Projects */}
+          <Link
+            href="/projects"
+            className="group p-7 rounded-3xl bg-white border border-slate-200 hover:border-slate-500 hover:shadow-lg transition-all flex flex-col gap-4"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center group-hover:bg-slate-700 group-hover:text-white transition-colors">
+              <Compass className="w-7 h-7" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-slate-900 group-hover:text-slate-700 transition-colors">
+                بغيت نتصفح المشاريع
+              </h3>
+              <p className="text-sm text-slate-600 mt-2 leading-relaxed">
+                استكشف دراسات الجدوى السريعة لأكثر من 25 مشروعًا مصنّفًا حسب رأس المال والولاية والمهارات.
+              </p>
+            </div>
+            <div className="mt-auto flex items-center gap-1.5 text-sm font-bold text-slate-600 pt-2">
+              <span>استكشف المشاريع</span>
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            </div>
+          </Link>
         </div>
       </section>
 
