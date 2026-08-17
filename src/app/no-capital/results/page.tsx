@@ -215,16 +215,26 @@ export default function NoCapitalResultsPage() {
                       </div>
                     )}
 
-                    <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
-                      <span className="px-2.5 py-1 rounded-lg bg-slate-100">
-                        المجهود: <strong>{rec.profile.effortLevel}</strong>
-                      </span>
-                      <span className="px-2.5 py-1 rounded-lg bg-slate-100">
-                        الوقت: <strong>{rec.profile.timeRequired}</strong>
-                      </span>
-                      <span className="px-2.5 py-1 rounded-lg bg-slate-100">
-                        تكلفة الانطلاق: <strong>{rec.profile.startCostEstimate}</strong>
-                      </span>
+                    <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+                        <span className="px-2.5 py-1 rounded-lg bg-slate-100">
+                          المجهود: <strong>{rec.profile.effortLevel}</strong>
+                        </span>
+                        <span className="px-2.5 py-1 rounded-lg bg-slate-100">
+                          الوقت: <strong>{rec.profile.timeRequired}</strong>
+                        </span>
+                        <span className="px-2.5 py-1 rounded-lg bg-slate-100">
+                          تكلفة الانطلاق: <strong>{rec.profile.startCostEstimate}</strong>
+                        </span>
+                      </div>
+
+                      <Link
+                        href={`/no-capital/projects/${rec.profile.slug}?score=${rec.totalScore}&level=${rec.matchLevel}${rec.reasons[0] ? "&reason=" + encodeURIComponent(rec.reasons[0]) : ""}`}
+                        className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-extrabold hover:bg-emerald-700 inline-flex items-center gap-1.5 shrink-0"
+                      >
+                        عرض التفاصيل
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                      </Link>
                     </div>
                   </div>
                 );
