@@ -1,4 +1,7 @@
 @import "tailwindcss";
+.font-official {
+  font-family: "Amiri", "Sakkal Majalla", "Traditional Arabic", "Simplified Arabic", serif;
+}
 
 /* ============================================
    NABDA PRINT STYLES - Information Only

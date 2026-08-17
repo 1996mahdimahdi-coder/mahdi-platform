@@ -84,7 +84,7 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2 text-sm font-medium text-slate-700">
+          <nav className="font-official hidden lg:flex items-center gap-1 xl:gap-2 text-[15px] font-bold text-slate-900">
             <Link
               href="/test"
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors font-bold"
@@ -207,7 +207,7 @@ export default function Navbar() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-2 shadow-lg">
+        <div className="font-official lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-2 shadow-lg">
           <Link
             href="/test"
             onClick={() => setMobileMenuOpen(false)}
