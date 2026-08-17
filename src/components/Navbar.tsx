@@ -78,14 +78,9 @@ export default function Navbar() {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-500 to-fuchsia-500 flex items-center justify-center text-white font-black text-sm shadow-md group-hover:scale-105 transition-transform">
               NB
             </div>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-lg text-slate-900 leading-tight">
-                NABDA <span className="text-indigo-600">نابدا</span>
-              </span>
-              <span className="text-[10px] text-slate-500 font-medium">
-                قبل ما تبدأ مشروعك... اختبره
-              </span>
-            </div>
+            <span className="font-extrabold text-lg text-slate-900 leading-tight">
+              NABDA
+            </span>
           </Link>
 
           {/* Desktop Nav Links */}
