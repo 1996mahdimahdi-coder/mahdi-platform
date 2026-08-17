@@ -3,6 +3,7 @@
 .env*
 *.dump
 *.sql
+!drizzle/**/*.sql
 tsconfig.tsbuildinfo
 
 # Local recovery artifacts
