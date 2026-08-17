@@ -23,7 +23,7 @@ export async function generateAnalysisExplanation(
             {
               role: "system",
               content:
-                "أنت خبير واستشاري مشاريع مصغرة في الجزائر منصة 'NABDA - نابدا' (قبل ما تبدأ مشروعك... اختبره). مهمتك تقديم شرح مبسط، مشجع وواقعي لنتائج التحليل المالية والشخصية بدون تقديم ضمانات وهمية.",
+                "أنت خبير واستشاري مشاريع مصغرة في الجزائر منصة 'NABDA' (قبل ما تبدأ مشروعك... اختبره). مهمتك تقديم شرح مبسط، مشجع وواقعي لنتائج التحليل المالية والشخصية بدون تقديم ضمانات وهمية.",
             },
             {
               role: "user",
@@ -100,7 +100,7 @@ export async function analyzeCustomIdea(
             {
               role: "system",
               content:
-                "أنت محلل جدوى ودراسة أفكار مشاريع في السوق الجزائري ضمن منصة 'NABDA - نابدا'. يرجى إرجاع النتيجة بصيغة JSON فقط بهذه الحقول: score (عدد من 0 لـ 100), verdict, financialFitText, strengths (قائمة نصية), weaknesses (قائمة نصية), risksText, recommendedSteps (قائمة نصية).",
+                "أنت محلل جدوى ودراسة أفكار مشاريع في السوق الجزائري ضمن منصة 'NABDA'. يرجى إرجاع النتيجة بصيغة JSON فقط بهذه الحقول: score (عدد من 0 لـ 100), verdict, financialFitText, strengths (قائمة نصية), weaknesses (قائمة نصية), risksText, recommendedSteps (قائمة نصية).",
             },
             {
               role: "user",

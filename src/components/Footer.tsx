@@ -13,11 +13,11 @@ export default function Footer() {
                 NB
               </div>
               <span className="font-extrabold text-xl text-white">
-                NABDA <span className="text-indigo-400">نابدا</span>
+                NABDA
               </span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              منصة NABDA – نابدا تساعدك على اختبار مدى ملاءمة مشروعك لوضعك المالي والشخصي والمحلي قبل أن تبدأ، لتقليل المخاطرة وزيادة فرص النجاح في الجزائر.
+              منصة NABDA تساعدك على اختبار مدى ملاءمة مشروعك لوضعك المالي والشخصي والمحلي قبل أن تبدأ، لتقليل المخاطرة وزيادة فرص النجاح في الجزائر.
             </p>
             <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs text-amber-300 flex items-start gap-2">
               <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
@@ -148,7 +148,7 @@ export default function Footer() {
 
         {/* Bottom copyright */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-          <p>© {new Date().getFullYear()} NABDA – نابدا. جميع الحقوق محفوظة.</p>
+          <p>© {new Date().getFullYear()} NABDA. جميع الحقوق محفوظة.</p>
           <div className="flex items-center gap-1 text-slate-400">
             <span>صُنِع بـ</span>
             <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />

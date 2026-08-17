@@ -8,7 +8,7 @@ export default function PrivacyPage() {
 
         <div className="space-y-4">
           <p>
-            تولي منصة <strong>NABDA – نابدا</strong> أقصى درجات الأهمية لخصوصية مستخدميها وحماية بياناتهم الشخصية والمالية.
+            تولي منصة <strong>NABDA</strong> أقصى درجات الأهمية لخصوصية مستخدميها وحماية بياناتهم الشخصية والمالية.
           </p>
 
           <h2 className="font-extrabold text-slate-900">1. البيانات التي نجمعها</h2>

@@ -636,7 +636,7 @@ export default function ResultsPage() {
 
         <div className="hidden print:block mt-8 pt-4 border-t-2 border-slate-300 text-center text-xs text-slate-500">
           <p className="font-bold">
-            منصة NABDA - نابدا | قبل ما تبدأ مشروعك... اختبره
+            منصة NABDA | قبل ما تبدأ مشروعك... اختبره
           </p>
 
           <p className="mt-1">

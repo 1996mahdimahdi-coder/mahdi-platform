@@ -38,7 +38,7 @@ export default function HomePage() {
 
           {/* Brand Identity Subhead */}
           <p className="text-base sm:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed font-normal">
-            منصة <strong className="text-white">NABDA – نابدا</strong> تساعدك على اختبار مدى ملاءمة المشروع لرأس مالك ووقتك وموقعك الجغرافي قبل أن تبدأ، مع محاكاة مالية وخطة تنفيذ عملية.
+            منصة <strong className="text-white">NABDA</strong> تساعدك على اختبار مدى ملاءمة المشروع لرأس مالك ووقتك وموقعك الجغرافي قبل أن تبدأ، مع محاكاة مالية وخطة تنفيذ عملية.
           </p>
 
           {/* Primary CTA & Secondary Links */}

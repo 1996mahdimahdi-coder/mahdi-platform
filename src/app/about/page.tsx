@@ -10,7 +10,7 @@ export default function AboutPage() {
             عن المنصة
           </span>
           <h1 className="text-3xl font-black text-slate-900">
-            NABDA – نابدا
+            NABDA
           </h1>
           <p className="text-sm font-bold text-indigo-600">
             "قبل ما تبدأ مشروعك... اختبره"
@@ -19,7 +19,7 @@ export default function AboutPage() {
 
         <div className="space-y-4 text-xs sm:text-sm text-slate-700 leading-relaxed">
           <p>
-            <strong>NABDA (نابدا)</strong> هي منصة جزائرية متخصصة في مساعدة المقاولين الشباب وأصحاب رؤوس الأموال المصغرة على اختبار مدى ملاءمة المشروع قبل البدء، بدلاً من الاعتماد على العاطفة أو التجارب العشوائية.
+            <strong>NABDA</strong> هي منصة جزائرية متخصصة في مساعدة المقاولين الشباب وأصحاب رؤوس الأموال المصغرة على اختبار مدى ملاءمة المشروع قبل البدء، بدلاً من الاعتماد على العاطفة أو التجارب العشوائية.
           </p>
 
           <p>

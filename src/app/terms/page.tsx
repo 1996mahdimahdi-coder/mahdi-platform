@@ -8,7 +8,7 @@ export default function TermsPage() {
 
         <div className="space-y-4">
           <p>
-            مرحباً بك في منصة <strong>NABDA – نابدا</strong>. باستعمالك للموقع، فإنك توافق على الالتزام بالشروط والأحكام التالية:
+            مرحباً بك في منصة <strong>NABDA</strong>. باستعمالك للموقع، فإنك توافق على الالتزام بالشروط والأحكام التالية:
           </p>
 
           <h2 className="font-extrabold text-slate-900">1. طبيعة النتائج والمحاكاة المالية</h2>

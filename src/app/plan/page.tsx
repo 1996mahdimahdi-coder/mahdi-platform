@@ -169,7 +169,7 @@ export default function ExecutionPlanPage() {
 
       {/* Print-Only Footer - shown only when printing */}
       <div className="hidden print:block mt-8 pt-4 border-t-2 border-slate-300 text-center text-xs text-slate-500">
-        <p className="font-bold">منصة NABDA – نابدا | قبل ما تبدأ مشروعك... اختبره</p>
+        <p className="font-bold">منصة NABDA | قبل ما تبدأ مشروعك... اختبره</p>
         <p>هذه خطة استرشادية مقترحة من NABDA. النتائج الفعلية تعتمد على التزامك وظروف السوق المحلية.</p>
         <p>© {new Date().getFullYear()} NABDA - جميع الحقوق محفوظة.</p>
       </div>

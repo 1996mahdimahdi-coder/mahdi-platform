@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     description:
       "منصة NABDA تساعدك على اختبار مدى ملاءمة المشروع لوضعك المالي والشخصي والمحلي قبل أن تبدأ، وتقترح أفضل المشاريع المناسبة لرأس مالك ووقتك وموقعك في الجزائر.",
     url: "https://mahdi-platform.vercel.app",
-    siteName: "NABDA نابدا",
+    siteName: "NABDA",
     locale: "ar_DZ",
     type: "website",
   },
