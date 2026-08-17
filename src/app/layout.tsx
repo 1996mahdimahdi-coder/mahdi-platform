@@ -22,6 +22,21 @@ export const metadata: Metadata = {
     "مشروع أونلاين بالجزائر",
     "اختبار فكرة مشروع",
   ],
+  openGraph: {
+    title: "NABDA – قبل ما تبدأ مشروعك... اختبره",
+    description:
+      "منصة NABDA تساعدك على اختبار مدى ملاءمة المشروع لوضعك المالي والشخصي والمحلي قبل أن تبدأ، وتقترح أفضل المشاريع المناسبة لرأس مالك ووقتك وموقعك في الجزائر.",
+    url: "https://mahdi-platform.vercel.app",
+    siteName: "NABDA نابدا",
+    locale: "ar_DZ",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NABDA – قبل ما تبدأ مشروعك... اختبره",
+    description:
+      "اختبر مدى ملاءمة مشروعك قبل أن تبدأ، واحصل على أفضل المشاريع المناسبة لرأس مالك وموقعك في الجزائر.",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
