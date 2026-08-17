@@ -63,7 +63,7 @@ export default function ConsentGate({ purpose, sessionId, onGranted, onCancel }:
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+    <div dir="rtl" className="fixed inset-0 z-[120] min-h-screen bg-slate-50 flex items-center justify-center p-4 overflow-y-auto">
       <div className="w-full max-w-2xl bg-white rounded-3xl border border-slate-200 shadow-xl p-6 sm:p-8 space-y-5">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">

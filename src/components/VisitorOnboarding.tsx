@@ -38,6 +38,17 @@ export default function VisitorOnboarding() {
 
   useEffect(() => {
     void Promise.resolve().then(() => {
+      // لا تُظهر نافذة التسجيل فوق صفحات الاختبار/الموافقة حتى لا تغطي ConsentGate
+      const pathname = window.location.pathname;
+      if (
+        pathname.startsWith("/test") ||
+        pathname.startsWith("/no-capital") ||
+        pathname.startsWith("/results")
+      ) {
+        setIsOpen(false);
+        return;
+      }
+
       try {
         const stored = localStorage.getItem("nabda_visitor");
 
