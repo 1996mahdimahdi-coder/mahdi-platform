@@ -353,6 +353,7 @@ export const noCapitalProjects = pgTable(
     skillsRequired: jsonb("skills_required").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
     toolsNeeded: jsonb("tools_needed").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
     startCostEstimate: text("start_cost_estimate").notNull().default("0 دج"),
+    startCostType: text("start_cost_type").notNull().default("zero_tools_existing"), // zero_tools_existing, low_capital, capital
     tags: jsonb("tags").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
     risks: jsonb("risks").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
     advantages: jsonb("advantages").$type<string[]>().notNull().default(sql`'[]'::jsonb`),

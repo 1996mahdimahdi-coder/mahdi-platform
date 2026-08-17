@@ -36,6 +36,13 @@
       "when": 1786942318067,
       "tag": "0004_confused_exodus",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786951351513,
+      "tag": "0005_add_start_cost_type",
+      "breakpoints": true
     }
   ]
 }

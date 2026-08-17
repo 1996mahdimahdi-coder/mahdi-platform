@@ -1,0 +1,1 @@
+ALTER TABLE "no_capital_projects" ADD COLUMN "start_cost_type" text DEFAULT 'zero_tools_existing' NOT NULL;

@@ -41,6 +41,7 @@ export type NoCapitalProfile = {
   skillsRequired: string[];
   toolsNeeded: string[];
   startCostEstimate: string;
+  startCostType?: "zero_tools_existing" | "low_capital" | "capital";
   tags: string[];
   risks: string[];
   advantages: string[];
