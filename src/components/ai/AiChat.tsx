@@ -381,10 +381,15 @@ export default function AiChat({ context, suggestedPrompts, compact = false }: A
         )}
 
         {state.error && (
-          <div className="flex justify-center">
+          <div className="flex flex-col items-center gap-2">
             <div className="px-5 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold">
               {state.error}
             </div>
+            {state.error.includes("تسجيل الدخول") && (
+              <a href="/login" className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-xs font-extrabold hover:bg-indigo-700">
+                سجّل الدخول لاستخدام المساعد
+              </a>
+            )}
           </div>
         )}
 
