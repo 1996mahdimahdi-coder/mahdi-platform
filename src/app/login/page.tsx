@@ -1,7 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 function GoogleLogo() {
   return (
@@ -14,9 +13,18 @@ function GoogleLogo() {
   );
 }
 
-function LoginContent() {
-  const searchParams = useSearchParams();
-  const error = searchParams.get("error");
+export default function LoginPage() {
+  const [showError, setShowError] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (window.location.search.indexOf("error=google") !== -1) {
+        setShowError(true);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   return (
     <div className="max-w-md mx-auto px-4 py-16">
@@ -31,7 +39,7 @@ function LoginContent() {
           </p>
         </div>
 
-        {error === "google" && (
+        {showError && (
           <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold">
             تعذر تسجيل الدخول بحساب Google. حاول مرة أخرى.
           </div>
@@ -50,13 +58,5 @@ function LoginContent() {
         </p>
       </div>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense fallback={null}>
-      <LoginContent />
-    </Suspense>
   );
 }
