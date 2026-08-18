@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { db } from "@/db";
 import { blogPosts, projects, noCapitalProjects } from "@/db/schema";
 
-const BASE = "https://mahdi-platform.vercel.app";
+const BASE = "https://nabda-dz.vercel.app";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
