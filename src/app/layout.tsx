@@ -1,3 +1,4 @@
+import Script from 'next/script';
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Navbar from "@/components/Navbar";
@@ -55,7 +56,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <VisitorOnboarding />
         <Navbar />
         <WelcomeBanner />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1">        <div id="container-0cebd69048a8ad4484c12999507dd876"></div>
+        <Script
+          src="https://pl30900770.effectivecpmnetwork.com/0cebd69048a8ad4484c12999507dd876/invoke.js"
+          strategy="lazyOnload"
+          async
+          data-cfasync="false"
+        />
+        {children}</main>
         <Footer />
       </body>
     </html>
