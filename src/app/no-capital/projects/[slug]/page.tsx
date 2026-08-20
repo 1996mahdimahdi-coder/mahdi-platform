@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Wrench, Brain, Clock, AlertTriangle, ThumbsUp, ThumbsDown, Target, Users, Megaphone, ChevronLeft } from "lucide-react";
+import NoCapitalActions from "@/components/NoCapitalActions";
+import type { NoCapitalPdfData } from "@/lib/pdfExport";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { categories, noCapitalProjects } from "@/db/schema";
@@ -83,6 +85,22 @@ export default async function NoCapitalProjectPage(props: {
   const level = sp.level as string | undefined;
   const reason = sp.reason ?? null;
 
+  const pdfData: NoCapitalPdfData = {
+    nameAr,
+    description,
+    score,
+    effortLevel,
+    timeRequired,
+    startCostType,
+    startCostEstimate,
+    skillsRequired,
+    toolsNeeded,
+    tags,
+    risks,
+    advantages,
+    steps,
+  };
+
   const meta = [
     { icon: Clock, label: "الوقت المطلوب", value: timeRequired },
     { icon: Brain, label: "مستوى الجهد", value: effortLevel },
@@ -123,6 +141,7 @@ export default async function NoCapitalProjectPage(props: {
             )}
           </div>
 
+          <NoCapitalActions data={pdfData} title={nameAr} />
           {reason && (
             <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-sm text-emerald-800">
               <span className="font-extrabold">لماذا تم اقتراحه لك:</span> {reason}

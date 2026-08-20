@@ -7,11 +7,11 @@ export const dynamic = "force-dynamic";
 const routes = createAdminRoutes({
   table: hookLibrary,
   tableName: "hook_library",
-  itemName: "الخطاف",
+  itemName: "hook",
   orderBy: (t) => desc(t.updatedAt),
   validate: (body) => {
     if (!body.title || !body.hookText) {
-      return "العنوان ونص الخطاف مطلوبان.";
+      return "العنوان ونص hook مطلوبان.";
     }
     return null;
   },

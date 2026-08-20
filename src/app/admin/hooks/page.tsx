@@ -5,7 +5,7 @@ import AdminResource, { type FormField, type Column } from "@/components/admin/A
 
 const fields: FormField[] = [
   { key: "title", label: "العنوان", kind: "text", required: true },
-  { key: "hookText", label: "نص الخطاف", kind: "textarea", required: true },
+  { key: "hookText", label: "نص الـ hook", kind: "textarea", required: true },
   { key: "type", label: "النوع", kind: "select", options: [
     { value: "question", label: "سؤال" },
     { value: "number", label: "رقم" },
@@ -35,14 +35,14 @@ const columns: Column[] = [
 
 export default function AdminHooksPage() {
   return (
-    <AdminShell title="مكتبة الخطافات" subtitle="أكثر من 100 خطاف فيديو مجرّب">
+    <AdminShell title="مكتبة hooks" subtitle="أكثر من 100 hook فيديو مجرّب">
       <AdminResource
-        resourceName="الخطافات"
+        resourceName="hooks"
         apiPath="/api/admin/hooks"
         fields={fields}
         columns={columns}
         rowTitleKey="title"
-        infoNote="المكتبة تُبنى تدريجياً من قبل فريق المحتوى. أضف أول خطافاتك هنا وستظهر في صفحة الخطافات."
+        infoNote="المكتبة تُبنى تدريجياً من قبل فريق المحتوى. أضف أول hooks هنا وستظهر في صفحة hooks."
       />
     </AdminShell>
   );

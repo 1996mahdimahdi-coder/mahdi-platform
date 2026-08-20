@@ -44,10 +44,10 @@ export default function LearnHooksPage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
         <div className="border-b border-slate-200 pb-6">
           <span className="text-xs font-black text-emerald-600 uppercase tracking-wider">
-            الخطافات
+            hooks
           </span>
 
-          <h1 className="text-2xl sm:text-4xl font-black mt-1">مكتبة خطافات الفيديو</h1>
+          <h1 className="text-2xl sm:text-4xl font-black mt-1">مكتبة hooks الفيديو</h1>
 
           <p className="text-xs sm:text-sm text-slate-500 mt-2 leading-relaxed">
             جمل تفتح بها فيديو قصير وتشد الجمهور في أول ثانيتين.
@@ -57,7 +57,7 @@ export default function LearnHooksPage() {
         {loading ? (
           <div className="flex flex-col items-center gap-3 py-20 text-slate-500">
             <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
-            <p className="text-sm font-bold">جاري تحميل الخطافات...</p>
+            <p className="text-sm font-bold">جاري تحميل الـ hooks...</p>
           </div>
         ) : hooks.length === 0 ? (
           <div className="bg-white rounded-3xl border border-slate-200 p-10 text-center space-y-4">
@@ -68,7 +68,7 @@ export default function LearnHooksPage() {
             <div>
               <h2 className="font-black text-lg">المكتبة قيد البناء</h2>
               <p className="text-xs sm:text-sm text-slate-500 max-w-md mx-auto mt-1 leading-relaxed">
-                سنضيف هنا أكثر من 100 خطاف مجرّب لأنواع المحتوى المختلفة. ابدأ
+                سنضيف هنا أكثر من 100 hook مجرّب لأنواع المحتوى المختلفة. ابدأ
                 الآن بفهم أنواع المحتوى وأفضل الممارسات.
               </p>
             </div>

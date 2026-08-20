@@ -23,7 +23,7 @@ const sections = [
   { icon: SlidersHorizontal, title: "قواعد التوصية", desc: "تحكم في أوزان المحرك حسب السؤال والخيار", href: "/admin/no-capital/rules", color: "bg-pink-50 text-pink-600 group-hover:bg-pink-600 group-hover:text-white" },
   { icon: ShieldCheck, title: "شروط الموافقة (Consent)", desc: "إصدارات نص الموافقة القانونية", href: "/admin/consent", color: "bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white" },
   { icon: BookOpen, title: "الدورات", desc: "دورات مجانية مع الدروس", href: "/admin/courses", color: "bg-rose-50 text-rose-600 group-hover:bg-rose-600 group-hover:text-white" },
-  { icon: Sparkles, title: "مكتبة الخطافات", desc: "أكثر من 100 خطاف فيديو", href: "/admin/hooks", color: "bg-violet-50 text-violet-600 group-hover:bg-violet-600 group-hover:text-white" },
+  { icon: Sparkles, title: "مكتبة hooks", desc: "أكثر من 100 hook فيديو", href: "/admin/hooks", color: "bg-violet-50 text-violet-600 group-hover:bg-violet-600 group-hover:text-white" },
   { icon: Video, title: "الفيديوهات", desc: "فيديوهات تعليمية قصيرة", href: "/admin/videos", color: "bg-teal-50 text-teal-600 group-hover:bg-teal-600 group-hover:text-white" },
   { icon: LayoutGrid, title: "أنواع المحتوى", desc: "أنواع المحتوى وأفضل الممارسات", href: "/admin/content/types", color: "bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white" },
   { icon: CalendarClock, title: "خطط النشر", desc: "إيقاع النشر وأفضل الأوقات لكل منصة", href: "/admin/content/publishing", color: "bg-cyan-50 text-cyan-600 group-hover:bg-cyan-600 group-hover:text-white" },
@@ -33,7 +33,7 @@ export default function AdminNoCapitalHubPage() {
   return (
     <AdminShell
       title="محتوى نابدا (CMS)"
-      subtitle="إدارة محتوى الوحدة الجديدة: مجالات، اختبارات، خطافات، دورات..."
+      subtitle="إدارة محتوى الوحدة الجديدة: مجالات، اختبارات، hooks، دورات..."
     >
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {sections.map((section) => (

@@ -3,7 +3,7 @@ import { BookOpen, Sparkles, Video, LayoutGrid, ArrowLeft } from "lucide-react";
 
 export const metadata = {
   title: "تعلم وأنشئ محتوى | NABDA",
-  description: "دروس مجانية، أفكار محتوى، مكتبة خطافات وفيديوهات لتطوير مشروعك.",
+  description: "دروس مجانية، أفكار محتوى، مكتبة hooks وفيديوهات لتطوير مشروعك.",
 };
 
 const sections = [
@@ -23,7 +23,7 @@ const sections = [
   },
   {
     icon: LayoutGrid,
-    title: "مكتبة الخطافات",
+    title: "مكتبة hooks",
     desc: "جمل تفتح بها فيديوهاتك وتجذب الانتباه في أول ثوانٍ.",
     href: "/learn/hooks",
     color: "bg-violet-50 text-violet-600 group-hover:bg-violet-600 group-hover:text-white",
@@ -49,7 +49,7 @@ export default function LearnPage() {
           <h1 className="text-2xl sm:text-4xl font-black mt-1">تعلم وابدأ في صناعة المحتوى</h1>
 
           <p className="text-xs sm:text-sm text-slate-500 mt-2 leading-relaxed">
-            محتوى عملي مجاني: دروس، أفكار نشر، خطافات فيديو وفيديوهات تطبيقية.
+            محتوى عملي مجاني: دروس، أفكار نشر، hooks فيديو وفيديوهات تطبيقية.
           </p>
         </div>
 

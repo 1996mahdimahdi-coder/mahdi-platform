@@ -1006,3 +1006,230 @@ export async function downloadResultsPdf(
   );
 }
 
+/* =========================================================
+   No-Capital project PDF (charts + colored headings)
+   ========================================================= */
+
+export interface NoCapitalPdfData {
+  nameAr: string;
+  description?: string;
+  score?: number | null;
+  effortLevel?: string;
+  timeRequired?: string;
+  startCostType?: string;
+  startCostEstimate?: string;
+  skillsRequired?: string[];
+  toolsNeeded?: string[];
+  tags?: string[];
+  risks?: string[];
+  advantages?: string[];
+  steps?: { title: string; detail: string }[];
+}
+
+const ACCENT: [number, number, number] = [79, 70, 229]; // indigo-600
+const ACCENT2: [number, number, number] = [16, 185, 129]; // emerald-600
+
+function levelToPct(v: string): number {
+  const s = String(v ?? "");
+  if (/منخفض|سهل|قليل|بدون/.test(s)) return 35;
+  if (/مرتفع|عالي|كبير|صعب|أكثر/.test(s)) return 85;
+  return 60;
+}
+
+function drawDonut(
+  pdf: jsPDF,
+  cx: number,
+  cy: number,
+  r: number,
+  pct: number,
+  color: [number, number, number],
+  label: string,
+  sublabel: string
+): void {
+  const clamped = Math.max(0, Math.min(100, Number(pct) || 0));
+
+  pdf.setFillColor(226, 232, 240);
+  pdf.circle(cx, cy, r, "F");
+  pdf.setFillColor(255, 255, 255);
+  pdf.circle(cx, cy, r * 0.62, "F");
+
+  const steps = 48;
+  const start = -Math.PI / 2;
+  const end = start + (clamped / 100) * Math.PI * 2;
+  const inner = r * 0.81;
+  const pts: Array<[number, number]> = [];
+  for (let i = 0; i <= steps; i++) {
+    const a = start + ((end - start) / steps) * i;
+    pts.push([cx + Math.cos(a) * inner, cy + Math.sin(a) * inner]);
+  }
+  pdf.setFillColor(color[0], color[1], color[2]);
+  for (let i = 0; i < pts.length - 1; i++) {
+    pdf.triangle(cx, cy, pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], "F");
+  }
+
+  pdf.setFont("NotoNaskhArabic", "bold");
+  pdf.setFontSize(15);
+  pdf.setTextColor(15, 23, 42);
+  pdf.text(`${Math.round(clamped)}%`, cx, cy, { align: "center" });
+
+  pdf.setFontSize(8);
+  pdf.setTextColor(100, 116, 139);
+  pdf.text(prepareArabicText(sublabel), cx, cy + 7, { align: "center" });
+
+  pdf.setFontSize(10);
+  pdf.setTextColor(color[0], color[1], color[2]);
+  pdf.text(prepareArabicText(label), cx, cy + r + 8, { align: "center" });
+}
+
+function drawBar(
+  pdf: jsPDF,
+  rightX: number,
+  y: number,
+  width: number,
+  label: string,
+  pct: number,
+  color: [number, number, number]
+): number {
+  pdf.setFont("NotoNaskhArabic", "bold");
+  pdf.setFontSize(9);
+  pdf.setTextColor(15, 23, 42);
+  pdf.text(prepareArabicText(label), rightX, y, {
+    align: "right",
+    isInputRtl: true,
+  } as any);
+
+  const barX = rightX - width;
+  const barW = width;
+  const clamped = Math.max(0, Math.min(100, Number(pct) || 0));
+
+  pdf.setFillColor(226, 232, 240);
+  pdf.roundedRect(barX, y - 4, barW, 5.5, 2.7, 2.7, "F");
+
+  if (clamped > 0) {
+    pdf.setFillColor(color[0], color[1], color[2]);
+    pdf.roundedRect(barX, y - 4, (clamped / 100) * barW, 5.5, 2.7, 2.7, "F");
+  }
+
+  return y + 10;
+}
+
+export async function downloadNoCapitalProjectPdf(
+  data: NoCapitalPdfData
+): Promise<void> {
+  const pdf = createPdf();
+  await loadArabicFonts(pdf);
+
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 18;
+  const contentWidth = pageWidth - margin * 2;
+
+  let y = 30;
+
+  pdf.setFont("NotoNaskhArabic", "bold");
+  pdf.setFontSize(19);
+  pdf.setTextColor(ACCENT[0], ACCENT[1], ACCENT[2]);
+  pdf.text(prepareArabicText(data.nameAr), pageWidth - margin, y, {
+    align: "right",
+    isInputRtl: true,
+  } as any);
+  y += 8;
+  pdf.setDrawColor(ACCENT[0], ACCENT[1], ACCENT[2]);
+  pdf.setLineWidth(0.6);
+  pdf.line(margin, y, pageWidth - margin, y);
+  y += 10;
+
+  pdf.setFontSize(10);
+  pdf.setTextColor(71, 85, 105);
+  const descLines = pdf.splitTextToSize(
+    prepareArabicText(data.description ?? ""),
+    contentWidth
+  );
+  pdf.text(descLines, pageWidth - margin, y, {
+    align: "right",
+    isInputRtl: true,
+  } as any);
+  y += descLines.length * 5 + 10;
+
+  const scorePct =
+    typeof data.score === "number" && !Number.isNaN(data.score)
+      ? Math.max(0, Math.min(100, data.score))
+      : null;
+  const donutPct = scorePct ?? levelToPct(data.effortLevel ?? "");
+  const donutLabel = scorePct !== null ? "درجة التوافق" : "مستوى الجهد";
+  const donutSub = scorePct !== null ? "من 100" : "نسبة تقريبية";
+  drawDonut(pdf, pageWidth / 2, y + 20, 20, donutPct, ACCENT2, donutLabel, donutSub);
+  y += 54;
+
+  const rightX = pageWidth - margin;
+  y += 4;
+  const effortPct = levelToPct(data.effortLevel ?? "");
+  const timePct = levelToPct(data.timeRequired ?? "");
+  const costPct = /بدون|zero/.test(String(data.startCostType ?? "")) ? 10 : 50;
+  y = drawBar(pdf, rightX, y, contentWidth, "مستوى الجهد", effortPct, ACCENT);
+  y = drawBar(pdf, rightX, y, contentWidth, "الوقت المطلوب", timePct, ACCENT);
+  y = drawBar(pdf, rightX, y, contentWidth, "تكلفة البدء", costPct, ACCENT2);
+  y += 8;
+
+  const section = (title: string, color: [number, number, number]) => {
+    pdf.setTextColor(color[0], color[1], color[2]);
+    y = addSectionTitle(pdf, title, pageWidth, margin, y);
+    pdf.setTextColor(51, 65, 85);
+  };
+
+  const bulletList = (items: string[]) => {
+    pdf.setFontSize(9.5);
+    for (const item of items) {
+      const lines = pdf.splitTextToSize(
+        prepareArabicText("•  " + item),
+        contentWidth
+      );
+      pdf.text(lines, pageWidth - margin, y, {
+        align: "right",
+        isInputRtl: true,
+      } as any);
+      y += lines.length * 4.6 + 2;
+    }
+    y += 4;
+  };
+
+  if (data.skillsRequired?.length) {
+    section("المهارات المطلوبة", ACCENT);
+    bulletList(data.skillsRequired);
+  }
+
+  if (data.toolsNeeded?.length) {
+    section("الأدوات المطلوبة", ACCENT);
+    bulletList(data.toolsNeeded);
+  }
+
+  if (data.steps?.length) {
+    section("خطوات البداية", ACCENT2);
+    pdf.setFontSize(9.5);
+    data.steps.forEach((s, i) => {
+      const txt = `${i + 1}. ${s.title} — ${s.detail}`;
+      const lines = pdf.splitTextToSize(prepareArabicText(txt), contentWidth);
+      pdf.text(lines, pageWidth - margin, y, {
+        align: "right",
+        isInputRtl: true,
+      } as any);
+      y += lines.length * 4.6 + 2;
+    });
+    y += 4;
+  }
+
+  if (data.advantages?.length) {
+    section("المزايا", ACCENT2);
+    bulletList(data.advantages);
+  }
+
+  if (data.risks?.length) {
+    section("المخاطر", [225, 29, 72]);
+    bulletList(data.risks);
+  }
+
+  pdf.save(
+    `${safeFileName(data.nameAr)}-nabda.pdf`
+  );
+}
+
