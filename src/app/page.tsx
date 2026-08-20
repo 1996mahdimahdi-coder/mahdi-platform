@@ -32,8 +32,11 @@ export default function HomePage() {
           </div>
 
           {/* Main Headline */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight sm:leading-tight">
-            عندك رأس مال ومحتار <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-violet-300 to-fuchsia-400">واش تدير؟</span>
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight sm:leading-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)]">
+            عندك رأس مال ومحتار{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-violet-200 to-fuchsia-300 drop-shadow-none">
+              واش تدير؟
+            </span>
           </h1>
 
           {/* Brand Identity Subhead */}
