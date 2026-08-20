@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Search,
   Compass,
@@ -83,6 +84,14 @@ const BEST_PROJECTS_DZ = [
 ];
 
 export default function ProjectsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[40vh] flex items-center justify-center"><div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" /></div>}>
+      <ProjectsPageInner />
+    </Suspense>
+  );
+}
+
+function ProjectsPageInner() {
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -96,6 +105,13 @@ export default function ProjectsPage() {
   const [workLocation, setWorkLocation] = useState("الكل");
   const [skillLevel, setSkillLevel] = useState("الكل");
   const [legalStatus, setLegalStatus] = useState("الكل");
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q) setSearchTerm(q);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     fetchProjects();

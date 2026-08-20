@@ -90,9 +90,13 @@ export default async function DomainPage({ params }: { params: Promise<{ slug: s
           <h2 className="font-black mb-3">📋 المشاريع الفرعية ({d.services.length})</h2>
           <div className="flex flex-wrap gap-2">
             {d.services.map((s) => (
-              <span key={s} className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold">
-                {s}
-              </span>
+              <Link
+                key={s}
+                href={`/projects?q=${encodeURIComponent(s)}`}
+                className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold hover:bg-indigo-100 hover:text-indigo-700 border border-transparent hover:border-indigo-300 transition-colors"
+              >
+                {s} ←
+              </Link>
             ))}
           </div>
         </section>
