@@ -128,9 +128,9 @@ export default function NoCapitalTestPage() {
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-14">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-black text-emerald-600">
+            <h1 className="text-xs font-black text-emerald-600">
               اختبار المشاريع بدون رأس مال
-            </span>
+            </h1>
 
             <span className="text-xs font-bold text-slate-400">
               {answeredCount} / {questions.length} أُجيب

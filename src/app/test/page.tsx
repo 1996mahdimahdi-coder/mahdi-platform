@@ -713,9 +713,9 @@ export default function TestPage() {
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-indigo-400" />
 
-              <span className="font-extrabold text-lg text-white">
+              <h1 className="font-extrabold text-lg text-white">
                 اختبار الوضع المالي والمحلي
-              </span>
+              </h1>
             </div>
 
             <span className="text-xs font-mono px-3 py-1 rounded-full bg-slate-800 text-indigo-400 border border-slate-700 whitespace-nowrap">
