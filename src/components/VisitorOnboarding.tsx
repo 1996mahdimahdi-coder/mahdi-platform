@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import {
@@ -282,9 +282,9 @@ export default function VisitorOnboarding() {
             </div>
 
             <div>
-              <h1 className="text-xl sm:text-2xl font-black">
+              <h2 className="text-xl sm:text-2xl font-black">
                 مرحباً بك في NABDA
-              </h1>
+              </h2>
 
               <p className="text-xs text-slate-300">
                 ساعدنا في تقديم تجربة مخصصة لك
