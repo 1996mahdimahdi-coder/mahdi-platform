@@ -644,3 +644,24 @@ export const consentRecords = pgTable(
     index("idx_consent_records_version").on(t.consentVersionId),
   ],
 );
+
+// ============================================================
+// Domains — 25 top-level business domains (separate from categories)
+// ============================================================
+export const domains = pgTable("domains", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  nameAr: text("name_ar").notNull(),
+  icon: text("icon").notNull().default("💼"),
+  capitalLevel: text("capital_level").notNull().default("منخفض"),
+  definition: text("definition"),
+  requirements: text("requirements"),
+  essentials: text("essentials"),
+  secondary: text("secondary"),
+  services: text("services"),
+  regulated: boolean("regulated").notNull().default(false),
+  sortOrder: integer("sort_order").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});

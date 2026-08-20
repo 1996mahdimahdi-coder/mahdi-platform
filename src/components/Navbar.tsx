@@ -15,7 +15,8 @@ import {
   TrendingUp,
   FileText,
   Rocket,
-  GraduationCap
+  GraduationCap,
+  Layers
 } from "lucide-react";
 
 export default function Navbar() {
@@ -112,6 +113,13 @@ export default function Navbar() {
             >
               <Compass className="w-4 h-4 text-slate-500" />
               المشاريع
+            </Link>
+            <Link
+              href="/domains"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+            >
+              <Layers className="w-4 h-4 text-slate-500" />
+              المجالات
             </Link>
             <Link
               href="/calculator"
@@ -239,6 +247,14 @@ export default function Navbar() {
           >
             <Compass className="w-4 h-4 text-slate-500" />
             تصفح جميع المشاريع
+          </Link>
+          <Link
+            href="/domains"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800 font-medium"
+          >
+            <Layers className="w-4 h-4 text-slate-500" />
+            مجالات المشاريع
           </Link>
           <Link
             href="/calculator"
