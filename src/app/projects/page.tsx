@@ -93,6 +93,9 @@ export default function ProjectsPage() {
   const [maxCapital, setMaxCapital] = useState<string>("");
   const [homeBasedOnly, setHomeBasedOnly] = useState(false);
   const [onlineOnly, setOnlineOnly] = useState(false);
+  const [workLocation, setWorkLocation] = useState("الكل");
+  const [skillLevel, setSkillLevel] = useState("الكل");
+  const [legalStatus, setLegalStatus] = useState("الكل");
 
   useEffect(() => {
     fetchProjects();
@@ -126,6 +129,20 @@ export default function ProjectsPage() {
       p.description.toLowerCase().includes(term) ||
       p.category.toLowerCase().includes(term)
     );
+  }).filter((p) => {
+    if (workLocation !== "الكل") {
+      const loc = (p.workLocation ?? "محل").toString();
+      if (loc !== workLocation) return false;
+    }
+    if (skillLevel !== "الكل") {
+      const sk = (p.skillLevel ?? "بسيطة").toString();
+      if (sk !== skillLevel) return false;
+    }
+    if (legalStatus !== "الكل") {
+      const lg = (p.legalStatus ?? "غير مقنن").toString();
+      if (lg !== legalStatus) return false;
+    }
+    return true;
   });
 
   return (
@@ -303,6 +320,47 @@ export default function ProjectsPage() {
             </span>
           </label>
 
+          <select
+            value={workLocation}
+            onChange={(e) => setWorkLocation(e.target.value)}
+            className="px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold"
+          >
+            <option value="الكل">📍 كل الأماكن</option>
+            <option value="من المنزل">من المنزل</option>
+            <option value="محل">محل</option>
+            <option value="ورشة">ورشة</option>
+            <option value="مكتب">مكتب</option>
+            <option value="متنقل">متنقل</option>
+            <option value="أونلاين">أونلاين</option>
+          </select>
+
+          <select
+            value={skillLevel}
+            onChange={(e) => setSkillLevel(e.target.value)}
+            className="px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold"
+          >
+            <option value="الكل">🎓 كل مستويات المهارة</option>
+            <option value="بدون مهارة">بدون مهارة</option>
+            <option value="بسيطة">مهارة بسيطة</option>
+            <option value="متوسطة">مهارة متوسطة</option>
+            <option value="احترافية">مهارة احترافية</option>
+            <option value="شهادة/تأهيل مطلوب">شهادة/تأهيل مطلوب</option>
+          </select>
+
+          <select
+            value={legalStatus}
+            onChange={(e) => setLegalStatus(e.target.value)}
+            className="px-3 py-2 rounded-xl border border-slate-300 text-xs font-bold"
+          >
+            <option value="الكل">⚖️ كل الأوضاع القانونية</option>
+            <option value="غير مقنن">غير مقنن</option>
+            <option value="سجل تجاري">سجل تجاري مطلوب</option>
+            <option value="ترخيص/اعتماد">ترخيص/اعتماد</option>
+            <option value="مهنة منظمة">مهنة منظمة</option>
+            <option value="شروط صحية">شروط صحية</option>
+            <option value="شروط بيئية">شروط بيئية</option>
+          </select>
+
           <div className="flex items-center gap-2 ms-auto">
             <span className="text-slate-400">الحد الأقصى لرأس المال:</span>
             <input
@@ -318,6 +376,10 @@ export default function ProjectsPage() {
             <span className="text-slate-400">دج</span>
           </div>
         </div>
+      </div>
+
+      <div className="flex items-center justify-between text-xs font-bold text-slate-500">
+        <span>النتائج: {filteredProjects.length} مشروع</span>
       </div>
 
       {/* Projects Grid */}
@@ -336,6 +398,9 @@ export default function ProjectsPage() {
               setMaxCapital("");
               setHomeBasedOnly(false);
               setOnlineOnly(false);
+              setWorkLocation("الكل");
+              setSkillLevel("الكل");
+              setLegalStatus("الكل");
             }}
             className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold"
           >

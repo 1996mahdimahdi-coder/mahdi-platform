@@ -50,6 +50,9 @@ export const projects = pgTable("projects", {
   seasonality: text("seasonality").notNull().default("ط·ظˆط§ظ„ ط§ظ„ط³ظ†ط©"), // ط·ظˆط§ظ„ ط§ظ„ط³ظ†ط©, طµظٹظپظٹ, ط±ظ…ط¶ط§ظ†ظٹ, ط§ظ„ط®
   competitionLevel: text("competition_level").notNull().default("ظ…طھظˆط³ط·ط©"), // ظ…ظ†ط®ظپط¶ط©, ظ…طھظˆط³ط·ط©, ظ…ط±طھظپط¹ط©
   targetArea: text("target_area").notNull().default("ط¬ظ…ظٹط¹ ط§ظ„ظ…ظ†ط§ط·ظ‚"), // ط¬ظ…ظٹط¹ ط§ظ„ظ…ظ†ط§ط·ظ‚, ظ…ط¯ظ† ظƒط¨ظٹط±ط©, ط¨ظ„ط¯ظٹط§طھ طµط؛ظٹط±ط©, ط§ظ„ط®
+  workLocation: text("work_location").notNull().default("محل"), // من المنزل, محل, ورشة, مكتب, متنقل, أونلاين
+  skillLevel: text("skill_level").notNull().default("بسيطة"), // بدون مهارة, بسيطة, متوسطة, احترافية, شهادة/تأهيل مطلوب
+  legalStatus: text("legal_status").notNull().default("غير مقنن"), // غير مقنن, سجل تجاري, ترخيص/اعتماد, مهنة منظمة, شروط صحية, شروط بيئية
   
   equipment: jsonb("equipment").$type<{ item: string; cost: number }[]>().notNull(),
   initialStock: integer("initial_stock").notNull().default(0),
