@@ -18,6 +18,7 @@ export default function NoCapitalTestPage() {
   const [submitting, setSubmitting] = useState(false);
   const [showConsent, setShowConsent] = useState(false);
   const [consentVersion, setConsentVersion] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState("");
 
   const sessionId = getOrCreateSessionId();
 
@@ -75,7 +76,12 @@ export default function NoCapitalTestPage() {
   };
 
   const handleNext = () => {
-    if (!question || (question.required && !hasAnswer(question))) return;
+    if (!question) return;
+    if (question.required && !hasAnswer(question)) {
+      setValidationError("يرجى الإجابة على هذا السؤال للمتابعة.");
+      return;
+    }
+    setValidationError("");
     if (isLast) {
       setShowConsent(true);
       return;
@@ -228,6 +234,12 @@ export default function NoCapitalTestPage() {
               </div>
             )}
 
+            {validationError && (
+              <p className="text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-4 py-2 text-xs font-bold">
+                {validationError}
+              </p>
+            )}
+
             <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100">
               <button
                 onClick={handleBack}
@@ -240,8 +252,7 @@ export default function NoCapitalTestPage() {
 
               <button
                 onClick={handleNext}
-                disabled={question.required && !hasAnswer(question)}
-                className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-extrabold hover:bg-emerald-700 disabled:opacity-40 flex items-center gap-1.5"
+                className="px-6 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-extrabold hover:bg-emerald-700 flex items-center gap-1.5 shadow-sm"
               >
                 {isLast ? "عرض نتائجي" : "التالي"}
                 <ArrowLeft className="w-4 h-4" />

@@ -14,10 +14,21 @@ import {
   summarizeRecommendations,
 } from "@/lib/noCapitalRecommendationEngine";
 import type { NoCapitalAnswers } from "@/lib/noCapital/types";
+import { checkRateLimit, clientIpKey, RATE_LIMITS, rateLimitExceededResponse } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  const assessLimit = RATE_LIMITS.assess.anonymous;
+  const assessCheck = await checkRateLimit({
+    key: clientIpKey(request, "no-capital-assess"),
+    limit: assessLimit.limit,
+    windowSeconds: assessLimit.windowSeconds,
+  });
+  if (!assessCheck.allowed) {
+    return rateLimitExceededResponse(assessCheck);
+  }
+
   let body: unknown;
   try {
     body = await request.json();
