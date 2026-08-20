@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Wrench, Brain, Clock, AlertTriangle, ThumbsUp, ThumbsDown, Target, Users, Megaphone, ChevronLeft } from "lucide-react";
 import NoCapitalActions from "@/components/NoCapitalActions";
+import ProjectVideo from "@/components/ProjectVideo";
+import { getProjectVideoId } from "@/lib/projectVideos";
 import type { NoCapitalPdfData } from "@/lib/pdfExport";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
@@ -101,6 +103,8 @@ export default async function NoCapitalProjectPage(props: {
     steps,
   };
 
+  const videoId = getProjectVideoId(slug);
+
   const meta = [
     { icon: Clock, label: "الوقت المطلوب", value: timeRequired },
     { icon: Brain, label: "مستوى الجهد", value: effortLevel },
@@ -169,6 +173,8 @@ export default async function NoCapitalProjectPage(props: {
             <span key={t} className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-bold">{t}</span>
           ))}
         </div>
+
+        {videoId && <ProjectVideo videoId={videoId} title={nameAr} />}
 
         {skillsRequired.length > 0 && (
           <section>
