@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Wrench, Brain, Clock, AlertTriangle, ThumbsUp, ThumbsDown, Target, Users, Megaphone, ChevronLeft } from "lucide-react";
 import NoCapitalActions from "@/components/NoCapitalActions";
 import ProjectVideo from "@/components/ProjectVideo";
-import { getProjectVideoId } from "@/lib/projectVideos";
+import { getProjectVideos } from "@/lib/projectVideos";
 import type { NoCapitalPdfData } from "@/lib/pdfExport";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
@@ -103,7 +103,7 @@ export default async function NoCapitalProjectPage(props: {
     steps,
   };
 
-  const videoId = getProjectVideoId(slug);
+  const videos = getProjectVideos(slug);
 
   const meta = [
     { icon: Clock, label: "الوقت المطلوب", value: timeRequired },
@@ -169,12 +169,13 @@ export default async function NoCapitalProjectPage(props: {
 
         <div className="flex flex-wrap gap-2 text-[11px]">
           <span className="px-2.5 py-1 rounded-lg bg-slate-100 font-bold">نوع التكلفة: {startCostType === "zero_tools_existing" ? "بدون رأس مال" : startCostType}</span>
+          <span className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 font-bold border border-amber-200">رأس المال: 0 دج — بشرط توفر هاتف/حاسوب وإنترنت ومهارة قابلة للبيع</span>
           {tags.map((t) => (
             <span key={t} className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-bold">{t}</span>
           ))}
         </div>
 
-        {videoId && <ProjectVideo videoId={videoId} title={nameAr} />}
+        {videos.length > 0 && <ProjectVideo videos={videos} title={nameAr} />}
 
         {skillsRequired.length > 0 && (
           <section>

@@ -16,7 +16,7 @@ const fields: FormField[] = [
     { value: "مرتفع", label: "مرتفع" },
   ], defaultValue: "متوسط" },
   { key: "timeRequired", label: "الوقت المطلوب", kind: "text", defaultValue: "2-4 ساعات" },
-  { key: "startCostEstimate", label: "تكلفة الانطلاق", kind: "text", defaultValue: "0 دج" },
+  { key: "startCostEstimate", label: "تكلفة الانطلاق", kind: "text", defaultValue: "0 دج (بشرط توفر هاتف/حاسوب + إنترنت + مهارة)" },
   { key: "skillsRequired", label: "المهارات المطلوبة", kind: "tags", help: "كل سطر مهارة" },
   { key: "toolsNeeded", label: "الوسائل اللازمة", kind: "tags", help: "كل سطر وسيلة" },
   { key: "tags", label: "وسوم التوافق (Tags)", kind: "tags", help: "وسوم يطابقها المحرك مع اختيارات المستخدم" },
