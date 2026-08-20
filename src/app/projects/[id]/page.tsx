@@ -19,7 +19,8 @@ import {
   Target,
   FileText,
   Download,
-  Loader2
+  Loader2,
+  Share2
 } from "lucide-react";
 import {
   calculateFinancials,
