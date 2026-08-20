@@ -14,3 +14,12 @@ export const NO_CAPITAL_VIDEOS: Record<string, string> = {
 export function getProjectVideoId(slug: string): string | null {
   return NO_CAPITAL_VIDEOS[slug] ?? null;
 }
+
+// خريطة فيديوهات مشاريع رأس المال (المفتاح = projectId)
+export const CAPITAL_VIDEOS: Record<string, string> = {
+  // "phone-accessories": "AbCdEfGhIjK",   ← مثال: أضيفي الفيديو الحقيقي هكذا
+};
+
+export function getCapitalProjectVideoId(projectId: string): string | null {
+  return CAPITAL_VIDEOS[projectId] ?? null;
+}

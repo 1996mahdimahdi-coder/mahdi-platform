@@ -19,8 +19,7 @@ import {
   Target,
   FileText,
   Download,
-  Loader2,
-  Share2
+  Loader2
 } from "lucide-react";
 import {
   calculateFinancials,
@@ -31,8 +30,6 @@ import {
 import { downloadProjectPdf, ProjectPdfData } from "@/lib/pdfExport";
 import DownloadProgress, { DownloadProgressState } from "@/components/DownloadProgress";
 import StartSmallTest from "@/components/StartSmallTest";
-import ProjectVideo from "@/components/ProjectVideo";
-import { getCapitalProjectVideoId } from "@/lib/projectVideos";
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -79,7 +76,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     if (!project) return;
 
     const fileName = `NABDA-${project.projectId}-${Date.now()}.pdf`;
-    const videoId = getCapitalProjectVideoId(project.projectId);
 
     // Show notification & reset progress
     setDownloadState({
@@ -260,10 +256,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12 print:py-2 print:px-0">
-      {videoId && <ProjectVideo videoId={videoId} title={project.projectName} />}
       {/* Print-Only Header - shown only when printing */}
       <div className="hidden print:block print-header">
-        <h2>NABDA – دراسة جدوى المشروع</h2>
+        <h1>NABDA – دراسة جدوى المشروع</h1>
         <p>قبل ما تبدأ مشروعك... اختبره.</p>
         <p>التاريخ: {new Date().toLocaleDateString("en-GB")}</p>
       </div>
@@ -307,15 +302,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               </>
             )}
           </button>
-          <a
-            href={"https://wa.me/?text=" + encodeURIComponent("شوف هذا المشروع في NABDA: " + project.projectName + " - https://nabda-dz.vercel.app/projects/" + id)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-green-500 text-white hover:bg-green-600 text-xs font-bold flex items-center justify-center gap-2 transition-colors"
-          >
-            <Share2 className="w-4 h-4" />
-            شارك
-          </a>
         </div>
       </div>
 
