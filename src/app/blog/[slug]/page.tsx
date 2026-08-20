@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+﻿import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Clock, ArrowRight, Sparkles, BarChart3, ImageIcon } from "lucide-react";
@@ -77,7 +77,7 @@ export async function generateMetadata(props: { params: Promise<{ slug: string }
   const post = await getPost(slug);
   if (!post) return { title: "المقال غير موجود — NABDA" };
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nabda.dz";
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nabda-dz.vercel.app";
 
   return {
     title: `${post.title} — NABDA`,
@@ -128,6 +128,20 @@ export default async function SingleBlogPostPage(props: { params: Promise<{ slug
 
   return (
     <main dir="rtl" className="min-h-screen bg-slate-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            headline: post.title,
+            description: post.summary,
+            inLanguage: "ar",
+            mainEntityOfPage: `https://nabda-dz.vercel.app/blog/${post.slug}`,
+            publisher: { "@type": "Organization", name: "NABDA" },
+          }),
+        }}
+      />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-6">
         <Link
           href="/blog"
@@ -286,3 +300,4 @@ export default async function SingleBlogPostPage(props: { params: Promise<{ slug
     </main>
   );
 }
+

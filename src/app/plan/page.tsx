@@ -55,7 +55,7 @@ export default function ExecutionPlanPage() {
 
       {/* Print-Only Header - shown only when printing */}
       <div className="hidden print:block print-header">
-        <h1>NABDA – خطة تنفيذ 30 يوم</h1>
+        <h2>NABDA – خطة تنفيذ 30 يوم</h2>
         <p>قبل ما تبدأ مشروعك... اختبره.</p>
         <p>التاريخ: {new Date().toLocaleDateString("en-GB")}</p>
       </div>
