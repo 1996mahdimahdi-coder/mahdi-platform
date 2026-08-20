@@ -79,7 +79,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     if (!project) return;
 
     const fileName = `NABDA-${project.projectId}-${Date.now()}.pdf`;
-    const videoId = getCapitalProjectVideoId(project.projectId);
 
     // Show notification & reset progress
     setDownloadState({
@@ -257,6 +256,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     calc.breakEvenUnits,
     salesUnits
   );
+
+  const videoId = getCapitalProjectVideoId(project.projectId);
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12 print:py-2 print:px-0">
