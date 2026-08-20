@@ -302,6 +302,15 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               </>
             )}
           </button>
+          <a
+            href={"https://wa.me/?text=" + encodeURIComponent("شوف هذا المشروع في NABDA: " + project.projectName + " - https://nabda-dz.vercel.app/projects/" + id)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-green-500 text-white hover:bg-green-600 text-xs font-bold flex items-center justify-center gap-2 transition-colors"
+          >
+            <Share2 className="w-4 h-4" />
+            شارك
+          </a>
         </div>
       </div>
 
