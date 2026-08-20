@@ -52,6 +52,19 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&family=Amiri:wght@400;700&display=swap"
           rel="stylesheet"
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "NABDA",
+              "url": "https://nabda-dz.vercel.app",
+              "description": "منصة NABDA تساعدك على اختبار مدى ملاءمة المشروع لوضعك المالي والشخصي والمحلي قبل أن تبدأ، وتقترح أفضل المشاريع المناسبة لرأس مالك ووقتك وموقعك في الجزائر.",
+              "inLanguage": "ar"
+            }),
+          }}
+        />
       </head>
       <body className="font-['Noto_Sans_Arabic',sans-serif] bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col">
         <VisitorOnboarding />
