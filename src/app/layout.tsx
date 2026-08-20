@@ -9,6 +9,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "NABDA – قبل ما تبدأ مشروعك... اختبره",
+  alternates: { canonical: "https://nabda-dz.vercel.app" },
   description:
     "منصة NABDA تساعدك على اختبار مدى ملاءمة المشروع لوضعك المالي والشخصي والمحلي قبل أن تبدأ، وتقترح أفضل المشاريع المناسبة لرأس مالك ووقتك وموقعك في الجزائر.",
   keywords: [
