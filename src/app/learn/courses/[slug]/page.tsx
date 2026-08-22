@@ -6,6 +6,32 @@ import { useParams } from "next/navigation";
 import { Loader2, BookOpen, Clock, ChevronDown, ChevronRight, PlayCircle } from "lucide-react";
 import type { CourseItem, CourseLessonItem } from "@/lib/noCapital/types";
 
+type YouTubeResult = { type: "video"; id: string } | { type: "playlist"; id: string };
+
+function parseYouTubeUrl(url: string): YouTubeResult | null {
+  try {
+    const u = new URL(url);
+    if (u.searchParams.has("list")) {
+      const list = u.searchParams.get("list");
+      if (list) return { type: "playlist", id: list };
+    }
+    if (u.hostname === "youtu.be") {
+      const id = u.pathname.slice(1);
+      if (id) return { type: "video", id };
+    }
+    if (u.searchParams.has("v")) {
+      const v = u.searchParams.get("v");
+      if (v) return { type: "video", id: v };
+    }
+    const parts = u.pathname.split("/");
+    if (parts.includes("embed")) {
+      const id = parts[parts.indexOf("embed") + 1];
+      if (id) return { type: "video", id };
+    }
+  } catch { /* not a valid URL */ }
+  return null;
+}
+
 export default function CourseDetailPage() {
   const params = useParams<{ slug: string }>();
   const slug = params.slug;
@@ -140,17 +166,26 @@ export default function CourseDetailPage() {
                         </p>
                       )}
 
-                      {lesson.videoUrl && (
-                        <a
-                          href={lesson.videoUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-extrabold hover:bg-emerald-700"
-                        >
-                          <PlayCircle className="w-4 h-4" />
-                          مشاهدة الدرس
-                        </a>
-                      )}
+                      {lesson.videoUrl && (() => {
+                        const yt = parseYouTubeUrl(lesson.videoUrl);
+                        if (!yt) return null;
+                        const src = yt.type === "playlist"
+                          ? `https://www.youtube.com/embed/videoseries?list=${yt.id}`
+                          : `https://www.youtube-nocookie.com/embed/${yt.id}`;
+                        return (
+                          <div className="mt-3">
+                            <div className="relative w-full overflow-hidden rounded-xl" style={{ paddingTop: "56.25%" }}>
+                              <iframe
+                                src={src}
+                                title={lesson.title}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                className="absolute inset-0 w-full h-full"
+                              />
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>

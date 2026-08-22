@@ -18,7 +18,7 @@ const cspHeader = [
   // preconnect links to the Google Fonts hosts live in src/app/layout.tsx
   "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://*.effectivecpmnetwork.com",
   "frame-ancestors 'none'",
-  "frame-src https://*.effectivecpmnetwork.com",
+  "frame-src https://*.effectivecpmnetwork.com https://www.youtube.com https://www.youtube-nocookie.com",
   "base-uri 'self'",
   "form-action 'self'",
   "object-src 'none'",

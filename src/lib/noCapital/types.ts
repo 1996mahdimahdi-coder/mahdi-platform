@@ -131,6 +131,12 @@ export type CourseItem = {
   level: string;
   durationMinutes: number;
   lessonsCount: number;
+  sortOrder: number;
+  featured: boolean;
+  recommended: boolean;
+  contentYear: number;
+  contentSource: string;
+  channelName?: string;
   coverImage?: string;
   published: boolean;
 };
