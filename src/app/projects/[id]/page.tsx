@@ -819,6 +819,18 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         )}
       </section>
 
+      {/* Legal Disclaimer */}
+      <div dir="rtl" className="mt-8 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-[11px] text-slate-500 leading-relaxed">
+        <p className="font-bold text-slate-700 mb-1">⚠️ إخلاء مسؤولية قانونية</p>
+        <p>
+          المعلومات الواردة في هذه الصفحة استرشادية وتعليمية فقط، ولا تُعد استشارة قانونية أو ضماناً للربح.
+          قد تخضع بعض الأنشطة لشروط وتراخيص إدارية (سجل تجاري، بطاقة مقاول ذاتي، تراخيص صحية أو بيئية،
+          أو مهن منظمة تتطلب تأهيلاً خاصاً). تقع مسؤولية التحقق من المتطلبات القانونية والإدارية
+          الخاصة بالنشاط قبل الانطلاق على عاتق صاحب المشروع وحده، ولا تتحمل منصة NABDA أي مسؤولية
+          عن أي قرار يتخذه المستخدم بناءً على هذا المحتوى.
+        </p>
+      </div>
+
       {/* Print-Only Footer - shown only when printing */}
       <div className="hidden print:block mt-8 pt-4 border-t-2 border-slate-300 text-center text-xs text-slate-500">
         <p className="font-bold">منصة NABDA | قبل ما تبدأ مشروعك... اختبره</p>
