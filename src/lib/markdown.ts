@@ -154,12 +154,12 @@ function tokensToHtml(tokens: Token[]): string {
           const tag = `h${token.level}`;
           const cls =
             token.level === 1
-              ? "text-2xl sm:text-4xl font-black text-slate-900 leading-tight mt-10 mb-4 first:mt-0"
+              ? "text-2xl sm:text-4xl font-black text-indigo-700 leading-tight mt-10 mb-4 first:mt-0"
               : token.level === 2
-                ? "text-xl sm:text-2xl font-black text-slate-900 mt-8 mb-3 border-b border-slate-200 pb-2"
+                ? "text-xl sm:text-2xl font-black text-indigo-700 mt-8 mb-3 border-b-2 border-indigo-200 pb-2"
                 : token.level === 3
-                  ? "text-lg sm:text-xl font-extrabold text-slate-800 mt-6 mb-2"
-                  : "text-base font-extrabold text-slate-700 mt-4 mb-2";
+                  ? "text-lg sm:text-xl font-extrabold text-emerald-700 mt-6 mb-2"
+                  : "text-base font-extrabold text-fuchsia-700 mt-4 mb-2";
           return `<${tag} class="${cls}">${parseInline(token.text)}</${tag}>`;
         }
 
