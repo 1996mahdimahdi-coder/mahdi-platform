@@ -177,13 +177,14 @@ function ProjectsPageInner() {
         </p>
       </div>
 
-      {/* Best Successful Projects in Algeria – Curated Section */}
+      {/* Best Successful Projects in Algeria – Curated Section (only on direct visit, not search) */}
+      {!searchParams.get("q") && !searchTerm && (
       <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 text-white space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
           <div>
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/30">
               <Trophy className="w-3.5 h-3.5 text-amber-400" />
-              <span>الأكثر نجاحاً في السوق الجزائري 2025</span>
+              <span>الأكثر نجاحاً في السوق الجزائري 2026</span>
             </span>
             <h2 className="text-2xl sm:text-3xl font-black mt-2 leading-tight">
               أفضل مشاريع ناجحة في الجزائر
@@ -214,7 +215,7 @@ function ProjectsPageInner() {
                   </span>
                 </div>
 
-                <h3 className="text-base font-extrabold text-white group-hover:text-amber-400 transition-colors">
+                <h3 className="text-base font-extrabold text-amber-300 group-hover:text-amber-400 transition-colors">
                   {item.title}
                 </h3>
 
@@ -260,6 +261,7 @@ function ProjectsPageInner() {
           </span>
         </div>
       </section>
+      )}
 
       {/* Filter Bar */}
       <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
