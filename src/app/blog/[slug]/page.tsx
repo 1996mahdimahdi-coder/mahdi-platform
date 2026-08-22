@@ -8,6 +8,7 @@ import { eq } from "drizzle-orm";
 import MarkdownContent from "@/components/MarkdownContent";
 import ArticleImage from "@/components/ArticleImage";
 import SourcesSection from "@/components/SourcesSection";
+import ShareButtons from "@/components/ShareButtons";
 
 export const dynamic = "force-dynamic";
 
@@ -222,6 +223,12 @@ export default async function SingleBlogPostPage(props: { params: Promise<{ slug
             {/* Content Body — Markdown */}
             <div className="article-content">
               <MarkdownContent content={post.content} />
+            </div>
+
+            {/* Share */}
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50 border border-slate-200 p-4">
+              <span className="text-sm font-black text-slate-700">شارك هذا المقال 👇</span>
+              <ShareButtons title={post.title} />
             </div>
 
             {/* Infographic */}

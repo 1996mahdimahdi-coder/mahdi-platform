@@ -19,8 +19,7 @@ import {
   Target,
   FileText,
   Download,
-  Loader2,
-  Share2
+  Loader2
 } from "lucide-react";
 import {
   calculateFinancials,
@@ -32,6 +31,7 @@ import { downloadProjectPdf, ProjectPdfData } from "@/lib/pdfExport";
 import DownloadProgress, { DownloadProgressState } from "@/components/DownloadProgress";
 import StartSmallTest from "@/components/StartSmallTest";
 import ProjectVideo from "@/components/ProjectVideo";
+import ShareButtons from "@/components/ShareButtons";
 import { getCapitalProjectVideos } from "@/lib/projectVideos";
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -308,16 +308,13 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
               </>
             )}
           </button>
-          <a
-            href={"https://wa.me/?text=" + encodeURIComponent("شوف هذا المشروع في NABDA: " + project.projectName + " - https://nabda-dz.vercel.app/projects/" + id)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-green-500 text-white hover:bg-green-600 text-xs font-bold flex items-center justify-center gap-2 transition-colors"
-          >
-            <Share2 className="w-4 h-4" />
-            شارك
-          </a>
         </div>
+      </div>
+
+      {/* Share Buttons */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50 border border-slate-200 p-4">
+        <span className="text-sm font-black text-slate-700">شارك هذا المشروع 👇</span>
+        <ShareButtons title={project.projectName} />
       </div>
 
       {/* Overview Cards & Basic Parameters */}
