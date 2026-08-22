@@ -169,11 +169,20 @@ export default function CourseDetailPage() {
                       {lesson.videoUrl && (() => {
                         const yt = parseYouTubeUrl(lesson.videoUrl);
                         if (!yt) return null;
-                        const src = yt.type === "playlist"
+                        const isPlaylist = yt.type === "playlist";
+                        const src = isPlaylist
                           ? `https://www.youtube.com/embed/videoseries?list=${yt.id}`
                           : `https://www.youtube-nocookie.com/embed/${yt.id}`;
                         return (
-                          <div className="mt-3">
+                          <div className="mt-3 space-y-2">
+                            {isPlaylist && (
+                              <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 text-[11px] font-bold border border-amber-200">
+                                  <PlayCircle className="w-3 h-3" />
+                                  قائمة تشغيل
+                                </span>
+                              </div>
+                            )}
                             <div className="relative w-full overflow-hidden rounded-xl" style={{ paddingTop: "56.25%" }}>
                               <iframe
                                 src={src}
@@ -183,6 +192,17 @@ export default function CourseDetailPage() {
                                 className="absolute inset-0 w-full h-full"
                               />
                             </div>
+                            {isPlaylist && (
+                              <a
+                                href={`https://www.youtube.com/playlist?list=${yt.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-[11px] font-bold text-red-600 hover:text-red-700 transition-colors"
+                              >
+                                <PlayCircle className="w-3 h-3" />
+                                شاهد جميع الفيديوهات على YouTube
+                              </a>
+                            )}
                           </div>
                         );
                       })()}
