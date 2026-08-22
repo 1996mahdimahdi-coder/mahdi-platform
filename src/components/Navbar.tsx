@@ -122,6 +122,13 @@ export default function Navbar() {
               المجالات
             </Link>
             <Link
+              href="/legal-guide"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+            >
+              <span className="text-sm">⚖️</span>
+              الدليل القانوني
+            </Link>
+            <Link
               href="/calculator"
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
             >
@@ -255,6 +262,14 @@ export default function Navbar() {
           >
             <Layers className="w-4 h-4 text-slate-500" />
             مجالات المشاريع
+          </Link>
+          <Link
+            href="/legal-guide"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800 font-medium"
+          >
+            <span className="text-sm">⚖️</span>
+            الدليل القانوني
           </Link>
           <Link
             href="/calculator"
