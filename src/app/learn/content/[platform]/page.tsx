@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ChevronLeft, CheckCircle2, XCircle, Clock, CalendarClock, Lightbulb, Wrench } from "lucide-react";
 import { PLATFORM_GUIDES } from "@/lib/platformGuides";
+import PlatformIcon from "@/components/PlatformIcon";
 
 export async function generateStaticParams() {
   return PLATFORM_GUIDES.map((p) => ({ platform: p.slug }));
@@ -29,7 +30,7 @@ export default async function PlatformPage({ params }: { params: Promise<{ platf
         </Link>
 
         <div className="flex items-center gap-4">
-          <span className="text-5xl">{g.icon}</span>
+          <PlatformIcon platform={g.slug} size={56} />
           <div>
             <h1 className="text-2xl sm:text-4xl font-black">دليل {g.name}</h1>
             <p className="text-sm text-slate-500 mt-1">{g.tagline}</p>

@@ -1,6 +1,7 @@
 ﻿import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { PLATFORM_GUIDES } from "@/lib/platformGuides";
+import PlatformIcon from "@/components/PlatformIcon";
 
 export default function LearnContentPage() {
   return (
@@ -20,7 +21,7 @@ export default function LearnContentPage() {
               href={`/learn/content/${g.slug}`}
               className="group bg-white rounded-2xl border border-slate-200 p-6 hover:border-indigo-400 hover:shadow-lg transition-all"
             >
-              <span className="text-4xl">{g.icon}</span>
+              <PlatformIcon platform={g.slug} size={44} />
               <h2 className="font-black text-xl mt-3 group-hover:text-indigo-600 transition-colors">{g.name}</h2>
               <p className="text-xs text-slate-500 mt-2 leading-relaxed">{g.tagline}</p>
               <p className="text-xs font-bold text-indigo-600 mt-3 inline-flex items-center gap-1">
