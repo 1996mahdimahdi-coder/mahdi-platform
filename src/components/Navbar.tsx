@@ -171,16 +171,12 @@ export default function Navbar() {
               المساعد الذكي
             </Link>
 
-            {/* Free Site Notice Badge */}
-            <span className="hidden xl:flex items-center gap-1 px-3 py-1.5 rounded-full bg-indigo-100 text-indigo-800 text-xs font-extrabold border border-indigo-200">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-              مجاني بالكامل
-            </span>
+
           </nav>
 
           {/* Right Actions / Auth */}
           <div className="hidden lg:flex items-center gap-3">
-            {authLoaded && (user ? (
+            {user ? (
               <div className="flex items-center gap-2">
                 {user.role === "admin" && (
                   <Link
@@ -206,17 +202,27 @@ export default function Navbar() {
               >
                 تسجيل الدخول
               </Link>
-            ))}
+            )}
           </div>
 
-          {/* Mobile Menu Toggle Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-            aria-label="القائمة"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Mobile: Login + Menu Toggle */}
+          <div className="lg:hidden flex items-center gap-2">
+            {!user && (
+              <Link
+                href="/login"
+                className="px-3 py-2 text-sm font-semibold rounded-lg bg-slate-900 text-white"
+              >
+                تسجيل الدخول
+              </Link>
+            )}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              aria-label="القائمة"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -320,10 +326,6 @@ export default function Navbar() {
             المساعد الذكي
           </Link>
 
-          <div className="p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-xs text-indigo-800 font-bold flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-indigo-600 shrink-0" />
-            <span>المنصة NABDA مجانية بالكامل لجميع المستخدمين</span>
-          </div>
 
           <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
             {!authLoaded ? (
