@@ -7,53 +7,16 @@ import {
   CheckCircle2,
   TrendingUp,
   Lightbulb,
-  AlertTriangle,
   ArrowLeft,
-  DollarSign,
   Target,
-  BarChart3,
   Rocket,
   GraduationCap,
 } from "lucide-react";
-import PlatformIcon from "@/components/PlatformIcon";
-
-const SOCIAL_LINKS = [
-  { label: "Facebook", href: "https://web.facebook.com/profile.php?id=61593142754403", platform: "facebook" },
-  { label: "Instagram", href: "https://www.instagram.com/nabda_2026/", platform: "instagram" },
-] as const;
+import ServiceOnboardingBanner from "@/components/ServiceOnboardingBanner";
 
 export default function HomePage() {
   return (
     <div className="space-y-16 pb-16">
-      {/* Social Media */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-3xl border border-slate-200 p-8 sm:p-10 text-center space-y-6">
-          <div className="space-y-2">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
-              تابع NABDA على مواقع التواصل
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
-              انضم إلى مجتمعنا للحصول على نصائح عملية وأحدث المحتوى
-            </p>
-          </div>
-
-          <div className="flex items-center justify-center gap-4">
-            {SOCIAL_LINKS.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-slate-900 text-white text-sm font-extrabold hover:bg-slate-800 hover:scale-[1.03] active:scale-[0.98] transition-all"
-              >
-                <PlatformIcon platform={link.platform} size={20} />
-                {link.label}
-              </a>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 text-white pt-16 pb-20 px-4 sm:px-6 lg:px-8">
         {/* Decorative Grid BG */}
@@ -121,8 +84,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* What Do You Want To Do? */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Service Onboarding Banner */}
+      <ServiceOnboardingBanner />
+
+      {/* What Do You Want To Do? + Capital Jump */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         <div className="text-center space-y-2 mb-8">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
             ماذا تريد أن تفعل؟
@@ -150,7 +116,7 @@ export default function HomePage() {
               </p>
             </div>
             <div className="mt-auto flex items-center gap-1.5 text-sm font-bold text-indigo-600 pt-2">
-              <span>اختبر وضعي الآن</span>
+              <span>ابدأ الاختبار</span>
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             </div>
           </Link>
@@ -194,7 +160,7 @@ export default function HomePage() {
               </p>
             </div>
             <div className="mt-auto flex items-center gap-1.5 text-sm font-bold text-fuchsia-600 pt-2">
-              <span>تصفح مركز التعلم</span>
+              <span>ابدأ التعلم</span>
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             </div>
           </Link>
@@ -216,100 +182,76 @@ export default function HomePage() {
               </p>
             </div>
             <div className="mt-auto flex items-center gap-1.5 text-sm font-bold text-slate-600 pt-2">
-              <span>استكشف المشاريع</span>
+              <span>تصفح المشاريع</span>
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             </div>
           </Link>
         </div>
-      </section>
 
-      {/* Quick Capital Jump */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center space-y-2 mb-8">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-            اختر رأس مالك المتاح واستكشف الخيارات
-          </h2>
-          <p className="text-sm text-slate-600">
-            تصفح دراسات الجدوى السريعة لـ 25+ مشروعًا وفق ميزانيتك بالدينار الجزائري (دج)
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link
-            href="/test?capital=30000"
-            className="p-6 rounded-2xl bg-white border border-slate-200 hover:border-indigo-500 hover:shadow-lg transition-all group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-              5
-            </div>
-            <h3 className="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
-              أقل من 5 ملايين (50 ألف دج)
+        {/* Capital Jump — Compact Sub-Section */}
+        <div className="space-y-5">
+          <div className="text-center space-y-2">
+            <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
+              عندك رأس مال محدد؟
             </h3>
-            <p className="text-xs text-slate-500 mt-2">
-              مشاريع خدمات منزلية، أونلاين، صناعة محتوى وحلويات من المنزل بدون إيجار.
+            <p className="text-xs text-slate-500">
+              تصفح دراسات الجدوى السريعة وفق ميزانيتك بالدينار الجزائري
             </p>
-            <div className="mt-4 flex items-center gap-1 text-xs font-bold text-indigo-600">
-              <span>اختبر هذه الفئة</span>
-              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            </div>
-          </Link>
+          </div>
 
-          <Link
-            href="/test?capital=80000"
-            className="p-6 rounded-2xl bg-white border border-slate-200 hover:border-indigo-500 hover:shadow-lg transition-all group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-              10
-            </div>
-            <h3 className="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
-              5 إلى 10 ملايين (100 ألف دج)
-            </h3>
-            <p className="text-xs text-slate-500 mt-2">
-              طباعة حرارية، إكسسوارات هواتف، غسيل متنقل، وتجارة العسل والزيوت.
-            </p>
-            <div className="mt-4 flex items-center gap-1 text-xs font-bold text-indigo-600">
-              <span>اختبر هذه الفئة</span>
-              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            </div>
-          </Link>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <Link
+              href="/test?capital=30000"
+              className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-indigo-500 hover:shadow-md transition-all group text-center"
+            >
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-colors mx-auto">
+                5
+              </div>
+              <h4 className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                أقل من 5 ملايين
+              </h4>
+              <p className="text-[11px] text-slate-500 mt-1">50 ألف دج</p>
+            </Link>
 
-          <Link
-            href="/test?capital=200000"
-            className="p-6 rounded-2xl bg-white border border-slate-200 hover:border-indigo-500 hover:shadow-lg transition-all group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-              20
-            </div>
-            <h3 className="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
-              10 إلى 20 مليون (200 ألف دج)
-            </h3>
-            <p className="text-xs text-slate-500 mt-2">
-              تجارة ملابس إلكترونية، صيانة كمبيوتر، عطور مستوردة، وخدمات تنظيف.
-            </p>
-            <div className="mt-4 flex items-center gap-1 text-xs font-bold text-indigo-600">
-              <span>اختبر هذه الفئة</span>
-              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            </div>
-          </Link>
+            <Link
+              href="/test?capital=80000"
+              className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-indigo-500 hover:shadow-md transition-all group text-center"
+            >
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-colors mx-auto">
+                10
+              </div>
+              <h4 className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                5 إلى 10 ملايين
+              </h4>
+              <p className="text-[11px] text-slate-500 mt-1">100 ألف دج</p>
+            </Link>
 
-          <Link
-            href="/test?capital=500000"
-            className="p-6 rounded-2xl bg-white border border-slate-200 hover:border-indigo-500 hover:shadow-lg transition-all group"
-          >
-            <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-              50+
-            </div>
-            <h3 className="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
-              أكثر من 50 مليون (500 ألف دج)
-            </h3>
-            <p className="text-xs text-slate-500 mt-2">
-              محل تجاري مصغر، معدات تنظيف شمسية، توزيع منتجات، وتجارة جملة إلكترونية.
-            </p>
-            <div className="mt-4 flex items-center gap-1 text-xs font-bold text-indigo-600">
-              <span>اختبر هذه الفئة</span>
-              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            </div>
-          </Link>
+            <Link
+              href="/test?capital=200000"
+              className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-indigo-500 hover:shadow-md transition-all group text-center"
+            >
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-colors mx-auto">
+                20
+              </div>
+              <h4 className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                10 إلى 20 مليون
+              </h4>
+              <p className="text-[11px] text-slate-500 mt-1">200 ألف دج</p>
+            </Link>
+
+            <Link
+              href="/test?capital=500000"
+              className="p-4 rounded-2xl bg-white border border-slate-200 hover:border-indigo-500 hover:shadow-md transition-all group text-center"
+            >
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-colors mx-auto">
+                50+
+              </div>
+              <h4 className="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                أكثر من 50 مليون
+              </h4>
+              <p className="text-[11px] text-slate-500 mt-1">500 ألف دج</p>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -375,106 +317,6 @@ export default function HomePage() {
               <Sparkles className="w-5 h-5" />
               ابدأ اختبار الوضع الآن
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Scoring Engine Breakdown */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-8 sm:p-12 shadow-xl border border-slate-700">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 text-xs font-semibold">
-                <BarChart3 className="w-4 h-4 text-indigo-400" />
-                معيار النقاط الـ 8 (Scoring System)
-              </div>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-white leading-snug">
-                كيف نحسب درجة الملاءمة لـ 100 نقطة؟
-              </h2>
-              <p className="text-slate-300 text-sm leading-relaxed">
-                تعتمد NABDA على معادلة برمجية ثابتة خالية من العواطف والتوقعات الخيالية لتوزيع النقاط كالتالي:
-              </p>
-
-              <div className="grid grid-cols-2 gap-3 text-xs sm:text-sm">
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between">
-                  <span className="text-slate-300">الملاءمة المالية</span>
-                  <span className="font-extrabold text-indigo-400">25 نقطة</span>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between">
-                  <span className="text-slate-300">الملاءمة الشخصية والمهارات</span>
-                  <span className="font-extrabold text-indigo-400">15 نقطة</span>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between">
-                  <span className="text-slate-300">ملاءمة طريقة العمل</span>
-                  <span className="font-extrabold text-indigo-400">10 نقاط</span>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between">
-                  <span className="text-slate-300">ملاءمة المنطقة والولاية</span>
-                  <span className="font-extrabold text-indigo-400">15 نقطة</span>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between">
-                  <span className="text-slate-300">مستوى المخاطرة المقبول</span>
-                  <span className="font-extrabold text-indigo-400">10 نقاط</span>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between">
-                  <span className="text-slate-300">سهولة السرعة والبداية</span>
-                  <span className="font-extrabold text-indigo-400">10 نقاط</span>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between">
-                  <span className="text-slate-300">قابلية التوسع والنمو</span>
-                  <span className="font-extrabold text-indigo-400">10 نقاط</span>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center justify-between">
-                  <span className="text-slate-300">توافق الساعات والوقت</span>
-                  <span className="font-extrabold text-indigo-400">5 نقاط</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Score Result Badges Display Box */}
-            <div className="bg-slate-800/90 rounded-2xl p-6 border border-slate-700 space-y-4">
-              <h3 className="text-base font-bold text-slate-200 border-b border-slate-700 pb-3">
-                تصنيف نتيجتك النهائية:
-              </h3>
-
-              <div className="space-y-3 text-xs sm:text-sm">
-                <div className="p-3 rounded-xl bg-indigo-950/60 border border-indigo-500/40 text-indigo-200 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🟢</span>
-                    <span className="font-bold">مناسب جدًا</span>
-                  </div>
-                  <span className="font-mono font-bold">80 - 100 نقطة</span>
-                </div>
-
-                <div className="p-3 rounded-xl bg-amber-950/60 border border-amber-500/40 text-amber-200 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🟡</span>
-                    <span className="font-bold">مناسب مع شروط</span>
-                  </div>
-                  <span className="font-mono font-bold">60 - 79 نقطة</span>
-                </div>
-
-                <div className="p-3 rounded-xl bg-orange-950/60 border border-orange-500/40 text-orange-200 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🟠</span>
-                    <span className="font-bold">يحتاج دراسة إضافية</span>
-                  </div>
-                  <span className="font-mono font-bold">40 - 59 نقطة</span>
-                </div>
-
-                <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-500/40 text-rose-200 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🔴</span>
-                    <span className="font-bold">غير مناسب حاليًا</span>
-                  </div>
-                  <span className="font-mono font-bold">أقل من 40 نقطة</span>
-                </div>
-              </div>
-
-              <div className="pt-2 text-xs text-slate-400 text-center">
-                نتائج التقييم محاكاة مبنية على الظروف المدخلة ولا تعتبر ضمانًا قانونيًا أو ماليًا للربح.
-              </div>
-            </div>
           </div>
         </div>
       </section>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ShieldCheck, Heart, ArrowLeft, Mail, MapPin } from "lucide-react";
+import PlatformIcon from "@/components/PlatformIcon";
 
 export default function Footer() {
   return (
@@ -22,8 +23,33 @@ export default function Footer() {
             <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs text-amber-300 flex items-start gap-2">
               <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
               <span>
-                "قبل ما تبدأ مشروعك... اختبره. نحن نحاول أن نريك تكلفة القرار قبل أن تتخذه."
+                &quot;قبل ما تبدأ مشروعك... اختبره. نحن نحاول أن نريك تكلفة القرار قبل أن تتخذه.&quot;
               </span>
+            </div>
+            <div className="space-y-2 pt-1">
+              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                تابع NABDA
+              </h4>
+              <div className="flex items-center gap-2">
+                <a
+                  href="https://web.facebook.com/profile.php?id=61593142754403"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-white text-xs font-bold hover:bg-slate-700 hover:scale-[1.03] active:scale-[0.98] transition-all"
+                >
+                  <PlatformIcon platform="facebook" size={16} />
+                  Facebook
+                </a>
+                <a
+                  href="https://www.instagram.com/nabda_2026/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-white text-xs font-bold hover:bg-slate-700 hover:scale-[1.03] active:scale-[0.98] transition-all"
+                >
+                  <PlatformIcon platform="instagram" size={16} />
+                  Instagram
+                </a>
+              </div>
             </div>
           </div>
 
