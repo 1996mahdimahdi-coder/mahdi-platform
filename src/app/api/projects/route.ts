@@ -87,7 +87,45 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
     }
 
-    const [created] = await db.insert(projects).values(body).returning();
+    const values = {
+      projectId: String(body.projectId),
+      projectName: String(body.projectName),
+      category: String(body.category ?? ""),
+      description: String(body.description ?? ""),
+      minCapital: Number(body.minCapital) || 0,
+      recommendedCapital: Number(body.recommendedCapital) || 0,
+      maxCapital: Number(body.maxCapital) || 0,
+      riskLevel: String(body.riskLevel ?? "متوسط"),
+      requiresShop: body.requiresShop === true,
+      homeBased: body.homeBased !== false,
+      onlinePossible: body.onlinePossible !== false,
+      transportRequired: body.transportRequired === true,
+      skillsRequired: Array.isArray(body.skillsRequired) ? body.skillsRequired : [],
+      timeRequired: String(body.timeRequired ?? "2-4 ساعات"),
+      difficulty: String(body.difficulty ?? "سهل"),
+      scalability: String(body.scalability ?? "متوسطة"),
+      seasonality: String(body.seasonality ?? "طوال السنة"),
+      competitionLevel: String(body.competitionLevel ?? "متوسطة"),
+      targetArea: String(body.targetArea ?? "جميع المناطق"),
+      workLocation: String(body.workLocation ?? "محل"),
+      skillLevel: String(body.skillLevel ?? "بسيطة"),
+      legalStatus: String(body.legalStatus ?? "غير مقنن"),
+      equipment: Array.isArray(body.equipment) ? body.equipment : [],
+      initialStock: Number(body.initialStock) || 0,
+      fixedCosts: Number(body.fixedCosts) || 0,
+      variableCostsPercent: Number(body.variableCostsPercent) || 10,
+      pricingMethod: String(body.pricingMethod ?? "هامش ربح ثابت"),
+      profitFormula: String(body.profitFormula ?? "الإيرادات - التكاليف"),
+      breakEvenFormula: String(body.breakEvenFormula ?? "التكاليف الثابتة / هامش الربح للوحده"),
+      risks: Array.isArray(body.risks) ? body.risks : [],
+      advantages: Array.isArray(body.advantages) ? body.advantages : [],
+      disadvantages: Array.isArray(body.disadvantages) ? body.disadvantages : [],
+      launchPlan: Array.isArray(body.launchPlan) ? body.launchPlan : [],
+      legalNotes: typeof body.legalNotes === "string" ? body.legalNotes : null,
+      source: typeof body.source === "string" ? body.source : null,
+    };
+
+    const [created] = await db.insert(projects).values(values).returning();
     return NextResponse.json({ success: true, project: created });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: "\u062d\u062f\u062b \u062e\u0637\u0623 \u062f\u0627\u062e\u0644\u064a. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649 \u0644\u0627\u062d\u0642\u064b\u0627." }, { status: 500 });

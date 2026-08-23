@@ -88,18 +88,56 @@ export async function PUT(
     const body = await request.json();
     const isNumeric = !isNaN(Number(id));
 
+    const updates: Record<string, unknown> = { lastUpdated: new Date() };
+
+    if ("projectId" in body) updates.projectId = String(body.projectId);
+    if ("projectName" in body) updates.projectName = String(body.projectName);
+    if ("category" in body) updates.category = String(body.category);
+    if ("description" in body) updates.description = String(body.description);
+    if ("minCapital" in body) updates.minCapital = Number(body.minCapital) || 0;
+    if ("recommendedCapital" in body) updates.recommendedCapital = Number(body.recommendedCapital) || 0;
+    if ("maxCapital" in body) updates.maxCapital = Number(body.maxCapital) || 0;
+    if ("riskLevel" in body) updates.riskLevel = String(body.riskLevel);
+    if ("requiresShop" in body) updates.requiresShop = body.requiresShop === true;
+    if ("homeBased" in body) updates.homeBased = body.homeBased === true;
+    if ("onlinePossible" in body) updates.onlinePossible = body.onlinePossible === true;
+    if ("transportRequired" in body) updates.transportRequired = body.transportRequired === true;
+    if ("skillsRequired" in body) updates.skillsRequired = Array.isArray(body.skillsRequired) ? body.skillsRequired : [];
+    if ("timeRequired" in body) updates.timeRequired = String(body.timeRequired);
+    if ("difficulty" in body) updates.difficulty = String(body.difficulty);
+    if ("scalability" in body) updates.scalability = String(body.scalability);
+    if ("seasonality" in body) updates.seasonality = String(body.seasonality);
+    if ("competitionLevel" in body) updates.competitionLevel = String(body.competitionLevel);
+    if ("targetArea" in body) updates.targetArea = String(body.targetArea);
+    if ("workLocation" in body) updates.workLocation = String(body.workLocation);
+    if ("skillLevel" in body) updates.skillLevel = String(body.skillLevel);
+    if ("legalStatus" in body) updates.legalStatus = String(body.legalStatus);
+    if ("equipment" in body) updates.equipment = Array.isArray(body.equipment) ? body.equipment : [];
+    if ("initialStock" in body) updates.initialStock = Number(body.initialStock) || 0;
+    if ("fixedCosts" in body) updates.fixedCosts = Number(body.fixedCosts) || 0;
+    if ("variableCostsPercent" in body) updates.variableCostsPercent = Number(body.variableCostsPercent) || 10;
+    if ("pricingMethod" in body) updates.pricingMethod = String(body.pricingMethod);
+    if ("profitFormula" in body) updates.profitFormula = String(body.profitFormula);
+    if ("breakEvenFormula" in body) updates.breakEvenFormula = String(body.breakEvenFormula);
+    if ("risks" in body) updates.risks = Array.isArray(body.risks) ? body.risks : [];
+    if ("advantages" in body) updates.advantages = Array.isArray(body.advantages) ? body.advantages : [];
+    if ("disadvantages" in body) updates.disadvantages = Array.isArray(body.disadvantages) ? body.disadvantages : [];
+    if ("launchPlan" in body) updates.launchPlan = Array.isArray(body.launchPlan) ? body.launchPlan : [];
+    if ("legalNotes" in body) updates.legalNotes = typeof body.legalNotes === "string" ? body.legalNotes : null;
+    if ("source" in body) updates.source = typeof body.source === "string" ? body.source : null;
+
     let updated = null;
     if (isNumeric) {
       const [res] = await db
         .update(projects)
-        .set({ ...body, lastUpdated: new Date() })
+        .set(updates)
         .where(eq(projects.id, Number(id)))
         .returning();
       updated = res;
     } else {
       const [res] = await db
         .update(projects)
-        .set({ ...body, lastUpdated: new Date() })
+        .set(updates)
         .where(eq(projects.projectId, id))
         .returning();
       updated = res;
