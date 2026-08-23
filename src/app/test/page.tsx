@@ -21,6 +21,81 @@ import {
 import ConsentGate from "@/components/ConsentGate";
 import { getOrCreateSessionId } from "@/lib/session";
 
+// ============================================================
+// M1 — Cache helpers (localStorage, 24h TTL)
+// ============================================================
+
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+}
+
+function readCache<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as CacheEntry<T>;
+
+    if (
+      typeof parsed !== "object" ||
+      parsed === null ||
+      !Array.isArray(parsed.data) ||
+      typeof parsed.timestamp !== "number"
+    ) {
+      return null;
+    }
+
+    if (Date.now() - parsed.timestamp > CACHE_TTL) {
+      return null;
+    }
+
+    return parsed.data;
+  } catch {
+    return null;
+  }
+}
+
+function readStaleCache<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+
+    const parsed = JSON.parse(raw) as CacheEntry<T>;
+
+    if (
+      typeof parsed !== "object" ||
+      parsed === null ||
+      !Array.isArray(parsed.data) ||
+      typeof parsed.timestamp !== "number"
+    ) {
+      return null;
+    }
+
+    return parsed.data;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache<T>(key: string, data: T): void {
+  try {
+    const entry: CacheEntry<T> = {
+      data,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(key, JSON.stringify(entry));
+  } catch {
+    // quota exceeded, private browsing, etc. — silently ignore
+  }
+}
+
+// ============================================================
+// Interfaces
+// ============================================================
+
 interface WilayaItem {
   id: number;
   code: string;
@@ -105,7 +180,7 @@ export default function TestPage() {
     useState<string>("دخل إضافي");
 
   // ============================================================
-  // تحميل الولايات
+  // تحميل الولايات (مع cache مدة 24 ساعة)
   // ============================================================
 
   useEffect(() => {
@@ -113,6 +188,31 @@ export default function TestPage() {
 
     const loadWilayas = async () => {
       setErrorMsg("");
+
+      const cached = readCache<WilayaItem[]>(
+        "nabda_wilayas_cache"
+      );
+
+      if (cached && !cancelled) {
+        const sorted = [...cached].sort(
+          (a, b) => a.id - b.id
+        );
+        setWilayasList(sorted);
+
+        const defaultWilaya = sorted.find(
+          (w) => w.id === 16
+        );
+
+        if (defaultWilaya) {
+          setWilayaId(defaultWilaya.id);
+          setWilayaName(defaultWilaya.nameAr);
+        } else if (sorted.length > 0) {
+          setWilayaId(sorted[0].id);
+          setWilayaName(sorted[0].nameAr);
+        }
+
+        return;
+      }
 
       try {
         const response = await fetch("/api/wilayas", {
@@ -138,6 +238,8 @@ export default function TestPage() {
         }
 
         if (!cancelled) {
+          writeCache("nabda_wilayas_cache", data.wilayas);
+
           const sortedWilayas = [
             ...data.wilayas,
           ].sort((a, b) => a.id - b.id);
@@ -166,9 +268,33 @@ export default function TestPage() {
         );
 
         if (!cancelled) {
-          setErrorMsg(
-            "تعذر تحميل قائمة الولايات."
-          );
+          const stale =
+            readStaleCache<WilayaItem[]>(
+              "nabda_wilayas_cache"
+            );
+
+          if (stale && stale.length > 0) {
+            const sorted = [...stale].sort(
+              (a, b) => a.id - b.id
+            );
+            setWilayasList(sorted);
+
+            const defaultWilaya = sorted.find(
+              (w) => w.id === 16
+            );
+
+            if (defaultWilaya) {
+              setWilayaId(defaultWilaya.id);
+              setWilayaName(defaultWilaya.nameAr);
+            } else {
+              setWilayaId(sorted[0].id);
+              setWilayaName(sorted[0].nameAr);
+            }
+          } else {
+            setErrorMsg(
+              "تعذر تحميل قائمة الولايات."
+            );
+          }
         }
       }
     };
@@ -181,7 +307,7 @@ export default function TestPage() {
   }, []);
 
   // ============================================================
-  // تحميل البلديات عند تغيير الولاية
+  // تحميل البلديات عند تغيير الولاية (مع cache مدة 24 ساعة)
   // ============================================================
 
   useEffect(() => {
@@ -196,6 +322,26 @@ export default function TestPage() {
 
     const loadCommunes = async () => {
       setErrorMsg("");
+
+      const cacheKey =
+        "nabda_communes_cache_" + wilayaId;
+      const cached = readCache<CommuneItem[]>(
+        cacheKey
+      );
+
+      if (cached && !cancelled) {
+        setCommunesList(cached);
+
+        if (cached.length > 0) {
+          setCommuneId(cached[0].id);
+          setCommuneName(cached[0].nameAr);
+        } else {
+          setCommuneId(0);
+          setCommuneName("");
+        }
+
+        return;
+      }
 
       try {
         const response = await fetch(
@@ -228,6 +374,8 @@ export default function TestPage() {
         }
 
         if (!cancelled) {
+          writeCache(cacheKey, data.communes);
+
           setCommunesList(data.communes);
 
           if (data.communes.length > 0) {
@@ -250,12 +398,23 @@ export default function TestPage() {
         );
 
         if (!cancelled) {
-          setCommunesList([]);
-          setCommuneId(0);
-          setCommuneName("");
-          setErrorMsg(
-            "تعذر تحميل بلديات الولاية المحددة."
-          );
+          const stale =
+            readStaleCache<CommuneItem[]>(
+              cacheKey
+            );
+
+          if (stale && stale.length > 0) {
+            setCommunesList(stale);
+            setCommuneId(stale[0].id);
+            setCommuneName(stale[0].nameAr);
+          } else {
+            setCommunesList([]);
+            setCommuneId(0);
+            setCommuneName("");
+            setErrorMsg(
+              "تعذر تحميل بلديات الولاية المحددة."
+            );
+          }
         }
       }
     };
