@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Lightbulb, Sparkles, CheckCircle2, AlertTriangle, ArrowLeft, RotateCcw, ShieldCheck } from "lucide-react";
+import { getCsrfToken } from "@/lib/clientCsrf";
 
 export default function IdeaTestPage() {
   const [ideaTitle, setIdeaTitle] = useState("");
@@ -24,9 +25,14 @@ export default function IdeaTestPage() {
     setErrorMsg("");
 
     try {
+      const csrfToken = await getCsrfToken();
+
       const res = await fetch("/api/idea-test", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-csrf-token": csrfToken,
+        },
         body: JSON.stringify({
           ideaTitle,
           category,

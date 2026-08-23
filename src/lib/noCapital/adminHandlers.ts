@@ -13,6 +13,7 @@ import {
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
 import { isMissingTableError, serializeRows, serializeRow } from "@/lib/noCapital/fallback";
+import { csrfGuard } from "@/lib/csrf";
 
 // ============================================================================
 // Generic admin CRUD factory for the NABDA growth resources (categories,
@@ -102,6 +103,9 @@ export function createAdminRoutes(config: AdminConfig) {
     const auth = await requireAdmin();
     if (auth.response) return auth.response;
 
+    const csrfErr = await csrfGuard(request);
+    if (csrfErr) return csrfErr;
+
     const writeLimit = RATE_LIMITS.adminWrite.user;
     const writeCheck = await checkRateLimit({
       key: `admin:write:user:${auth.session.userId}`,
@@ -169,6 +173,9 @@ export function createAdminRoutes(config: AdminConfig) {
     const auth = await requireAdmin();
     if (auth.response) return auth.response;
 
+    const csrfErr = await csrfGuard(request);
+    if (csrfErr) return csrfErr;
+
     const writeLimit = RATE_LIMITS.adminWrite.user;
     const writeCheck = await checkRateLimit({
       key: `admin:write:user:${auth.session.userId}`,
@@ -223,6 +230,9 @@ export function createAdminRoutes(config: AdminConfig) {
   async function remove(request: Request, context: { params: Promise<{ id: string }> }) {
     const auth = await requireAdmin();
     if (auth.response) return auth.response;
+
+    const csrfErr = await csrfGuard(request);
+    if (csrfErr) return csrfErr;
 
     const writeLimit = RATE_LIMITS.adminWrite.user;
     const writeCheck = await checkRateLimit({

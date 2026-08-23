@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Loader2, ShieldCheck, RefreshCcw } from "lucide-react";
 import type { ConsentVersion } from "@/lib/noCapital/types";
+import { getCsrfToken } from "@/lib/clientCsrf";
 
 type ConsentGateProps = {
   purpose: "assessment" | "no-capital" | "plan";
@@ -46,9 +47,14 @@ export default function ConsentGate({ purpose, sessionId, onGranted, onCancel }:
     if (!consent) return;
     setSubmitting(true);
     try {
+      const csrfToken = await getCsrfToken();
+
       const res = await fetch("/api/no-capital/consent", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-csrf-token": csrfToken,
+        },
         body: JSON.stringify({ sessionId, purpose, version: consent.version }),
       });
       const data = await res.json();

@@ -14,6 +14,7 @@ import {
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
 import { validateSource } from "@/lib/sourceValidation";
+import { csrfGuard } from "@/lib/csrf";
 
 export const dynamic = "force-dynamic";
 
@@ -113,6 +114,9 @@ export async function PUT(
   if (auth.response) {
     return auth.response;
   }
+
+  const csrfErr = await csrfGuard(request);
+  if (csrfErr) return csrfErr;
 
   const writeLimit = RATE_LIMITS.adminWrite.user;
 
@@ -238,6 +242,9 @@ export async function DELETE(
   if (auth.response) {
     return auth.response;
   }
+
+  const csrfErr = await csrfGuard(request);
+  if (csrfErr) return csrfErr;
 
   const writeLimit = RATE_LIMITS.adminWrite.user;
 

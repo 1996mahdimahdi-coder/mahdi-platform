@@ -15,6 +15,7 @@ import {
   RATE_LIMITS,
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
+import { csrfGuard } from "@/lib/csrf";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +40,9 @@ function jsonError(
 }
 
 export async function POST(request: Request) {
+  const csrfErr = await csrfGuard(request);
+  if (csrfErr) return csrfErr;
+
   // H1 rate limiting: per-IP first so even malformed floods are bounded.
   const ipLimit = RATE_LIMITS.login.ip;
 

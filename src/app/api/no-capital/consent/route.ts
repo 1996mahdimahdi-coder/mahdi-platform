@@ -5,6 +5,7 @@ import { consentRecords, consentVersions } from "@/db/schema";
 import { isMissingTableError } from "@/lib/noCapital/fallback";
 import { loadActiveConsent } from "@/lib/noCapital/publicData";
 import { checkRateLimit, clientIpKey, RATE_LIMITS, rateLimitExceededResponse } from "@/lib/rateLimit";
+import { csrfGuard } from "@/lib/csrf";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,9 @@ async function resolveVersionId(version: string): Promise<number | null> {
 }
 
 export async function POST(request: Request) {
+  const csrfErr = await csrfGuard(request);
+  if (csrfErr) return csrfErr;
+
   let body: unknown;
   try {
     body = await request.json();

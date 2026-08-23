@@ -1,5 +1,6 @@
 "use client";
 
+import { getCsrfToken } from "@/lib/clientCsrf";
 import { useEffect, useState } from "react";
 import {
   User,
@@ -225,10 +226,13 @@ export default function VisitorOnboarding() {
     setLoading(true);
 
     try {
+      const csrfToken = await getCsrfToken();
+
       const res = await fetch("/api/visitor", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-csrf-token": csrfToken,
         },
         body: JSON.stringify({
           firstName: firstName.trim(),

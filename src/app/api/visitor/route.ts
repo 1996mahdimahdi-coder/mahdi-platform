@@ -10,6 +10,7 @@ import {
   RATE_LIMITS,
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
+import { csrfGuard } from "@/lib/csrf";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,9 @@ const MAX_EMAIL = 254;
 const MAX_PHONE = 30;
 
 export async function POST(request: Request) {
+  const csrfErr = await csrfGuard(request);
+  if (csrfErr) return csrfErr;
+
   // H1 rate limiting: this endpoint stores PII, so submissions are
   // bounded per IP (5 / hour).
   const ipLimit = RATE_LIMITS.visitor.ip;

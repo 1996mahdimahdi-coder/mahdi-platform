@@ -12,6 +12,7 @@ import {
   RATE_LIMITS,
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
+import { csrfGuard } from "@/lib/csrf";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +71,9 @@ export async function PUT(
   if (auth.error) {
     return auth.error;
   }
+
+  const csrfErr = await csrfGuard(request);
+  if (csrfErr) return csrfErr;
 
   const writeLimit = RATE_LIMITS.adminWrite.user;
 
@@ -158,6 +162,9 @@ export async function DELETE(
   if (auth.error) {
     return auth.error;
   }
+
+  const csrfErr = await csrfGuard(request);
+  if (csrfErr) return csrfErr;
 
   const writeLimit = RATE_LIMITS.adminWrite.user;
 

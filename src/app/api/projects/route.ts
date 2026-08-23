@@ -12,6 +12,7 @@ import {
   RATE_LIMITS,
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
+import { csrfGuard } from "@/lib/csrf";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +68,9 @@ export async function POST(request: Request) {
   if (session.role !== "admin") {
     return forbiddenResponse();
   }
+
+  const csrfErr = await csrfGuard(request);
+  if (csrfErr) return csrfErr;
 
   // H1 rate limiting: admin write operations are keyed by admin userId.
   const writeLimit = RATE_LIMITS.adminWrite.user;

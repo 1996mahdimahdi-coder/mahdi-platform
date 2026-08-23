@@ -109,3 +109,18 @@ export function csrfErrorResponse() {
     { status: 403 }
   );
 }
+
+/**
+ * Server-side CSRF guard for state-changing endpoints.
+ * Call at the top of POST/PUT/DELETE/PATCH handlers.
+ * Returns null on success, or a NextResponse 403 error on failure.
+ */
+export async function csrfGuard(
+  request: Request
+): Promise<NextResponse | null> {
+  const token = await getCsrfTokenFromRequest(request);
+  if (!token || !verifyCsrfToken(token)) {
+    return csrfErrorResponse();
+  }
+  return null;
+}

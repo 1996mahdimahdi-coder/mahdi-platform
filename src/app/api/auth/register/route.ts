@@ -14,6 +14,7 @@ import {
   RATE_LIMITS,
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
+import { csrfGuard } from "@/lib/csrf";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +42,9 @@ function jsonError(
 }
 
 export async function POST(request: Request) {
+  const csrfErr = await csrfGuard(request);
+  if (csrfErr) return csrfErr;
+
   // H1 rate limiting: 3 registrations / hour / IP (prevents account spam).
   const ipLimit = RATE_LIMITS.register.ip;
 

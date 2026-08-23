@@ -6,6 +6,7 @@ import {
   RATE_LIMITS,
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
+import { csrfGuard } from "@/lib/csrf";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,9 @@ function badRequest(error: string) {
 }
 
 export async function POST(request: Request) {
+  const csrfErr = await csrfGuard(request);
+  if (csrfErr) return csrfErr;
+
   // H1 rate limiting: this endpoint can call OpenAI when a key is set,
   // so anonymous bursts are bounded per IP.
   const ipLimit = RATE_LIMITS.ideaTest.ip;
