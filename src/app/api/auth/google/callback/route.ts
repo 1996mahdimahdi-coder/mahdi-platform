@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { users } from "@/db/schema";
@@ -11,6 +12,7 @@ import {
 export const dynamic = "force-dynamic";
 
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+const OAUTH_STATE_COOKIE = "nabda_oauth_state";
 
 type GoogleTokenResponse = {
   access_token?: string;
@@ -36,13 +38,52 @@ function decodeIdToken(idToken: string): GoogleIdToken | null {
   }
 }
 
+function timingSafeStringCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  const bufA = Buffer.from(a, "utf8");
+  const bufB = Buffer.from(b, "utf8");
+  return timingSafeEqual(bufA, bufB);
+}
+
+function invalidateStateCookie(response: NextResponse) {
+  response.cookies.set(OAUTH_STATE_COOKIE, "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+}
+
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const error = url.searchParams.get("error");
+  const state = url.searchParams.get("state");
+
+  const loginErrorUrl = new URL("/login?error=google", url.origin);
 
   if (error || !code) {
-    return NextResponse.redirect(new URL("/login?error=google", url.origin));
+    return NextResponse.redirect(loginErrorUrl);
+  }
+
+  // ── M-1: OAuth state verification ──
+  const cookieHeader = request.headers.get("cookie") || "";
+  const stateCookieMatch = cookieHeader.match(
+    /(?:^|;\s*)nabda_oauth_state=([^;]*)/
+  );
+  const expectedState = stateCookieMatch
+    ? decodeURIComponent(stateCookieMatch[1])
+    : null;
+
+  // Both state values must be present
+  if (!state || !expectedState) {
+    return NextResponse.redirect(loginErrorUrl);
+  }
+
+  // Timing-safe comparison
+  if (!timingSafeStringCompare(state, expectedState)) {
+    return NextResponse.redirect(loginErrorUrl);
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -50,7 +91,7 @@ export async function GET(request: Request) {
   const redirectUri = process.env.GOOGLE_REDIRECT_URI;
 
   if (!clientId || !clientSecret || !redirectUri) {
-    return NextResponse.redirect(new URL("/login?error=google", url.origin));
+    return NextResponse.redirect(loginErrorUrl);
   }
 
   try {
@@ -69,12 +110,12 @@ export async function GET(request: Request) {
     const tokenData = (await tokenRes.json()) as GoogleTokenResponse;
 
     if (!tokenRes.ok || !tokenData.id_token) {
-      return NextResponse.redirect(new URL("/login?error=google", url.origin));
+      return NextResponse.redirect(loginErrorUrl);
     }
 
     const payload = decodeIdToken(tokenData.id_token);
     if (!payload || !payload.email || payload.email_verified === false) {
-      return NextResponse.redirect(new URL("/login?error=google", url.origin));
+      return NextResponse.redirect(loginErrorUrl);
     }
 
     const email = payload.email.toLowerCase();
@@ -118,9 +159,10 @@ export async function GET(request: Request) {
       new URL(role === "admin" ? "/admin" : "/dashboard", url.origin)
     );
     response.cookies.set(SESSION_COOKIE_NAME, token, getSessionCookieOptions());
+    invalidateStateCookie(response);
     return response;
   } catch (err) {
     console.error("Google callback error:", err);
-    return NextResponse.redirect(new URL("/login?error=google", url.origin));
+    return NextResponse.redirect(loginErrorUrl);
   }
 }
