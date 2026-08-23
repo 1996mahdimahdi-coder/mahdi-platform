@@ -109,7 +109,7 @@ export async function GET(request: Request) {
           type: "no_capital",
           title: r.title,
           description: r.description.slice(0, 150),
-          href: `/no-capital/${r.slug}`,
+          href: `/no-capital/projects/${r.slug}`,
           score: 12 + titleScore,
         });
       }
