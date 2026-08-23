@@ -121,6 +121,7 @@ export const analysisResults = pgTable("analysis_results", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id, { onDelete: "set null" }),
   sessionId: text("session_id"),
+  shareToken: text("share_token").unique(),
   userCapital: integer("user_capital").notNull(),
   testAnswers: jsonb("test_answers").notNull(),
   topProjects: jsonb("top_projects").$type<{

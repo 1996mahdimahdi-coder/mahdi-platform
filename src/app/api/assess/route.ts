@@ -1,5 +1,6 @@
 ﻿import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { randomBytes } from "node:crypto";
 
 import { db } from "@/db";
 import {
@@ -25,13 +26,30 @@ import {
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
 import { loadActiveConsent } from "@/lib/noCapital/publicData";
+import {
+  getCsrfTokenFromRequest,
+  verifyCsrfToken,
+  csrfErrorResponse,
+} from "@/lib/csrf";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
     // ============================================================
-    // 0. قراءة بيانات الطلب
+    // 0. CSRF validation — double-submit cookie pattern.
+    //    The token must be present in either x-csrf-token header
+    //    or nabda_csrf cookie, and must be a valid HMAC-signed token.
+    // ============================================================
+
+    const csrfToken = await getCsrfTokenFromRequest(request);
+
+    if (!verifyCsrfToken(csrfToken)) {
+      return csrfErrorResponse();
+    }
+
+    // ============================================================
+    // 0.1 قراءة بيانات الطلب
     // ============================================================
 
     let body: Record<string, unknown>;
@@ -234,11 +252,11 @@ export async function POST(request: Request) {
 
     if (
       !Number.isFinite(capital) ||
-      capital <= 0 ||
+      capital < 10000 ||
       capital > 100_000_000
     ) {
       return invalidRequest(
-        "الرجاء إدخال رأس مال صحيح (بين 0 و 100 مليون دج)."
+        "الرجاء إدخال رأس مال صحيح (بين 10,000 و 100 مليون دج)."
       );
     }
 
@@ -648,6 +666,8 @@ export async function POST(request: Request) {
     // 10. حفظ نتيجة التحليل
     // ============================================================
 
+    const shareToken = randomBytes(24).toString("hex");
+
     const [savedRecord] =
       await db
         .insert(analysisResults)
@@ -655,6 +675,8 @@ export async function POST(request: Request) {
           userId,
 
           sessionId,
+
+          shareToken,
 
           userCapital:
             userInput.capital,
@@ -676,6 +698,8 @@ export async function POST(request: Request) {
 
       analysisId:
         savedRecord?.id ?? null,
+
+      shareToken,
 
       userId,
 

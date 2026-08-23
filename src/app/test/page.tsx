@@ -304,7 +304,7 @@ export default function TestPage() {
     if (
       customCapitalInput.trim() !== "" &&
       Number.isFinite(customValue) &&
-      customValue > 0
+      customValue >= 10000
     ) {
       return customValue;
     }
@@ -324,10 +324,10 @@ export default function TestPage() {
 
       if (
         !Number.isFinite(capital) ||
-        capital <= 0
+        capital < 10000
       ) {
         setErrorMsg(
-          "يرجى إدخال رأس مال صحيح أكبر من صفر."
+          "الحد الأدنى لرأس المال هو 10,000 دج (1 مليون سنتيم)."
         );
         return false;
       }
@@ -458,6 +458,22 @@ export default function TestPage() {
     }
 
     try {
+      let csrfToken = "";
+
+      try {
+        const csrfRes = await fetch("/api/csrf", {
+          method: "GET",
+          cache: "no-store",
+        });
+
+        if (csrfRes.ok) {
+          const csrfData = await csrfRes.json();
+          csrfToken = csrfData.token || "";
+        }
+      } catch {
+        // CSRF fetch failed — proceed without token (server will reject if required)
+      }
+
       const payload = {
         userId: sessionUser?.id ?? null,
 
@@ -497,6 +513,9 @@ export default function TestPage() {
           headers: {
             "Content-Type":
               "application/json",
+            ...(csrfToken
+              ? { "x-csrf-token": csrfToken }
+              : {}),
           },
           body: JSON.stringify(
             payload
@@ -782,7 +801,7 @@ export default function TestPage() {
                 <div className="relative">
                   <input
                     type="number"
-                    min="1"
+                    min="10000"
                     step="1"
                     inputMode="numeric"
                     placeholder="مثال: 85000"

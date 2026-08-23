@@ -12,6 +12,7 @@ import {
   RotateCcw,
   Download,
   Loader2,
+  Share2,
 } from "lucide-react";
 import { downloadResultsPdf } from "@/lib/pdfExport";
 import DownloadProgress from "@/components/DownloadProgress";
@@ -47,6 +48,7 @@ interface ProjectResult {
 interface ResultData {
   success?: boolean;
   analysisId?: number;
+  shareToken?: string;
   userInput?: {
     capital?: number;
     wilayaId?: number;
@@ -89,26 +91,63 @@ export default function ResultsPage() {
   });
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("nabda_last_result");
+    const loadResults = async () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const shareToken = urlParams.get("share");
 
-      if (!stored) {
+        if (shareToken) {
+          const res = await fetch(
+            `/api/share/${encodeURIComponent(shareToken)}`
+          );
+
+          if (!res.ok) {
+            router.push("/test");
+            return;
+          }
+
+          const data = await res.json();
+
+          if (!data.success || !data.result) {
+            router.push("/test");
+            return;
+          }
+
+          const mapped: ResultData = {
+            success: true,
+            shareToken,
+            userInput: data.result.testAnswers,
+            userCapital: data.result.userCapital,
+            top5Results: data.result.topProjects,
+          };
+
+          setResultData(mapped);
+          setConsentGranted(true);
+          return;
+        }
+
+        const stored = localStorage.getItem("nabda_last_result");
+
+        if (!stored) {
+          router.push("/test");
+          return;
+        }
+
+        const parsed: ResultData = JSON.parse(stored);
+
+        if (!parsed || !Array.isArray(parsed.top5Results)) {
+          router.push("/test");
+          return;
+        }
+
+        setResultData(parsed);
+      } catch (error) {
+        console.error("Failed to load results:", error);
         router.push("/test");
-        return;
       }
+    };
 
-      const parsed: ResultData = JSON.parse(stored);
-
-      if (!parsed || !Array.isArray(parsed.top5Results)) {
-        router.push("/test");
-        return;
-      }
-
-      setResultData(parsed);
-    } catch (error) {
-      console.error("Failed to load results:", error);
-      router.push("/test");
-    }
+    loadResults();
   }, [router]);
 
   const animateProgress = (
@@ -219,6 +258,33 @@ export default function ResultsPage() {
     downloadState.stage !== "complete" &&
     downloadState.stage !== "error";
 
+  const handleShare = async () => {
+    const token = resultData?.shareToken;
+    if (!token) return;
+
+    const url = `${window.location.origin}/results?share=${token}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "نتائجي — NABDA",
+          text: "شاهد نتائج تقييم مشروعني على منصة NABDA",
+          url,
+        });
+        return;
+      } catch {
+        // user cancelled or share failed — fall through to clipboard
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      alert("تم نسخ رابط المشاركة.");
+    } catch {
+      // clipboard API unavailable
+    }
+  };
+
   if (!resultData) {
     return (
       <div
@@ -296,6 +362,16 @@ export default function ResultsPage() {
               <Printer className="w-4 h-4" />
               طباعة
             </button>
+
+            {resultData?.shareToken && (
+              <button
+                onClick={handleShare}
+                className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold flex items-center justify-center gap-2"
+              >
+                <Share2 className="w-4 h-4" />
+                مشاركة
+              </button>
+            )}
 
             <button
               onClick={handleDownloadResultsPdf}
