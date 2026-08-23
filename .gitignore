@@ -36,3 +36,7 @@ restore-*.mjs
 *.encoding-backup
 src/db/seedData.test.ts
 src/lib/scoringEngine.fixed.ts
+
+# One-time seed scripts (contained hardcoded DB credentials — deleted H-1)
+insert-agriculture.ts
+scripts/
