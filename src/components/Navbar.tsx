@@ -16,8 +16,10 @@ import {
   FileText,
   Rocket,
   GraduationCap,
-  Layers
+  Layers,
+  Search
 } from "lucide-react";
+import GlobalSearch from "@/components/GlobalSearch";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -175,7 +177,8 @@ export default function Navbar() {
           </nav>
 
           {/* Right Actions / Auth */}
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-2">
+            <GlobalSearch />
             {user ? (
               <div className="flex items-center gap-2">
                 {user.role === "admin" && (
@@ -205,8 +208,9 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile: Login + Menu Toggle */}
+          {/* Mobile: Search + Login + Menu Toggle */}
           <div className="lg:hidden flex items-center gap-2">
+            <GlobalSearch />
             {!user && (
               <Link
                 href="/login"
@@ -229,6 +233,9 @@ export default function Navbar() {
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="font-official lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-2 shadow-lg">
+          <div className="px-3 py-2">
+            <GlobalSearch />
+          </div>
           <Link
             href="/test"
             onClick={() => setMobileMenuOpen(false)}
