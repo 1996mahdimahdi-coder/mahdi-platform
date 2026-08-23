@@ -8,6 +8,7 @@ import {
   scoringWeights,
   analysisResults,
   userProfiles,
+  wilayas,
 } from "@/db/schema";
 
 import {
@@ -292,6 +293,21 @@ export async function POST(request: Request) {
           .slice(0, 20)
       : [];
 
+    // Fetch areaType from wilayas table for location scoring
+    let areaType: string | undefined;
+    if (wilayaId) {
+      try {
+        const [wilayaRow] = await db
+          .select({ areaType: wilayas.areaType })
+          .from(wilayas)
+          .where(eq(wilayas.id, wilayaId))
+          .limit(1);
+        areaType = wilayaRow?.areaType ?? undefined;
+      } catch {
+        areaType = undefined;
+      }
+    }
+
     const userInput: UserAssessmentInput = {
       capital,
 
@@ -313,6 +329,8 @@ export async function POST(request: Request) {
         body.communeName,
         100
       ),
+
+      areaType,
 
       availableHours: pickEnum(
         body.availableHours,

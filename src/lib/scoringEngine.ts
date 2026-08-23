@@ -5,6 +5,7 @@
   communeId?: number;
   wilayaName?: string;
   communeName?: string;
+  areaType?: string; // urban, rural, coastal, desert — fetched from wilayas table
   availableHours: string; // أقل من ساعتين يوميًا, 2–4 ساعات, 4–6 ساعات, أكثر من 6 ساعات, دوام كامل
   skills: string[];
   preferredMode?: string; // بيع منتجات, تقديم خدمات, مشروع أونلاين, مشروع محلي, مشروع من المنزل, مشروع يحتاج محل, لا أعرف
@@ -181,11 +182,44 @@ export function evaluateProjectScore(
   }
 
   // 4. Location Score (max locationWeight e.g. 15)
-  let locationScore = Math.round(weights.locationWeight * 0.85); // base
-  if (project.targetArea === "جميع المناطق") {
+  let locationScore = weights.locationWeight; // default: full marks
+
+  if (project.onlinePossible) {
+    // Online projects are location-agnostic
+    locationScore = weights.locationWeight;
+    reasons.push("المشروع يتميز عبر الإنترنت ولا يعتمد على الموقع الجغرافي.");
+  } else if (project.targetArea === "جميع المناطق") {
     locationScore = weights.locationWeight;
     reasons.push("المشروع قابل للتطبيق في أي ولاية أو بلدية بالجزائر.");
-  } else if (user.wilayaName) {
+  } else if (project.targetArea === "مدن كبيرة") {
+    const area = user.areaType;
+    if (!area) {
+      // Missing data: safe fallback, no penalty
+      locationScore = weights.locationWeight;
+    } else if (area === "urban") {
+      locationScore = weights.locationWeight;
+      reasons.push("مشروع مدن كبيرة يتوافق مع موقعك الحضري.");
+    } else if (area === "coastal" || area === "rural") {
+      locationScore = Math.round(weights.locationWeight * 0.67);
+      reasons.push("مشروع مدن كبيرة لكن موقعك ساحلي/ريفي قد يقلل من توفر السوق المستهدف.");
+    } else {
+      // desert
+      locationScore = Math.round(weights.locationWeight * 0.47);
+      reasons.push("مشروع مدن كبيرة في منطقة صحراوية — توفر السوق المستهدف محدود.");
+    }
+  } else if (project.targetArea === "بلديات صحراوية") {
+    const area = user.areaType;
+    if (!area) {
+      locationScore = weights.locationWeight;
+    } else if (area === "desert") {
+      locationScore = weights.locationWeight;
+      reasons.push("مشروع مخصص للمناطق الصحراوية يتوافق مع موقعك.");
+    } else {
+      locationScore = Math.round(weights.locationWeight * 0.4);
+      reasons.push("مشروع مخصص للمناطق الصحراوية لكن موقعك خارج النطاق الموصى به.");
+    }
+  } else {
+    // Unknown targetArea: safe fallback, no penalty
     locationScore = weights.locationWeight;
   }
 
