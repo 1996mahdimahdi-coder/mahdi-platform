@@ -128,6 +128,7 @@ export type CourseItem = {
   title: string;
   summary: string;
   description?: string;
+  categoryId: number | null;
   level: string;
   durationMinutes: number;
   lessonsCount: number;
