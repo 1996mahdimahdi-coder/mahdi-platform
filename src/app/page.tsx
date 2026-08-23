@@ -13,8 +13,14 @@ import {
   Target,
   BarChart3,
   Rocket,
-  GraduationCap
+  GraduationCap,
 } from "lucide-react";
+import PlatformIcon from "@/components/PlatformIcon";
+
+const SOCIAL_LINKS = [
+  { label: "Facebook", href: "https://web.facebook.com/profile.php?id=61593142754403", platform: "facebook" },
+  { label: "Instagram", href: "https://www.instagram.com/nabda_2026/", platform: "instagram" },
+] as const;
 
 export default function HomePage() {
   return (
@@ -560,6 +566,35 @@ export default function HomePage() {
                 نعم، قاعدة بيانات NABDA تحتوي على 69 ولاية مع البلديات التابعة لها لتحديد نطاق الملاءمة الجغرافية والمنطقة (مدن كبرى، بلديات صحراوية، ساحلية، أو زراعية).
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Social Media */}
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white rounded-3xl border border-slate-200 p-8 sm:p-10 text-center space-y-6">
+          <div className="space-y-2">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
+              تابع NABDA على مواقع التواصل
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500">
+              انضم إلى مجتمعنا للحصول على نصائح عملية وأحدث المحتوى
+            </p>
+          </div>
+
+          <div className="flex items-center justify-center gap-4">
+            {SOCIAL_LINKS.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-slate-900 text-white text-sm font-extrabold hover:bg-slate-800 hover:scale-[1.03] active:scale-[0.98] transition-all"
+              >
+                <PlatformIcon platform={link.platform} size={20} />
+                {link.label}
+              </a>
+            ))}
           </div>
         </div>
       </section>
