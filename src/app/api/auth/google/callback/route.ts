@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { jwtVerify, createRemoteJWKSet, type JWTPayload } from "jose";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { users } from "@/db/schema";
@@ -12,7 +13,11 @@ import {
 export const dynamic = "force-dynamic";
 
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+const GOOGLE_JWKS_URL = new URL("https://www.googleapis.com/oauth2/v3/certs");
+const GOOGLE_ISSUERS = ["https://accounts.google.com", "accounts.google.com"];
 const OAUTH_STATE_COOKIE = "nabda_oauth_state";
+
+const googleJwks = createRemoteJWKSet(GOOGLE_JWKS_URL);
 
 type GoogleTokenResponse = {
   access_token?: string;
@@ -25,14 +30,18 @@ type GoogleIdToken = {
   email?: string;
   email_verified?: boolean;
   name?: string;
-};
+} & JWTPayload;
 
-function decodeIdToken(idToken: string): GoogleIdToken | null {
+async function verifyGoogleIdToken(
+  idToken: string,
+  clientId: string
+): Promise<GoogleIdToken | null> {
   try {
-    const parts = idToken.split(".");
-    if (parts.length !== 3) return null;
-    const payload = Buffer.from(parts[1], "base64url").toString("utf8");
-    return JSON.parse(payload) as GoogleIdToken;
+    const { payload } = await jwtVerify(idToken, googleJwks, {
+      issuer: GOOGLE_ISSUERS,
+      audience: clientId,
+    });
+    return payload as GoogleIdToken;
   } catch {
     return null;
   }
@@ -113,7 +122,8 @@ export async function GET(request: Request) {
       return NextResponse.redirect(loginErrorUrl);
     }
 
-    const payload = decodeIdToken(tokenData.id_token);
+    // ── M-2: Verify ID token signature (RS256), aud, iss, exp via Google JWKS ──
+    const payload = await verifyGoogleIdToken(tokenData.id_token, clientId);
     if (!payload || !payload.email || payload.email_verified === false) {
       return NextResponse.redirect(loginErrorUrl);
     }
