@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ShieldCheck, Sparkles } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "عن NABDA — منصة مساعدة رواد الأعمال في الجزائر",
+  description: "تعرف على NABDA، منصة تساعد رواد الأعمال على دراسة أفكار المشاريع واستخدام أدوات تحليل وتخطيط قبل اتخاذ قرار البدء.",
+};
 
 export default function AboutPage() {
   return (

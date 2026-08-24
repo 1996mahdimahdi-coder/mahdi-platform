@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Sparkles,
@@ -13,6 +14,11 @@ import {
   GraduationCap,
 } from "lucide-react";
 import ServiceOnboardingBanner from "@/components/ServiceOnboardingBanner";
+
+export const metadata: Metadata = {
+  title: "NABDA — اختبر مشروعك قبل ما تبدأ في الجزائر",
+  description: "منصة مجانية لاختبار ملاءمة مشروعك لوضعك المالي والسوق في الجزائر، مع أدوات تساعدك على حساب التكاليف والأرباح واكتشاف أفكار مناسبة لرأس مالك.",
+};
 
 export default function HomePage() {
   return (
