@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Sparkles, Check, ShieldCheck, Heart } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "الأسعار",
+  description: "منصة NABDA مجانية بالكامل — لا توجد اشتراكات أو رسوم خفية. استخدم جميع الأدوات والحسابات مجاناً.",
+};
 
 export default function FreePricingPage() {
   return (

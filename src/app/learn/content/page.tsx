@@ -1,7 +1,13 @@
-﻿import Link from "next/link";
+﻿import type { Metadata } from "next";
+import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { PLATFORM_GUIDES } from "@/lib/platformGuides";
 import PlatformIcon from "@/components/PlatformIcon";
+
+export const metadata: Metadata = {
+  title: "تعلم صناعة المحتوى",
+  description: "أدلة شاملة لصناعة المحتوى على منصات التواصل الاجتماعي — تعرّف على أي منصة تناسبك وكيف تبدأ.",
+};
 
 export default function LearnContentPage() {
   return (

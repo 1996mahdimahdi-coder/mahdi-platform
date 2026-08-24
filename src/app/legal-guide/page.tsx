@@ -2,7 +2,7 @@
 import { ExternalLink, AlertTriangle } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "الدليل القانوني — NABDA",
+  title: "الدليل القانوني",
   description: "دليل إرشادي للإجراءات القانونية: بطاقة المقاول الذاتي، السجل التجاري، والالتزامات الإدارية في الجزائر.",
 };
 

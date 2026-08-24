@@ -12,8 +12,8 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ platform: string }> }): Promise<Metadata> {
   const { platform } = await params;
   const g = PLATFORM_GUIDES.find((p) => p.slug === platform);
-  if (!g) return { title: "المنصة غير موجودة — NABDA" };
-  return { title: `دليل ${g.name} — NABDA`, description: g.tagline };
+  if (!g) return { title: "المنصة غير موجودة" };
+  return { title: `دليل ${g.name}`, description: g.tagline };
 }
 
 export default async function PlatformPage({ params }: { params: Promise<{ platform: string }> }) {

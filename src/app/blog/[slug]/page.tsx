@@ -76,12 +76,12 @@ async function getPost(slug: string) {
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await props.params;
   const post = await getPost(slug);
-  if (!post) return { title: "المقال غير موجود — NABDA" };
+  if (!post) return { title: "المقال غير موجود" };
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nabda-dz.vercel.app";
 
   return {
-    title: `${post.title} — NABDA`,
+    title: post.title,
     description: post.summary?.slice(0, 160) ?? post.title,
     openGraph: {
       title: post.title,
@@ -140,7 +140,7 @@ export default async function SingleBlogPostPage(props: { params: Promise<{ slug
             inLanguage: "ar",
             mainEntityOfPage: `https://nabda-dz.vercel.app/blog/${post.slug}`,
             publisher: { "@type": "Organization", name: "NABDA" },
-          }),
+          }).replace(/<\/script>/g, "<\\/script>"),
         }}
       />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-6">

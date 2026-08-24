@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "ولايات الجزائر والفرص المحلية — NABDA",
+  title: "ولايات الجزائر والفرص المحلية",
   description: "تصفح ولايات الجزائر ومعلوماتها لمساعدة رواد الأعمال على التفكير في اختيار موقع المشروع والسوق المحلي.",
 };
 

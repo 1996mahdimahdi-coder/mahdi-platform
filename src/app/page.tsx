@@ -23,6 +23,25 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <div className="space-y-16 pb-16">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "NABDA",
+            url: "https://nabda-dz.vercel.app",
+            description: "منصة مجانية لاختبار ملاءمة مشروعك في الجزائر",
+            inLanguage: "ar",
+            publisher: {
+              "@type": "Organization",
+              name: "NABDA",
+              url: "https://nabda-dz.vercel.app",
+              logo: "https://nabda-dz.vercel.app/icon.svg",
+            },
+          }).replace(/<\/script>/g, "<\\/script>"),
+        }}
+      />
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 text-white pt-16 pb-20 px-4 sm:px-6 lg:px-8">
         {/* Decorative Grid BG */}

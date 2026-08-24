@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "حاسبة الأرباح ونقطة التعادل — NABDA",
+  title: "حاسبة الأرباح ونقطة التعادل",
   description: "احسب الإيرادات والتكاليف والأرباح ونقطة التعادل لمشروعك باستخدام بياناتك الفعلية قبل اتخاذ قرار البدء.",
 };
 

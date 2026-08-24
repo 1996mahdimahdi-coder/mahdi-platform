@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "تصنيفات المشاريع — NABDA",
+  title: "تصنيفات المشاريع",
   description: "تصفح أفكار المشاريع حسب التصنيف، مثل المشاريع التجارية والخدماتية والمنزلية والرقمية وغيرها.",
 };
 

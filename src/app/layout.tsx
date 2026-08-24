@@ -8,7 +8,14 @@ import WelcomeBanner from "@/components/WelcomeBanner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "NABDA – قبل ما تبدأ مشروعك... اختبره",
+  metadataBase: new URL("https://nabda-dz.vercel.app"),
+  title: {
+    template: "%s — NABDA",
+    default: "NABDA — قبل ما تبدأ مشروعك... اختبره",
+  },
+  alternates: {
+    canonical: "/",
+  },
   description:
     "منصة NABDA تساعدك على اختبار مدى ملاءمة المشروع لوضعك المالي والشخصي والمحلي قبل أن تبدأ، وتقترح أفضل المشاريع المناسبة لرأس مالك ووقتك وموقعك في الجزائر.",
   keywords: [
@@ -24,7 +31,7 @@ export const metadata: Metadata = {
     "اختبار فكرة مشروع",
   ],
   openGraph: {
-    title: "NABDA – قبل ما تبدأ مشروعك... اختبره",
+    title: "NABDA — قبل ما تبدأ مشروعك... اختبره",
     images: [{ url: "https://nabda-dz.vercel.app/icon.svg", width: 512, height: 512, alt: "NABDA" }],
     description:
       "منصة NABDA تساعدك على اختبار مدى ملاءمة المشروع لوضعك المالي والشخصي والمحلي قبل أن تبدأ، وتقترح أفضل المشاريع المناسبة لرأس مالك ووقتك وموقعك في الجزائر.",
@@ -34,7 +41,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "NABDA – قبل ما تبدأ مشروعك... اختبره",
+    title: "NABDA — قبل ما تبدأ مشروعك... اختبره",
     description:
       "اختبر مدى ملاءمة مشروعك قبل أن تبدأ، واحصل على أفضل المشاريع المناسبة لرأس مالك وموقعك في الجزائر.",
   },

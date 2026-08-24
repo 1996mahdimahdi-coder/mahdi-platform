@@ -4,7 +4,7 @@ import AiChat from "@/components/ai/AiChat";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "مساعد NABDA الذكي — اسأل عن المشاريع والتسويق",
+  title: "مساعد NABDA الذكي",
   description: "اسأل مساعد NABDA الذكي عن المشاريع بدون رأس مال، التسويق، التعلم، وخطط العمل. مساعدتك مبنية على محتوى NABDA.",
   openGraph: {
     title: "مساعد NABDA الذكي",

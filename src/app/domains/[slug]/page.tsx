@@ -11,8 +11,8 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const d = getDomainBySlug(slug);
-  if (!d) return { title: "المجال غير موجود — NABDA" };
-  return { title: `${d.nameAr} — NABDA`, description: d.definition };
+  if (!d) return { title: "المجال غير موجود" };
+  return { title: d.nameAr, description: d.definition };
 }
 
 export default async function DomainPage({ params }: { params: Promise<{ slug: string }> }) {

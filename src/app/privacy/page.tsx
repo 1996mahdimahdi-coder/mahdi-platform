@@ -1,4 +1,11 @@
-﻿export default function PrivacyPage() {
+﻿import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "سياسة الخصوصية",
+  description: "تعرّف على كيفية جمع واستخدام وحماية بياناتك الشخصية عند استخدام منصة NABDA.",
+};
+
+export default function PrivacyPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6 text-xs sm:text-sm text-slate-700 leading-relaxed">

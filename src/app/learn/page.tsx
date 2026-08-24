@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BookOpen, Sparkles, Video, LayoutGrid, ArrowLeft } from "lucide-react";
 
 export const metadata = {
-  title: "تعلم وأنشئ محتوى | NABDA",
+  title: "تعلم وأنشئ محتوى",
   description: "دروس مجانية، أفكار محتوى، مكتبة hooks وفيديوهات لتطوير مشروعك.",
 };
 

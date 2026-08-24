@@ -1,16 +1,12 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { db } from "@/db";
 import { projects } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 const BASE = "https://nabda-dz.vercel.app";
 
-export async function generateMetadata(props: {
-  params: Promise<{ id: string }>;
-}): Promise<Metadata> {
-  const { id } = await props.params;
-
-  let project: { projectName?: string; description?: string; projectId?: string } | null = null;
+async function getProject(id: string) {
   try {
     const rows = await db
       .select({
@@ -21,17 +17,24 @@ export async function generateMetadata(props: {
       .from(projects)
       .where(eq(projects.projectId, id))
       .limit(1);
-    project = rows[0] ?? null;
+    return rows[0] ?? null;
   } catch {
-    project = null;
+    return null;
   }
+}
+
+export async function generateMetadata(props: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await props.params;
+  const project = await getProject(id);
 
   if (!project) {
-    return { title: "المشروع غير موجود — NABDA" };
+    return { title: "المشروع غير موجود" };
   }
 
   return {
-    title: `${project.projectName} — NABDA`,
+    title: project.projectName,
     description: (project.description ?? "").slice(0, 160),
     alternates: { canonical: `${BASE}/projects/${project.projectId}` },
     openGraph: {
@@ -45,6 +48,9 @@ export async function generateMetadata(props: {
   };
 }
 
-export default function ProjectLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+export default async function ProjectLayout(props: { children: React.ReactNode; params: Promise<{ id: string }> }) {
+  const { id } = await props.params;
+  const project = await getProject(id);
+  if (!project) notFound();
+  return <>{props.children}</>;
 }

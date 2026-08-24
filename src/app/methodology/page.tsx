@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Users,
@@ -47,6 +48,11 @@ const METHODOLOGY_POINTS = [
     text: "البيانات غير الموثقة لا تظهر أبدًا كأرقام رسمية. نعرض الصيغة الصريحة: \"لا تتوفر حاليًا بيانات رسمية موثقة قابلة للتحقق.\"",
   },
 ];
+
+export const metadata: Metadata = {
+  title: "منهجية البيانات",
+  description: "تعرّف على كيف تُجمع وتُتحقق بيانات المشاريع والمدن والولايات في منصة NABDA من مصادر رسمية موثوقة.",
+};
 
 export default function MethodologyPage() {
   return (
