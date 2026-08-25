@@ -190,17 +190,19 @@ export async function GET(request: Request) {
     const name = (payload.name || email.split("@")[0]).slice(0, 80);
 
     const existing = await db
-      .select({ id: users.id, role: users.role })
+      .select({ id: users.id, role: users.role, tokenVersion: users.tokenVersion })
       .from(users)
       .where(eq(users.email, email))
       .limit(1);
 
     let userId: number;
     let role: string;
+    let tokenVersion: number;
 
     if (existing.length > 0) {
       userId = existing[0].id;
       role = existing[0].role;
+      tokenVersion = existing[0].tokenVersion;
     } else {
       const adminEmail = (process.env.ADMIN_EMAIL || "").toLowerCase();
       role = adminEmail && email === adminEmail ? "admin" : "user";
@@ -219,9 +221,10 @@ export async function GET(request: Request) {
         .returning();
 
       userId = created.id;
+      tokenVersion = created.tokenVersion;
     }
 
-    const token = createSessionToken({ id: userId, role });
+    const token = createSessionToken({ id: userId, role, tokenVersion });
 
     // ── DIAG: success ──
     console.error(

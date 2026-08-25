@@ -96,6 +96,7 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   role: text("role").notNull().default("user"), // user, admin
   phone: text("phone"),
+  tokenVersion: integer("token_version").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

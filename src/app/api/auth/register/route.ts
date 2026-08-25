@@ -190,6 +190,7 @@ export async function POST(request: Request) {
     const token = createSessionToken({
       id: created.id,
       role: created.role,
+      tokenVersion: created.tokenVersion,
     });
 
     const response = NextResponse.json(

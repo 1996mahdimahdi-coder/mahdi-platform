@@ -18,6 +18,7 @@ export type SessionPayload = {
   version: 1;
   userId: number;
   role: string;
+  tokenVersion: number;
   issuedAt: number;
   expiresAt: number;
 };
@@ -46,6 +47,7 @@ function signValue(value: string): string {
 export function createSessionToken(user: {
   id: number;
   role: string;
+  tokenVersion: number;
 }): string {
   const now = Math.floor(Date.now() / 1000);
 
@@ -53,6 +55,7 @@ export function createSessionToken(user: {
     version: 1,
     userId: user.id,
     role: user.role,
+    tokenVersion: user.tokenVersion,
     issuedAt: now,
     expiresAt:
       now + SESSION_MAX_AGE_SECONDS,
@@ -157,12 +160,21 @@ export async function getSession():
       .select({
         id: users.id,
         role: users.role,
+        tokenVersion: users.tokenVersion,
       })
       .from(users)
       .where(eq(users.id, verified.userId))
       .limit(1);
 
     if (!user || user.role === "disabled") {
+      return null;
+    }
+
+    // Token revocation: if the tokenVersion in the token does not match
+    // the current tokenVersion in the database, the session was revoked
+    // (e.g. user logged out). All tokens issued before the logout are
+    // now invalid.
+    if (user.tokenVersion !== verified.tokenVersion) {
       return null;
     }
 

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -23,13 +23,9 @@ const NO_STORE_HEADERS = {
   "Cache-Control": "private, no-store",
 };
 
-const EMAIL_PATTERN =
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function jsonError(
-  error: string,
-  status: number
-) {
+function jsonError(error: string, status: number) {
   return NextResponse.json(
     { success: false, error },
     {
@@ -40,27 +36,45 @@ function jsonError(
 }
 
 export async function POST(request: Request) {
+  const loginDiagStartedAt = Date.now();
+  const loginDiag = (stage: string) =>
+    console.log(
+      `[LOGIN_DIAG] +${Date.now() - loginDiagStartedAt}ms ${stage}`
+    );
+
+  loginDiag("POST:start");
+  loginDiag("csrfGuard:start");
   const csrfErr = await csrfGuard(request);
-  if (csrfErr) return csrfErr;
+  loginDiag("csrfGuard:done");
+  if (csrfErr) {
+    loginDiag("csrfGuard:rejected");
+    return csrfErr;
+  }
 
   // H1 rate limiting: per-IP first so even malformed floods are bounded.
   const ipLimit = RATE_LIMITS.login.ip;
 
+  loginDiag("rateLimit:ip:start");
   const ipCheck = await checkRateLimit({
     key: clientIpKey(request, "login"),
     limit: ipLimit.limit,
     windowSeconds: ipLimit.windowSeconds,
   });
+  loginDiag("rateLimit:ip:done");
 
   if (!ipCheck.allowed) {
+    loginDiag("rateLimit:ip:rejected");
     return rateLimitExceededResponse(ipCheck);
   }
 
   let body: unknown;
 
   try {
+    loginDiag("request.json:start");
     body = await request.json();
+    loginDiag("request.json:done");
   } catch {
+    loginDiag("request.json:error");
     return jsonError(
       "\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0637\u0644\u0628 \u063a\u064a\u0631 \u0635\u0627\u0644\u062d\u0629.",
       400
@@ -97,10 +111,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (
-    email.length > 254 ||
-    !EMAIL_PATTERN.test(email)
-  ) {
+  if (email.length > 254 || !EMAIL_PATTERN.test(email)) {
     return jsonError(
       "\u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a \u063a\u064a\u0631 \u0635\u0627\u0644\u062d.",
       400
@@ -119,31 +130,41 @@ export async function POST(request: Request) {
   // network. The email is normalized (trim + lowercase) before use.
   const emailLimit = RATE_LIMITS.login.email;
 
+  loginDiag("rateLimit:email:start");
   const emailCheck = await checkRateLimit({
     key: `login:email:${normalizeEmail(email)}`,
     limit: emailLimit.limit,
     windowSeconds: emailLimit.windowSeconds,
   });
+  loginDiag("rateLimit:email:done");
 
   if (!emailCheck.allowed) {
+    loginDiag("rateLimit:email:rejected");
     return rateLimitExceededResponse(emailCheck);
   }
 
   try {
+    loginDiag("db.users:start");
     const userRows = await db
       .select()
       .from(users)
       .where(eq(users.email, email))
       .limit(1);
+    loginDiag("db.users:done");
 
     const user = userRows[0];
 
-    const passwordMatches = user
-      ? await bcrypt.compare(
-          password,
-          user.passwordHash
-        )
-      : false;
+    let passwordMatches = false;
+    if (user) {
+      loginDiag("bcrypt.compare:start");
+      passwordMatches = await bcrypt.compare(
+        password,
+        user.passwordHash
+      );
+      loginDiag("bcrypt.compare:done");
+    } else {
+      loginDiag("bcrypt.compare:skipped-no-user");
+    }
 
     if (
       !user ||
@@ -156,10 +177,13 @@ export async function POST(request: Request) {
       );
     }
 
+    loginDiag("createSessionToken:start");
     const token = createSessionToken({
       id: user.id,
       role: user.role,
+      tokenVersion: user.tokenVersion,
     });
+    loginDiag("createSessionToken:done");
 
     const response = NextResponse.json(
       {
@@ -183,9 +207,10 @@ export async function POST(request: Request) {
       getSessionCookieOptions()
     );
 
+    loginDiag("POST:success");
     return response;
-  } catch (error) {
-    console.error("Login error:", error);
+  } catch {
+    loginDiag("login:error");
 
     return jsonError(
       "\u062d\u062f\u062b \u062e\u0637\u0623 \u062f\u0627\u062e\u0644\u064a. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649 \u0644\u0627\u062d\u0642\u064b\u0627.",
@@ -193,3 +218,4 @@ export async function POST(request: Request) {
     );
   }
 }
+
