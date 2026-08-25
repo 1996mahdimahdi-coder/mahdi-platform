@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import VisitorOnboarding from "@/components/VisitorOnboarding";
 import WelcomeBanner from "@/components/WelcomeBanner";
+import FloatingChatButton from "@/components/ai/FloatingChatButton";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -73,6 +74,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
         {children}</main>
         <Footer />
+        <FloatingChatButton />
       </body>
     </html>
   );
