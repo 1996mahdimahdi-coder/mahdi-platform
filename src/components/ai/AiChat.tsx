@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Send, Loader2, MessageCircle, Sparkles, Trash2, ExternalLink } from "lucide-react";
+import { getCsrfToken } from "@/lib/clientCsrf";
 
 type Source = { type: string; title: string; slug?: string };
 
@@ -140,11 +141,19 @@ export default function AiChat({ context, suggestedPrompts, compact = false }: A
         content: m.content,
       }));
 
+      const csrfToken = await getCsrfToken();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60_000);
       const res = await fetch("/api/ai/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
+        },
         body: JSON.stringify({ messages: history, context }),
+        signal: controller.signal,
       });
+      clearTimeout(timeoutId);
 
       const data = await res.json();
 
@@ -165,10 +174,14 @@ export default function AiChat({ context, suggestedPrompts, compact = false }: A
         isLoading: false,
       }));
     } catch (err) {
+      let msg = err instanceof Error ? err.message : "حدث خطأ غير متوقع";
+      if (msg === "abort" || err instanceof DOMException) {
+        msg = "استغرق الاتصال وقتاً أطول من المعتاد. حاول مرة أخرى.";
+      }
       setState((prev) => ({
         ...prev,
         isLoading: false,
-        error: err instanceof Error ? err.message : "حدث خطأ غير متوقع",
+        error: msg,
       }));
     }
   }, [state.messages, state.isLoading, context]);
