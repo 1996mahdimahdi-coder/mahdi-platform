@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+﻿import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -14,9 +14,9 @@ const cspHeader = [
   `script-src 'self' 'unsafe-inline' https://*.effectivecpmnetwork.com${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
-  "img-src 'self' data: blob: https://*.effectivecpmnetwork.com",
+  "img-src 'self' data: blob: https://*.effectivecpmnetwork.com https://consumeririssalary.com https://protrafficinspector.com",
   // preconnect links to the Google Fonts hosts live in src/app/layout.tsx
-  "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://*.effectivecpmnetwork.com",
+  "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://*.effectivecpmnetwork.com https://consumeririssalary.com https://protrafficinspector.com",
   "frame-ancestors 'none'",
   "frame-src https://*.effectivecpmnetwork.com https://cdn.cloudvideosa.com https://www.youtube.com https://www.youtube-nocookie.com",
   "base-uri 'self'",
@@ -44,3 +44,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
