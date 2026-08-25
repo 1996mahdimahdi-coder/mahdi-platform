@@ -165,13 +165,6 @@ export default function Navbar() {
               <FileText className="w-4 h-4 text-slate-500" />
               المقالات
             </Link>
-            <Link
-              href="/ai"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-fuchsia-600 text-white font-bold hover:opacity-90 transition-opacity"
-            >
-              <Sparkles className="w-4 h-4" />
-              المساعد الذكي
-            </Link>
 
 
           </nav>
@@ -323,14 +316,6 @@ export default function Navbar() {
           >
             <FileText className="w-4 h-4 text-slate-500" />
             المقالات والنصائح
-          </Link>
-          <Link
-            href="/ai"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-indigo-700 font-bold"
-          >
-            <Sparkles className="w-4 h-4" />
-            المساعد الذكي
           </Link>
 
 
