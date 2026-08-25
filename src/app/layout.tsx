@@ -67,7 +67,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <WelcomeBanner />
         <main className="flex-1">        <div id="container-0cebd69048a8ad4484c12999507dd876"></div>
         <Script
-          src="https://pl30900770.effectivecpmnetwork.com/0cebd69048a8ad4484c12999507dd876/invoke.js"
+          src="https://pl30900770.profitableratecpmnetwork.com/0cebd69048a8ad4484c12999507dd876/invoke.js"
           strategy="lazyOnload"
           async
           data-cfasync="false"
