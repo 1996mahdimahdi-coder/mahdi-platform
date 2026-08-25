@@ -114,11 +114,29 @@ export function csrfErrorResponse() {
  * Server-side CSRF guard for state-changing endpoints.
  * Call at the top of POST/PUT/DELETE/PATCH handlers.
  * Returns null on success, or a NextResponse 403 error on failure.
+ *
+ * Enforcement rules:
+ *   - Cookie present + header missing  → 403
+ *   - Cookie present + header wrong    → 403
+ *   - Cookie present + header valid    → pass
+ *   - Cookie missing + header valid    → pass
+ *   - Cookie missing + header missing  → 403
  */
 export async function csrfGuard(
   request: Request
 ): Promise<NextResponse | null> {
-  const token = await getCsrfTokenFromRequest(request);
+  const cookieHeader = request.headers.get("cookie") || "";
+  const hasCookie = new RegExp(
+    `(?:^|;\\s*)${CSRF_COOKIE}=[^;]`
+  ).test(cookieHeader);
+
+  const headerToken = request.headers.get(CSRF_HEADER);
+
+  if (hasCookie && !headerToken) {
+    return csrfErrorResponse();
+  }
+
+  const token = headerToken || (await getCsrfTokenFromRequest(request));
   if (!token || !verifyCsrfToken(token)) {
     return csrfErrorResponse();
   }
