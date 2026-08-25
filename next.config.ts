@@ -6,9 +6,9 @@ const isDev = process.env.NODE_ENV === "development";
 // Follows the official Next.js "Without Nonces" pattern (static generation is
 // used across the app, and nonce-based CSP would force every page to render
 // dynamically). 'unsafe-inline' is required by the Next.js App Router for its
-// inline bootstrap/RSC scripts and inline style attributes. React's dev
-// overlay needs 'unsafe-eval' in development only; it is never shipped in
-// production. No wildcard sources are used.
+// inline bootstrap/RSC scripts and inline style attributes. React's dev overlay
+// needs 'unsafe-eval' in development only; it is never shipped in production.
+// No wildcard sources are used.
 const cspHeader = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline' https://*.effectivecpmnetwork.com${isDev ? " 'unsafe-eval'" : ""}`,
@@ -16,7 +16,7 @@ const cspHeader = [
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://*.effectivecpmnetwork.com https://consumeririssalary.com https://protrafficinspector.com https://cdn.storageimagedisplay.com https://furiousexpansion.com",
   // preconnect links to the Google Fonts hosts live in src/app/layout.tsx
-  "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://*.effectivecpmnetwork.com https://consumeririssalary.com https://protrafficinspector.com https://furiousexpansion.com",
+  "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://*.effectivecpmnetwork.com https://consumeririssalary.com https://protrafficinspector.com https://furiousexpansion.com https://sleepoverlimitprofound.com",
   "frame-ancestors 'none'",
   "frame-src https://*.effectivecpmnetwork.com https://cdn.cloudvideosa.com https://www.youtube.com https://www.youtube-nocookie.com",
   "base-uri 'self'",
