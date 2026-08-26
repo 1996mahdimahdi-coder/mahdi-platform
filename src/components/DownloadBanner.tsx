@@ -8,10 +8,22 @@ export default function DownloadBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    setVisible(!isCapacitor());
+    setVisible(true);
   }, []);
 
   if (!visible) return null;
+
+  const handleDownload = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!isCapacitor()) return;
+
+    e.preventDefault();
+    import("@/lib/nativeDownload").then(({ default: NativeDownload }) => {
+      NativeDownload.download({
+        url: new URL("/downloads/nabda-dz.apk", window.location.origin).href,
+        filename: "nabda-dz.apk",
+      });
+    });
+  };
 
   return (
     <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -33,6 +45,7 @@ export default function DownloadBanner() {
         <a
           href="/downloads/nabda-dz.apk"
           download="nabda-dz.apk"
+          onClick={handleDownload}
           className="shrink-0 inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-fuchsia-600 text-white font-extrabold text-base shadow-xl shadow-indigo-900/30 hover:shadow-indigo-900/50 hover:scale-[1.02] active:scale-[0.98] transition-all"
         >
           <Download className="w-5 h-5" />
