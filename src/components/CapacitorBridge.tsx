@@ -23,9 +23,10 @@ export default function CapacitorBridge() {
       fetch("/api/auth/config", { cache: "no-store" })
         .then((r) => r.json())
         .then((config) => {
-          if (config.googleClientId) {
+          const androidId = config.googleAndroidClientId || config.googleClientId;
+          if (androidId) {
             SocialLogin.initialize({
-              google: { webClientId: config.googleClientId },
+              google: { webClientId: androidId },
             });
           }
         })

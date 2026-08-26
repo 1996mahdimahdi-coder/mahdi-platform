@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const googleClientId = process.env.GOOGLE_CLIENT_ID || "";
+  const googleAndroidClientId = process.env.GOOGLE_ANDROID_CLIENT_ID || "";
 
   const googleEnabled = Boolean(
     googleClientId &&
@@ -14,5 +15,6 @@ export async function GET() {
   return NextResponse.json({
     googleEnabled,
     googleClientId: googleEnabled ? googleClientId : "",
+    googleAndroidClientId,
   });
 }
