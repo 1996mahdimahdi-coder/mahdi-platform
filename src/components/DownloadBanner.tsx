@@ -11,6 +11,7 @@ export default function DownloadBanner() {
     setVisible(true);
   }, []);
 
+  if (isCapacitor()) return null;
   if (!visible) return null;
 
   const handleDownload = (e: React.MouseEvent<HTMLAnchorElement>) => {
