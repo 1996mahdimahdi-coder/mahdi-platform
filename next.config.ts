@@ -40,7 +40,18 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  headers: () => [{ source: "/:path*", headers: securityHeaders }],
+  headers: () => [
+    { source: "/:path*", headers: securityHeaders },
+    {
+      source: "/downloads/:path*.apk",
+      headers: [
+        {
+          key: "Content-Disposition",
+          value: 'attachment; filename="nabda-dz.apk"',
+        },
+      ],
+    },
+  ],
 };
 
 export default nextConfig;
