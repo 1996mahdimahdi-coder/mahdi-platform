@@ -10,6 +10,12 @@
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/browser": "^8.0.4",
+    "@capacitor/cli": "^8.5.0",
+    "@capacitor/core": "^8.5.0",
+    "@capgo/capacitor-social-login": "^8.4.5",
     "@types/bcryptjs": "^2.4.6",
     "arabic-persian-reshaper": "^1.0.1",
     "bcryptjs": "^3.0.3",
@@ -35,6 +41,7 @@
     "drizzle-kit": "0.31.10",
     "eslint": "9.39.4",
     "eslint-config-next": "16.2.6",
+    "playwright": "^1.62.1",
     "postcss": "8.5.26",
     "tailwindcss": "4.1.17",
     "tsx": "^4.23.12",

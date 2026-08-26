@@ -1,5 +1,4 @@
 import { timingSafeEqual } from "node:crypto";
-import { jwtVerify, createRemoteJWKSet, type JWTPayload } from "jose";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { users } from "@/db/schema";
@@ -9,15 +8,12 @@ import {
   getSessionCookieOptions,
   SESSION_COOKIE_NAME,
 } from "@/lib/auth";
+import { verifyGoogleIdToken, type GoogleIdTokenPayload } from "@/lib/google-verify";
 
 export const dynamic = "force-dynamic";
 
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
-const GOOGLE_JWKS_URL = new URL("https://www.googleapis.com/oauth2/v3/certs");
-const GOOGLE_ISSUERS = ["https://accounts.google.com", "accounts.google.com"];
 const OAUTH_STATE_COOKIE = "nabda_oauth_state";
-
-const googleJwks = createRemoteJWKSet(GOOGLE_JWKS_URL);
 
 type GoogleTokenResponse = {
   access_token?: string;
@@ -25,28 +21,6 @@ type GoogleTokenResponse = {
   error?: string;
   error_description?: string;
 };
-
-type GoogleIdToken = {
-  sub: string;
-  email?: string;
-  email_verified?: boolean;
-  name?: string;
-} & JWTPayload;
-
-async function verifyGoogleIdToken(
-  idToken: string,
-  clientId: string
-): Promise<GoogleIdToken | null> {
-  try {
-    const { payload } = await jwtVerify(idToken, googleJwks, {
-      issuer: GOOGLE_ISSUERS,
-      audience: clientId,
-    });
-    return payload as GoogleIdToken;
-  } catch {
-    return null;
-  }
-}
 
 function timingSafeStringCompare(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
@@ -170,7 +144,7 @@ export async function GET(request: Request) {
     }
 
     // ── M-2: Verify ID token signature (RS256), aud, iss, exp via Google JWKS ──
-    const payload = await verifyGoogleIdToken(tokenData.id_token, clientId);
+    const payload: GoogleIdTokenPayload | null = await verifyGoogleIdToken(tokenData.id_token, clientId);
 
     // ── DIAG: Path 6 — id_token verification / email validation failed ──
     if (!payload || !payload.email || payload.email_verified === false) {

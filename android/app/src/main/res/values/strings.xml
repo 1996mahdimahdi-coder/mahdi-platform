@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">NABDA</string>
+    <string name="title_activity_main">NABDA</string>
+    <string name="package_name">dz.nabda.app</string>
+    <string name="custom_url_scheme">dz.nabda.app</string>
+</resources>
