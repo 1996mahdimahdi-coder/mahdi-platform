@@ -55,6 +55,7 @@ type AdminConfig = {
   validate?: (body: Record<string, unknown>) => string | null;
   create?: (body: Record<string, unknown>) => Record<string, unknown>;
   update?: (body: Record<string, unknown>) => Record<string, unknown>;
+  afterCreate?: (created: any) => Promise<void>;
 };
 
 function badRequest(message: string) {
@@ -134,6 +135,11 @@ export function createAdminRoutes(config: AdminConfig) {
       const values = config.create(record);
       const [created] = (await db.insert(table).values(values).returning()) as any[];
       if (!created) return internalError(`${tableName} create`, new Error("no row returned"));
+      if (config.afterCreate) {
+        config.afterCreate(created).catch((e: unknown) =>
+          console.error(`afterCreate hook error for ${tableName}:`, e)
+        );
+      }
       return NextResponse.json(
         { success: true, item: serializeRow(created) },
         { headers: PRIVATE_NO_STORE_HEADERS }

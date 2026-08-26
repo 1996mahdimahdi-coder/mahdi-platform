@@ -15,6 +15,66 @@ function isInternalLink(href: string): boolean {
   }
 }
 
+async function setupPushNotifications() {
+  try {
+    const { PushNotifications } = await import(
+      "@capacitor/push-notifications"
+    );
+
+    const permResult = await PushNotifications.requestPermissions();
+    if (permResult.receive !== "granted") {
+      return;
+    }
+
+    await PushNotifications.register();
+
+    PushNotifications.addListener("registration", async (token) => {
+      console.info("[Push] Registration token obtained");
+      try {
+        const { getCsrfToken } = await import("@/lib/clientCsrf");
+        const csrf = await getCsrfToken();
+        await fetch("/api/push/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(csrf ? { "x-csrf-token": csrf } : {}),
+          },
+          body: JSON.stringify({ token: token.value, platform: "android" }),
+          credentials: "same-origin",
+        });
+        console.info("[Push] Token sent to server");
+      } catch (e) {
+        console.error("[Push] Failed to send token:", e);
+      }
+    });
+
+    PushNotifications.addListener("registrationError", (err) => {
+      console.error("[Push] Registration failed:", err.error);
+    });
+
+    PushNotifications.addListener(
+      "pushNotificationReceived",
+      (notification) => {
+        console.info("[Push] Notification received:", notification.title);
+      }
+    );
+
+    PushNotifications.addListener(
+      "pushNotificationActionPerformed",
+      (action) => {
+        const data = action.notification.data;
+        console.info("[Push] Notification tapped:", data);
+        // TODO: deep link based on data.type + data.targetId
+        if (data?.url) {
+          window.location.href = data.url;
+        }
+      }
+    );
+  } catch (e) {
+    console.error("[Push] Setup failed:", e);
+  }
+}
+
 export default function CapacitorBridge() {
   useEffect(() => {
     if (!isCapacitor()) return;
@@ -41,6 +101,8 @@ export default function CapacitorBridge() {
         }
       });
     });
+
+    setupPushNotifications();
 
     const originalOpen = window.open;
     window.open = function (

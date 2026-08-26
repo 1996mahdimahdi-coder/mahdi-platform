@@ -1,6 +1,7 @@
 import { desc } from "drizzle-orm";
 import { courses } from "@/db/schema";
 import { createAdminRoutes } from "@/lib/noCapital/adminHandlers";
+import { notifyNewCourse } from "@/lib/push";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,11 @@ const routes = createAdminRoutes({
     published: body.published === true ? true : false,
     updatedAt: new Date(),
   }),
+  afterCreate: async (created) => {
+    if (created.published) {
+      await notifyNewCourse({ slug: created.slug, title: created.title });
+    }
+  },
 });
 
 export async function GET() {

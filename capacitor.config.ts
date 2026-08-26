@@ -38,6 +38,9 @@ const config: CapacitorConfig = {
       },
       logLevel: 1,
     },
+    PushNotifications: {
+      presentationOptions: ["badge", "alert", "sound"],
+    },
   },
 };
 
