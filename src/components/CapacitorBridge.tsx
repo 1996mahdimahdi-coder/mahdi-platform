@@ -15,10 +15,31 @@ function isInternalLink(href: string): boolean {
   }
 }
 
+async function handleNotificationUrl(url: string) {
+  if (url && url.startsWith("/")) {
+    window.location.href = url;
+  }
+}
+
 async function setupPushNotifications() {
   try {
     const { PushNotifications } = await import(
       "@capacitor/push-notifications"
+    );
+
+    // Register action listener FIRST — before any async permission/register
+    // calls. On Android cold start, the native plugin queues the intent and
+    // replays it once the listener is attached.  Placing this at the top
+    // minimises the window where the event could be missed.
+    await PushNotifications.addListener(
+      "pushNotificationActionPerformed",
+      (action) => {
+        const data = action.notification.data;
+        console.info("[Push] Notification tapped:", data);
+        if (data?.url) {
+          handleNotificationUrl(data.url);
+        }
+      }
     );
 
     const permResult = await PushNotifications.requestPermissions();
@@ -58,18 +79,6 @@ async function setupPushNotifications() {
         console.info("[Push] Notification received:", notification.title);
       }
     );
-
-    PushNotifications.addListener(
-      "pushNotificationActionPerformed",
-      (action) => {
-        const data = action.notification.data;
-        console.info("[Push] Notification tapped:", data);
-        // TODO: deep link based on data.type + data.targetId
-        if (data?.url) {
-          window.location.href = data.url;
-        }
-      }
-    );
   } catch (e) {
     console.error("[Push] Setup failed:", e);
   }
@@ -83,9 +92,9 @@ export default function CapacitorBridge() {
       fetch("/api/auth/config", { cache: "no-store" })
         .then((r) => r.json())
         .then((config) => {
-          if (config.googleClientId) {
+          if (config.googleAndroidClientId) {
             SocialLogin.initialize({
-              google: { webClientId: config.googleClientId },
+              google: { webClientId: config.googleAndroidClientId },
             });
           }
         })
@@ -100,6 +109,26 @@ export default function CapacitorBridge() {
           App.exitApp();
         }
       });
+
+      // Cold-start fallback: if the app was launched by tapping a push
+      // notification while fully killed, the native intent URL is returned
+      // here.  The pushNotificationActionPerformed listener (registered in
+      // setupPushNotifications) normally handles this, but as a safety net
+      // we also check getLaunchUrl().
+      App.getLaunchUrl().then((launch) => {
+        if (launch?.url) {
+          try {
+            const u = new URL(launch.url, window.location.origin);
+            if (u.hostname === NABDA_HOST || u.hostname === window.location.hostname) {
+              if (u.pathname !== window.location.pathname) {
+                handleNotificationUrl(u.pathname + u.search + u.hash);
+              }
+            }
+          } catch {
+            // Not a valid URL — ignore
+          }
+        }
+      }).catch(() => {});
     });
 
     setupPushNotifications();
