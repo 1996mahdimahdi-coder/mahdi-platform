@@ -93,8 +93,8 @@ export default function LoginPage() {
         </div>
         {error && <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" dir="ltr" placeholder="admin@nabda.dz" className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm" />
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" dir="ltr" placeholder="كلمة المرور" className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm" />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" dir="ltr" placeholder="أدخل بريدك الإلكتروني" className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm" />
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" dir="ltr" placeholder="أدخل كلمة المرور" className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm" />
           <button type="submit" disabled={loading} className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white disabled:opacity-60">
             {loading ? "جارٍ تسجيل الدخول..." : "تسجيل الدخول"}
           </button>

@@ -133,12 +133,21 @@ export default function DashboardPage() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      const csrfRes = await fetch("/api/csrf", { credentials: "include", cache: "no-store" });
+      const csrfData = await csrfRes.json();
+      if (csrfRes.ok && csrfData?.token) {
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          credentials: "include",
+          headers: { "x-csrf-token": csrfData.token },
+        });
+      }
     } catch (e) {
       console.error(e);
     }
     localStorage.removeItem("nabda_user");
-    router.push("/");
+    localStorage.removeItem("nabda_last_result");
+    window.location.replace("/login");
   };
 
   if (!user || loading) {
