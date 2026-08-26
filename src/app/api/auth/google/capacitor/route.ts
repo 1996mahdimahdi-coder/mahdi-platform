@@ -32,20 +32,20 @@ export async function POST(request: Request) {
     );
   }
 
-  const audience = process.env.GOOGLE_CLIENT_ID;
+  const audience = process.env.GOOGLE_ANDROID_CLIENT_ID;
 
   if (!audience) {
     return NextResponse.json(
-      { success: false, error: "Google login is not configured." },
+      { success: false, error: "Google Android login is not configured. Add GOOGLE_ANDROID_CLIENT_ID to Vercel env." },
       { status: 503 }
     );
   }
 
-  const payload = await verifyGoogleIdToken(idToken, audience);
+  const { payload, error: verifyError } = await verifyGoogleIdToken(idToken, audience);
 
   if (!payload || !payload.email || payload.email_verified === false) {
     return NextResponse.json(
-      { success: false, error: "Invalid Google token." },
+      { success: false, error: "Invalid Google token.", details: verifyError || "email_missing_or_unverified" },
       { status: 401 }
     );
   }

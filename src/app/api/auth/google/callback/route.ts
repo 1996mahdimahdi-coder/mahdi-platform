@@ -144,7 +144,7 @@ export async function GET(request: Request) {
     }
 
     // ── M-2: Verify ID token signature (RS256), aud, iss, exp via Google JWKS ──
-    const payload: GoogleIdTokenPayload | null = await verifyGoogleIdToken(tokenData.id_token, clientId);
+    const { payload } = await verifyGoogleIdToken(tokenData.id_token, clientId);
 
     // ── DIAG: Path 6 — id_token verification / email validation failed ──
     if (!payload || !payload.email || payload.email_verified === false) {

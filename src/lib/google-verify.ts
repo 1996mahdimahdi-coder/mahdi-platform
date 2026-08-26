@@ -18,18 +18,16 @@ export type GoogleIdTokenPayload = {
 export async function verifyGoogleIdToken(
   idToken: string,
   clientId: string
-): Promise<GoogleIdTokenPayload | null> {
+): Promise<{ payload: GoogleIdTokenPayload | null; error: string | null }> {
   try {
     const { payload } = await jwtVerify(idToken, googleJwks, {
       issuer: GOOGLE_ISSUERS,
       audience: clientId,
     });
-    return payload as GoogleIdTokenPayload;
+    return { payload: payload as GoogleIdTokenPayload, error: null };
   } catch (e) {
-    console.error(
-      "[GoogleVerify]",
-      e instanceof Error ? e.message : String(e)
-    );
-    return null;
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("[GoogleVerify]", msg);
+    return { payload: null, error: msg };
   }
 }
