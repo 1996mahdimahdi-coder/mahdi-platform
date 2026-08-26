@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const audience = process.env.GOOGLE_ANDROID_CLIENT_ID;
+  const audience = process.env.GOOGLE_CLIENT_ID;
 
   if (!audience) {
     return NextResponse.json(
