@@ -25,7 +25,11 @@ export async function verifyGoogleIdToken(
       audience: clientId,
     });
     return payload as GoogleIdTokenPayload;
-  } catch {
+  } catch (e) {
+    console.error(
+      "[GoogleVerify]",
+      e instanceof Error ? e.message : String(e)
+    );
     return null;
   }
 }
