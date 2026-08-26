@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
+import { getCsrfToken } from "@/lib/clientCsrf";
 
 type Source = {
   id: number;
@@ -253,9 +254,10 @@ export default function AdminSourcesPage() {
         : "/api/admin/sources";
       const method = editing ? "PUT" : "POST";
 
+      const csrfToken = await getCsrfToken();
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
         body: JSON.stringify(payload),
       });
 
@@ -297,8 +299,10 @@ export default function AdminSourcesPage() {
     if (!confirm(`هل أنت متأكد من حذف المصدر "${source.name}"؟`)) return;
 
     try {
+      const csrfToken = await getCsrfToken();
       const res = await fetch(`/api/admin/sources/${source.id}`, {
         method: "DELETE",
+        headers: { "x-csrf-token": csrfToken },
       });
       if (res.status === 401) {
         router.replace("/login");

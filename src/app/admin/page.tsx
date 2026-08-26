@@ -16,6 +16,7 @@ import {
   X,
   FileText
 } from "lucide-react";
+import { getCsrfToken } from "@/lib/clientCsrf";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -164,9 +165,10 @@ export default function AdminDashboardPage() {
 
   const handleSaveWeights = async () => {
     try {
+      const csrfToken = await getCsrfToken();
       const res = await fetch("/api/admin/weights", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
         body: JSON.stringify(weights),
       });
       if (res.status === 401) {
@@ -190,7 +192,8 @@ export default function AdminDashboardPage() {
   const handleDeleteProject = async (id: number) => {
     if (!confirm("هل أنت تأكد من إرادة حذف هذا المشروع؟")) return;
     try {
-      const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
+      const csrfToken = await getCsrfToken();
+      const res = await fetch(`/api/projects/${id}`, { method: "DELETE", headers: { "x-csrf-token": csrfToken } });
       if (res.status === 401) {
         router.replace("/login");
         return;
@@ -230,9 +233,10 @@ export default function AdminDashboardPage() {
         ],
       };
 
+      const csrfToken = await getCsrfToken();
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
         body: JSON.stringify(payload),
       });
 

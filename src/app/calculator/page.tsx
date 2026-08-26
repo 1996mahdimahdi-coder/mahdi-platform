@@ -191,13 +191,27 @@ export default function StandaloneCalculatorPage() {
               </span>
             </div>
 
-            <div className="bg-amber-500 text-slate-950 p-6 rounded-3xl space-y-2 shadow-md">
-              <span className="text-slate-900 text-xs font-bold block">نقطة التعادل (Break-Even)</span>
-              <span className="text-3xl font-black font-mono text-slate-950">
-                {calc.breakEvenUnits} وحدة
+            <div className={`p-6 rounded-3xl space-y-2 shadow-md ${
+              calc.breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN"
+                ? "bg-rose-500 text-white"
+                : "bg-amber-500 text-slate-950"
+            }`}>
+              <span className={`text-xs font-bold block ${
+                calc.breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN"
+                  ? "text-rose-100" : "text-slate-900"
+              }`}>نقطة التعادل (Break-Even)</span>
+              <span className="text-3xl font-black font-mono">
+                {calc.breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN"
+                  ? "—"
+                  : `${calc.breakEvenUnits} وحدة`}
               </span>
-              <span className="text-xs text-slate-900 block font-bold">
-                تساوي مبيعات بقيمة {calc.breakEvenRevenue.toLocaleString()} دج
+              <span className={`text-xs block font-bold ${
+                calc.breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN"
+                  ? "text-rose-100" : "text-slate-900"
+              }`}>
+                {calc.breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN"
+                  ? calc.breakEvenMessage
+                  : `تساوي مبيعات بقيمة ${calc.breakEvenRevenue.toLocaleString()} دج`}
               </span>
             </div>
           </div>
@@ -209,7 +223,15 @@ export default function StandaloneCalculatorPage() {
               قراءة سريعة لنتيجتك المالية
             </h3>
             <p className="text-xs text-slate-700 leading-relaxed">
-              تحتاج إلى بيع <strong className="text-indigo-700 font-mono">{calc.breakEvenUnits} قطعة</strong> فقط لتغطية التكاليف الثابتة وميزانية الإعلانات بالكامل. كل قطعة تبيعها بعد ذلك تحقق لك فائدة صافية مقدرة بـ <strong className="text-indigo-700 font-mono">{calc.unitProfitMargin.toLocaleString()} دج</strong>.
+              {calc.breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN" ? (
+                <span className="text-rose-700 font-bold">{calc.breakEvenMessage}</span>
+              ) : calc.breakEvenStatus === "IMMEDIATELY_BREAK_EVEN" ? (
+                <span>{calc.breakEvenMessage}</span>
+              ) : (
+                <>
+                  تحتاج إلى بيع <strong className="text-indigo-700 font-mono">{calc.breakEvenUnits} قطعة</strong> فقط لتغطية التكاليف الثابتة وميزانية الإعلانات بالكامل. كل قطعة تبيعها بعد ذلك تحقق لك فائدة صافية مقدرة بـ <strong className="text-indigo-700 font-mono">{calc.unitProfitMargin.toLocaleString()} دج</strong>.
+                </>
+              )}
             </p>
           </div>
 

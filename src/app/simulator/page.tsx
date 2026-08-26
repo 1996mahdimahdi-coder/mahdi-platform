@@ -155,8 +155,12 @@ export default function SimulatorPage() {
 
               <div className="bg-slate-800/60 p-4 rounded-xl border border-slate-700">
                 <span className="text-slate-400 block mb-1">نقطة التعادل المطلوبة:</span>
-                <span className="font-mono text-amber-300 font-bold">
-                  {calc.breakEvenUnits} قطعة
+                <span className="font-mono font-bold">
+                  {calc.breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN" ? (
+                    <span className="text-rose-400">{calc.breakEvenMessage}</span>
+                  ) : (
+                    <span className="text-amber-300">{calc.breakEvenUnits} قطعة</span>
+                  )}
                 </span>
               </div>
             </div>

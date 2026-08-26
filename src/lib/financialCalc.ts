@@ -9,6 +9,11 @@
   returnRatePercent?: number; // نسبة المرتجعات %
 }
 
+export type BreakEvenStatus =
+  | "AVAILABLE"
+  | "NO_PROFITABLE_BREAK_EVEN"
+  | "IMMEDIATELY_BREAK_EVEN";
+
 export interface FinancialCalcResult {
   purchasePrice: number;
   salePrice: number;
@@ -24,6 +29,8 @@ export interface FinancialCalcResult {
   unitProfitMargin: number;     // هامش ربح القطعة الواحدة
   breakEvenUnits: number;       // نقطة التعادل بالوحدات
   breakEvenRevenue: number;     // نقطة التعادل بالإيرادات دج
+  breakEvenStatus: BreakEvenStatus; // هل نقطة التعادل متوفرة
+  breakEvenMessage: string;     // رسالة توضيحية لنقطة التعادل
   returnsCost: number;          // قيمة الخسائر من المرتجعات
 }
 
@@ -33,15 +40,29 @@ export interface ScenarioSimulationResult {
   optimistic: FinancialCalcResult;   // سيناريو متفائل (+40% sales)
 }
 
+function safeNumber(value: number | undefined | null, fallback: number = 0): number {
+  if (value == null || !Number.isFinite(value)) return fallback;
+  return value;
+}
+
 export function calculateFinancials(inputs: FinancialCalcInputs): FinancialCalcResult {
-  const purchase = Math.max(0, inputs.purchasePrice || 0);
-  const sale = Math.max(0, inputs.salePrice || 0);
-  const units = Math.max(0, inputs.monthlySalesUnits || 0);
-  const delivery = Math.max(0, inputs.deliveryCostPerUnit || 0);
-  const packaging = Math.max(0, inputs.packagingCostPerUnit || 0);
-  const adSpend = Math.max(0, inputs.adSpendMonthly || 0);
-  const fixed = Math.max(0, inputs.fixedCostsMonthly || 0);
-  const returnRate = Math.min(100, Math.max(0, inputs.returnRatePercent || 0));
+  const rawPurchase = safeNumber(inputs.purchasePrice);
+  const rawSale = safeNumber(inputs.salePrice);
+  const rawUnits = safeNumber(inputs.monthlySalesUnits);
+  const rawDelivery = safeNumber(inputs.deliveryCostPerUnit);
+  const rawPackaging = safeNumber(inputs.packagingCostPerUnit);
+  const rawAdSpend = safeNumber(inputs.adSpendMonthly);
+  const rawFixed = safeNumber(inputs.fixedCostsMonthly);
+  const rawReturnRate = safeNumber(inputs.returnRatePercent);
+
+  const purchase = Math.max(0, rawPurchase);
+  const sale = Math.max(0, rawSale);
+  const units = Math.max(0, rawUnits);
+  const delivery = Math.max(0, rawDelivery);
+  const packaging = Math.max(0, rawPackaging);
+  const adSpend = Math.max(0, rawAdSpend);
+  const fixed = Math.max(0, rawFixed);
+  const returnRate = Math.min(100, Math.max(0, rawReturnRate));
 
   const grossRevenue = sale * units;
   const cogsTotal = purchase * units;
@@ -74,10 +95,27 @@ export function calculateFinancials(inputs: FinancialCalcInputs): FinancialCalcR
   // monthly profit calculation.
   const totalFixedOverheads = adSpend + fixed;
 
-  const breakEvenUnits =
-    unitProfitMargin > 0
-      ? Math.ceil(totalFixedOverheads / unitProfitMargin)
-      : 0;
+  let breakEvenUnits: number;
+  let breakEvenStatus: BreakEvenStatus;
+  let breakEvenMessage: string;
+
+  if (totalFixedOverheads === 0 && unitProfitMargin > 0) {
+    breakEvenUnits = 0;
+    breakEvenStatus = "IMMEDIATELY_BREAK_EVEN";
+    breakEvenMessage = "بدون تكاليف ثابتة، المشروع يحقق التعادل فوراً.";
+  } else if (unitProfitMargin > 0) {
+    breakEvenUnits = Math.ceil(totalFixedOverheads / unitProfitMargin);
+    breakEvenStatus = "AVAILABLE";
+    breakEvenMessage = `تحتاج إلى بيع ${breakEvenUnits} وحدة لتغطية التكاليف الثابتة وميزانية الإعلانات بالكامل.`;
+  } else if (unitProfitMargin === 0) {
+    breakEvenUnits = 0;
+    breakEvenStatus = "NO_PROFITABLE_BREAK_EVEN";
+    breakEvenMessage = "لا توجد نقطة تعادل مربحة لأن هامش المساهمة يساوي صفر. بيع أي عدد إضافي من الوحدات لا يساهم في تغطية التكاليف الثابتة.";
+  } else {
+    breakEvenUnits = 0;
+    breakEvenStatus = "NO_PROFITABLE_BREAK_EVEN";
+    breakEvenMessage = "لا توجد نقطة تعادل مربحة بهذا السعر لأن هامش المساهمة سلبي. زيادة المبيعات ستزيد الخسارة. ارفع سعر البيع أو خفّض تكلفة الوحدة.";
+  }
 
   const breakEvenRevenue =
     breakEvenUnits * sale;
@@ -97,6 +135,8 @@ export function calculateFinancials(inputs: FinancialCalcInputs): FinancialCalcR
     unitProfitMargin,
     breakEvenUnits,
     breakEvenRevenue,
+    breakEvenStatus,
+    breakEvenMessage,
     returnsCost,
   };
 }
@@ -153,13 +193,24 @@ export function evaluateShouldIStart(
   recommendedCapital: number,
   netProfit: number,
   breakEvenUnits: number,
-  monthlySales: number
+  monthlySales: number,
+  breakEvenStatus?: BreakEvenStatus
 ): ShouldIStartVerdict {
   if (userCapital < minCapital) {
     return {
       verdict: "🔵 المشروع مناسب ولكن رأس المال غير كافٍ",
       badgeClass: "bg-sky-100 text-sky-800 border-sky-300",
       explanation: `رأس مالك الحالي (${userCapital.toLocaleString()} دج) أقل من أدنى حد للتأسيس (${minCapital.toLocaleString()} دج). ننصح بتجميع المبلغ المتبقي أو البدء بنصف الكمية فقط.`,
+    };
+  }
+
+  if (breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN") {
+    return {
+      verdict: "🔴 لا تبدأ بهذا الحجم",
+      badgeClass: "bg-rose-100 text-rose-800 border-rose-300",
+      explanation: netProfit < 0
+        ? `الأرقام المدخلة تُظهر خسارة شهرية (${netProfit.toLocaleString()} دج). لا توجد نقطة تعادل مربحة — رفع السعر أو تخفيض التكاليف ضرورة قبل أي قرار.`
+        : `هامش المساهمة لا يسمح بتغطية التكاليف الثابتة. لا توجد نقطة تعادل مربحة.`,
     };
   }
 

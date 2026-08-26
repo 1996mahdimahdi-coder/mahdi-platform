@@ -254,7 +254,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     project.recommendedCapital,
     calc.netProfitMonthly,
     calc.breakEvenUnits,
-    salesUnits
+    salesUnits,
+    calc.breakEvenStatus
   );
 
   const videos = getCapitalProjectVideos(project.projectId);
@@ -646,23 +647,56 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             </span>
           </div>
 
-          <div className="bg-amber-950/80 p-5 rounded-2xl border border-amber-500/50 space-y-1">
-            <span className="text-amber-300 text-xs font-bold block">نقطة التعادل (Break-Even)</span>
-            <span className="text-2xl font-black text-amber-400 font-mono">
-              {calc.breakEvenUnits} وحدة
+          <div className={`p-5 rounded-2xl border space-y-1 ${
+            calc.breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN"
+              ? "bg-rose-950/80 border-rose-500/50"
+              : "bg-amber-950/80 border-amber-500/50"
+          }`}>
+            <span className={`text-xs font-bold block ${
+              calc.breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN"
+                ? "text-rose-300" : "text-amber-300"
+            }`}>نقطة التعادل (Break-Even)</span>
+            <span className={`text-2xl font-black font-mono ${
+              calc.breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN"
+                ? "text-rose-400" : "text-amber-400"
+            }`}>
+              {calc.breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN"
+                ? "—"
+                : `${calc.breakEvenUnits} وحدة`}
             </span>
-            <span className="text-[11px] text-amber-300 block font-bold">
-              تساوي إيرادات {calc.breakEvenRevenue.toLocaleString()} دج
+            <span className={`text-[11px] block font-bold ${
+              calc.breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN"
+                ? "text-rose-300" : "text-amber-300"
+            }`}>
+              {calc.breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN"
+                ? calc.breakEvenMessage
+                : `تساوي إيرادات ${calc.breakEvenRevenue.toLocaleString()} دج`}
             </span>
           </div>
         </div>
 
         {/* Break-Even Arabic Explanation */}
-        <div className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700 text-slate-300 text-xs leading-relaxed flex items-start gap-3">
-          <Sparkles className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+        <div className={`p-4 rounded-2xl border text-xs leading-relaxed flex items-start gap-3 ${
+          calc.breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN"
+            ? "bg-rose-950/60 border-rose-700 text-rose-300"
+            : "bg-slate-800/60 border-slate-700 text-slate-300"
+        }`}>
+          <Sparkles className={`w-5 h-5 shrink-0 mt-0.5 ${
+            calc.breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN"
+              ? "text-rose-400" : "text-amber-400"
+          }`} />
           <span>
-            <strong>شرح نقطة التعادل بأسلوب مبسط:</strong> "وفق المعطيات أعلاه، تحتاج تقريبًا إلى بيع{" "}
-            <strong className="text-amber-300 font-mono">{calc.breakEvenUnits} وحدة</strong> شهريًا لتغطية كافة المصاريف الثابتة وميزانية الإعلانات. أي مبيعات تتجاوز هذا العدد تعتبر ربحًا صافيًا في جيبك."
+            <strong>شرح نقطة التعادل بأسلوب مبسط:</strong>{" "}
+            {calc.breakEvenStatus === "NO_PROFITABLE_BREAK_EVEN" ? (
+              <span className="font-bold">{calc.breakEvenMessage}</span>
+            ) : calc.breakEvenStatus === "IMMEDIATELY_BREAK_EVEN" ? (
+              <span>{calc.breakEvenMessage}</span>
+            ) : (
+              <>
+                وفق المعطيات أعلاه، تحتاج تقريبًا إلى بيع{" "}
+                <strong className="text-amber-300 font-mono">{calc.breakEvenUnits} وحدة</strong> شهريًا لتغطية كافة المصاريف الثابتة وميزانية الإعلانات. أي مبيعات تتجاوز هذا العدد تعتبر ربحًا صافيًا في جيبك."
+              </>
+            )}
           </span>
         </div>
 

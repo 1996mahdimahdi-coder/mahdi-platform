@@ -121,7 +121,8 @@ function tokenize(markdown: string): Token[] {
     }
 
     if (line.trim().match(/^```/)) {
-      const lang = line.trim().replace(/^```/, "").trim();
+      const rawLang = line.trim().replace(/^```/, "").trim();
+      const lang = /^[a-z0-9+#\-]+$/i.test(rawLang) ? rawLang : "";
       const codeLines: string[] = [];
       i++;
       while (i < lines.length && !lines[i].trim().match(/^```$/)) {
@@ -194,7 +195,8 @@ function tokensToHtml(tokens: Token[]): string {
             .join("")}</tbody></table></div>`;
 
         case "code":
-          return `<div class="my-4 rounded-xl overflow-hidden border border-slate-200"><div class="bg-slate-800 text-slate-400 text-xs px-4 py-2 font-mono">${token.language || "code"}</div><pre class="p-4 bg-slate-900 text-slate-200 text-sm font-mono overflow-x-auto leading-relaxed"><code>${token.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>`;
+          const safeLang = escapeHtml(token.language || "code");
+          return `<div class="my-4 rounded-xl overflow-hidden border border-slate-200"><div class="bg-slate-800 text-slate-400 text-xs px-4 py-2 font-mono">${safeLang}</div><pre class="p-4 bg-slate-900 text-slate-200 text-sm font-mono overflow-x-auto leading-relaxed"><code>${token.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>`;
 
         default:
           return "";

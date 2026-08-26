@@ -15,10 +15,14 @@ import {
 } from "@/lib/noCapitalRecommendationEngine";
 import type { NoCapitalAnswers } from "@/lib/noCapital/types";
 import { checkRateLimit, clientIpKey, RATE_LIMITS, rateLimitExceededResponse } from "@/lib/rateLimit";
+import { csrfGuard } from "@/lib/csrf";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  const csrfErr = await csrfGuard(request);
+  if (csrfErr) return csrfErr;
+
   const assessLimit = RATE_LIMITS.assess.anonymous;
   const assessCheck = await checkRateLimit({
     key: clientIpKey(request, "no-capital-assess"),

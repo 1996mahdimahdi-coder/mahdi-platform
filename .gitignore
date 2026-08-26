@@ -40,3 +40,9 @@ src/lib/scoringEngine.fixed.ts
 # One-time seed scripts (contained hardcoded DB credentials — deleted H-1)
 insert-agriculture.ts
 scripts/
+
+# Release signing (NEVER commit)
+*.jks
+*.keystore
+key.properties
+android/app/google-services.json

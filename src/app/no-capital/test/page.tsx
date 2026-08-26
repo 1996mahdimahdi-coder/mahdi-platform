@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
 import ConsentGate from "@/components/ConsentGate";
 import { getOrCreateSessionId } from "@/lib/session";
+import { getCsrfToken } from "@/lib/clientCsrf";
 import type { NoCapitalAnswer, NoCapitalAnswers, NoCapitalQuestion } from "@/lib/noCapital/types";
 
 export default function NoCapitalTestPage() {
@@ -98,9 +99,14 @@ export default function NoCapitalTestPage() {
     setConsentVersion(version);
     setSubmitting(true);
     try {
+      const csrfToken = await getCsrfToken();
+
       const res = await fetch("/api/no-capital/assess", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-csrf-token": csrfToken,
+        },
         body: JSON.stringify({ answers, sessionId, consentVersion: version }),
       });
       const data = await res.json();

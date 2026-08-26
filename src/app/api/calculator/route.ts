@@ -66,7 +66,8 @@ export async function POST(request: Request) {
       minCapital * 2,
       baseCalc.netProfitMonthly,
       baseCalc.breakEvenUnits,
-      baseCalc.monthlySalesUnits
+      baseCalc.monthlySalesUnits,
+      baseCalc.breakEvenStatus
     );
 
     return NextResponse.json({

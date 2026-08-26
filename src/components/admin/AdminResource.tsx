@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { Loader2, Plus, Pencil, Trash2, X, AlertTriangle, Save } from "lucide-react";
+import { getCsrfToken } from "@/lib/clientCsrf";
 
 export type FieldKind =
   | "text"
@@ -169,9 +170,10 @@ export default function AdminResource({
     setFormError(null);
     try {
       const isNew = editingId === "new";
+      const csrfToken = await getCsrfToken();
       const res = await fetch(apiPath, {
         method: isNew ? "POST" : "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-csrf-token": csrfToken },
         body: JSON.stringify(payload),
       });
       const data = await res.json();
@@ -192,7 +194,8 @@ export default function AdminResource({
     const title = rowTitleKey ? String(row[rowTitleKey] ?? row.id ?? "هذا العنصر") : `هذا العنصر`;
     if (!window.confirm(`هل أنت متأكد من حذف "${title}"؟`)) return;
     try {
-      const res = await fetch(`${apiPath}/${row.id}`, { method: "DELETE" });
+      const csrfToken = await getCsrfToken();
+      const res = await fetch(`${apiPath}/${row.id}`, { method: "DELETE", headers: { "x-csrf-token": csrfToken } });
       const data = await res.json();
       if (!res.ok) {
         window.alert(data.error ?? "حدث خطأ أثناء الحذف.");
