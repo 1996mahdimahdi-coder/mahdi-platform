@@ -689,3 +689,23 @@ export const deviceTokens = pgTable("device_tokens", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+// ============================================================
+// Library — paid books & guides (PDF delivered manually via
+// Telegram after payment confirmation). No PDF stored/exposed.
+// ============================================================
+export const libraryBooks = pgTable("library_books", {
+  id: serial("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  category: text("category").notNull().default("عام"), // المجال
+  shortDescription: text("short_description").notNull(),
+  description: text("description"),
+  coverImage: text("cover_image"),
+  whatYouLearn: jsonb("what_you_learn").$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+  outline: jsonb("outline").$type<string[]>().notNull().default(sql`'[]'::jsonb`), // المحاور/المحتوى
+  priceDzd: integer("price_dzd").notNull().default(0),
+  published: boolean("published").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});

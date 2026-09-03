@@ -152,6 +152,20 @@ export type CourseLessonItem = {
   videoUrl?: string;
 };
 
+export type LibraryBookItem = {
+  id: number;
+  slug: string;
+  title: string;
+  category: string;
+  shortDescription: string;
+  description?: string;
+  coverImage?: string;
+  whatYouLearn: string[];
+  outline: string[];
+  priceDzd: number;
+  published: boolean;
+};
+
 export type ExecutionPlanItem = {
   id: number;
   slug: string;

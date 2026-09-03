@@ -18,6 +18,7 @@
     "@capacitor/push-notifications": "^8.1.2",
     "@capgo/capacitor-social-login": "^8.4.5",
     "@types/bcryptjs": "^2.4.6",
+    "@vercel/blob": "^2.8.0",
     "arabic-persian-reshaper": "^1.0.1",
     "bcryptjs": "^3.0.3",
     "bidi-js": "^1.0.3",

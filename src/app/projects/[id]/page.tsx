@@ -19,7 +19,8 @@ import {
   Target,
   FileText,
   Download,
-  Loader2
+  Loader2,
+  Send
 } from "lucide-react";
 import {
   calculateFinancials,
@@ -465,6 +466,73 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
       </div>
+
+      {/* Paid Study Offer — 490 دج (non-blocking upsell) */}
+      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 text-white rounded-3xl p-6 sm:p-8 border border-slate-700 shadow-xl space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-700 pb-5">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold">
+              <FileText className="w-4 h-4" />
+              عرض مدفوع اختياري
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black flex items-center gap-2">
+              <span>📊</span> دراسة مشروع كاملة
+            </h2>
+          </div>
+
+          <div className="text-center bg-slate-900/80 border border-slate-700 px-6 py-4 rounded-2xl shrink-0">
+            <span className="text-[11px] text-slate-400 block font-bold">السعر</span>
+            <span className="text-3xl font-black text-indigo-400 font-mono">490 دج</span>
+          </div>
+        </div>
+
+        <p className="text-sm text-slate-300 leading-relaxed">
+          دراسة تفصيلية تساعدك على معرفة تكلفة المشروع، المصاريف، المداخيل المتوقعة، نقطة التعادل، المخاطر وخطوات الانطلاق.
+        </p>
+
+        <div className="grid sm:grid-cols-2 gap-2 text-xs text-slate-200">
+          {[
+            "وصف المشروع",
+            "رأس المال المطلوب",
+            "المعدات والتجهيزات",
+            "المواد الأولية",
+            "المصاريف الثابتة",
+            "المصاريف المتغيرة",
+            "المداخيل المتوقعة",
+            "هامش الربح",
+            "نقطة التعادل",
+            "المخاطر",
+            "الأخطاء الشائعة",
+            "خطوات الانطلاق",
+            "خطة عمل 30 يوم",
+            "ملاحظات عملية مرتبطة بالسوق الجزائري",
+          ].map((point, idx) => (
+            <div key={idx} className="flex items-start gap-2">
+              <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+              <span>{point}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center gap-3 border-t border-slate-700">
+          <a
+            href="https://t.me/+xvIo0_hK5k9mOWVk"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-sky-500 text-white font-extrabold text-sm hover:bg-sky-600 transition-colors shadow-md"
+          >
+            <Send className="w-4 h-4" />
+            طلب الدراسة عبر Telegram
+          </a>
+
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-indigo-300 font-bold">لإتمام الشراء والتواصل معنا عبر Telegram</p>
+            <p className="text-[11px] text-slate-400 leading-snug">
+              تُسلَّم الدراسة بعد تأكيد الدفع. المعلومات المعروضة هنا استرشادية وقد تُعرض بعض البيانات على أنها «غير متوفرة» إذا لم نتوفر عليها.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* CAPITAL ALLOCATION BREAKDOWN */}
       <section className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">

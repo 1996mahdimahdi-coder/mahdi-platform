@@ -1,8 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Loader2, Plus, Pencil, Trash2, X, AlertTriangle, Save } from "lucide-react";
+import { upload } from "@vercel/blob/client";
 import { getCsrfToken } from "@/lib/clientCsrf";
+
+const IMAGE_ACCEPT = ["image/jpeg", "image/png", "image/webp"];
+const DEFAULT_MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 export type FieldKind =
   | "text"
@@ -11,7 +15,8 @@ export type FieldKind =
   | "boolean"
   | "select"
   | "tags"
-  | "json";
+  | "json"
+  | "image-upload";
 
 export type FormField = {
   key: string;
@@ -22,6 +27,8 @@ export type FormField = {
   options?: { value: string; label: string }[];
   help?: string;
   defaultValue?: unknown;
+  uploadEndpoint?: string;
+  maxImageBytes?: number;
 };
 
 export type Column = {
@@ -60,6 +67,7 @@ function fieldToRequestValue(field: FormField, raw: string): { value: unknown; e
         return { value: null, error: `حقل "${field.label}" يحتوي JSON غير صالح.` };
       }
     }
+    case "image-upload":
     default:
       return { value: raw, error: null };
   }
@@ -76,6 +84,7 @@ function valueToFormValue(field: FormField, value: unknown): string {
       return value === true ? "true" : "false";
     case "number":
       return String(value);
+    case "image-upload":
     default:
       return String(value);
   }
@@ -98,6 +107,8 @@ export default function AdminResource({
   const [editingId, setEditingId] = useState<number | "new" | null>(null);
   const [formValues, setFormValues] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
+  const [uploadingField, setUploadingField] = useState<string | null>(null);
+  const coverFileInput = useRef<HTMLInputElement | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -190,6 +201,49 @@ export default function AdminResource({
     }
   };
 
+  const handleImageUpload = async (field: FormField, file: File) => {
+    if (!field.uploadEndpoint) {
+      setFormError(`حقل "${field.label}" لا يملك نقطة رفع معرّفة.`);
+      return;
+    }
+
+    const maxBytes = field.maxImageBytes ?? DEFAULT_MAX_IMAGE_BYTES;
+    if (file.size <= 0) {
+      setFormError(`الملف "${file.name}" فارغ.`);
+      return;
+    }
+    if (file.size > maxBytes) {
+      setFormError(
+        `صورة الغلاف كبيرة جداً. الحد الأقصى ${Math.round(maxBytes / (1024 * 1024))} ميجابايت.`
+      );
+      return;
+    }
+    if (!IMAGE_ACCEPT.includes(file.type)) {
+      setFormError("صيغة الصورة غير مدعومة. يُقبل JPG أو PNG أو WebP فقط.");
+      return;
+    }
+
+    setUploadingField(field.key);
+    setFormError(null);
+    try {
+      const csrfToken = await getCsrfToken();
+      const blob = await upload(file.name, file, {
+        access: "public",
+        handleUploadUrl: field.uploadEndpoint,
+        headers: { "x-csrf-token": csrfToken },
+      });
+      setFormValues((prev) => ({ ...prev, [field.key]: blob.url }));
+    } catch (error) {
+      setFormError(
+        `تعذّر رفع الصورة: ${
+          error instanceof Error ? error.message : "خطأ غير معروف"
+        }`
+      );
+    } finally {
+      setUploadingField(null);
+    }
+  };
+
   const remove = async (row: Record<string, unknown>) => {
     const title = rowTitleKey ? String(row[rowTitleKey] ?? row.id ?? "هذا العنصر") : `هذا العنصر`;
     if (!window.confirm(`هل أنت متأكد من حذف "${title}"؟`)) return;
@@ -279,7 +333,7 @@ export default function AdminResource({
 
           <div className="grid sm:grid-cols-2 gap-4">
             {fields.map((field) => (
-              <div key={field.key} className={field.kind === "textarea" || field.kind === "json" || field.kind === "tags" ? "sm:col-span-2" : ""}>
+              <div key={field.key} className={field.kind === "textarea" || field.kind === "json" || field.kind === "tags" || field.kind === "image-upload" ? "sm:col-span-2" : ""}>
                 <label className="text-xs font-bold text-slate-700 block mb-1.5">
                   {field.label}
                   {field.required && <span className="text-red-500"> *</span>}
@@ -314,6 +368,53 @@ export default function AdminResource({
                     <option value="true">مفعّل</option>
                     <option value="false">غير مفعّل</option>
                   </select>
+                ) : field.kind === "image-upload" ? (
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-4">
+                      <div className="w-28 h-36 shrink-0 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden">
+                        {formValues[field.key] ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={formValues[field.key]}
+                            alt={`معاينة ${field.label}`}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-[11px] font-bold text-slate-400 px-2 text-center">
+                            لا يوجد غلاف بعد
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <input
+                          ref={coverFileInput}
+                          type="file"
+                          accept={IMAGE_ACCEPT.join(",")}
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) void handleImageUpload(field, file);
+                            e.target.value = "";
+                          }}
+                        />
+                        <button
+                          onClick={() => coverFileInput.current?.click()}
+                          disabled={uploadingField !== null}
+                          className="px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-extrabold hover:bg-slate-800 disabled:opacity-50 flex items-center gap-2"
+                        >
+                          {uploadingField === field.key ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : null}
+                          {formValues[field.key] ? "تغيير الغلاف" : "📤 رفع غلاف الكتاب"}
+                        </button>
+                        {formValues[field.key] && (
+                          <p className="text-[11px] text-slate-400">
+                            يتم نشر الصورة تلقائياً عند الضغط على «حفظ».
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 ) : (
                   <input
                     type={field.kind === "number" ? "number" : "text"}
