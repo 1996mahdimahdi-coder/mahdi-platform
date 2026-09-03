@@ -710,6 +710,17 @@ export default function ResultsPage() {
           </div>
         </div>
 
+        <div className="text-center py-4">
+          <a
+            href="https://t.me/+xvIo0_hK5k9mOWVk"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-500 text-white font-extrabold text-xs hover:bg-sky-600 transition-colors"
+          >
+            فكرة مشروع في ولايتك — كل أسبوع
+          </a>
+        </div>
+
         <div className="hidden print:block mt-8 pt-4 border-t-2 border-slate-300 text-center text-xs text-slate-500">
           <p className="font-bold">
             منصة NABDA | قبل ما تبدأ مشروعك... اختبره

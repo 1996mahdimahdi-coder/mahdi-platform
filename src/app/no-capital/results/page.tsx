@@ -243,6 +243,17 @@ export default function NoCapitalResultsPage() {
           </>
         )}
 
+        <div className="text-center pt-4">
+          <a
+            href="https://t.me/+xvIo0_hK5k9mOWVk"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-500 text-white font-extrabold text-xs hover:bg-sky-600 transition-colors"
+          >
+            فكرة مشروع في ولايتك — كل أسبوع
+          </a>
+        </div>
+
         <div className="text-center pt-2">
           <Link
             href="/no-capital"

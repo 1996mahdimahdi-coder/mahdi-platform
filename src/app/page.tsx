@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PROJECT_COUNT } from "@/lib/constants";
 import {
   Sparkles,
   Compass,
@@ -204,7 +205,7 @@ export default function HomePage() {
                 بغيت نتصفح المشاريع
               </h3>
               <p className="text-sm text-slate-600 mt-2 leading-relaxed">
-                استكشف دراسات الجدوى السريعة لأكثر من 25 مشروعًا مصنّفًا حسب رأس المال والولاية والمهارات.
+                استكشف دراسات الجدوى السريعة لأكثر من {PROJECT_COUNT} مشروعًا مصنّفًا حسب رأس المال والولاية والمهارات.
               </p>
             </div>
             <div className="mt-auto flex items-center gap-1.5 text-sm font-bold text-slate-600 pt-2">

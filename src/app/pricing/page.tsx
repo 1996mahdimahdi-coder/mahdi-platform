@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Sparkles, Check, ShieldCheck, Heart } from "lucide-react";
+import { PROJECT_COUNT } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "الأسعار",
@@ -54,7 +55,7 @@ export default function FreePricingPage() {
             "محاكي السيناريوهات (What-If)",
             "اختبار فكرتك الخاصة (Idea Test)",
             "مُولد خطة 30 يوم",
-            "تفاصيل كاملة لكل مشروع مع 25+ فكرة",
+            `تفاصيل كاملة لكل مشروع مع ${PROJECT_COUNT} فكرة`,
             "تصدير التقارير وتنزيلها PDF",
             "لوحة تحكم شخصية لحفظ الاختبارات",
             "بدون حدود وبدون اشتراك",

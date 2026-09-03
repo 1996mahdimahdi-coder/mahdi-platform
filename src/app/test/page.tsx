@@ -96,14 +96,6 @@ function writeCache<T>(key: string, data: T): void {
 // Interfaces
 // ============================================================
 
-interface WilayaItem {
-  id: number;
-  code: string;
-  nameAr: string;
-  nameFr: string;
-  areaType: string;
-}
-
 interface CommuneItem {
   id: number;
   nameAr: string;
@@ -114,7 +106,6 @@ interface CommuneItem {
 
 interface WilayasResponse {
   success: boolean;
-  wilayas?: WilayaItem[];
   communes?: CommuneItem[];
   error?: string;
 }
@@ -131,10 +122,11 @@ export default function TestPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [showConsent, setShowConsent] = useState(false);
+  const [showConsent, setShowConsent] = useState(true);
+  const [userName, setUserName] = useState("");
+  const [consentVersion, setConsentVersion] = useState("");
   const sessionId = getOrCreateSessionId();
 
-  const [wilayasList, setWilayasList] = useState<WilayaItem[]>([]);
   const [communesList, setCommunesList] = useState<CommuneItem[]>([]);
 
   const [selectedCapitalOption, setSelectedCapitalOption] =
@@ -178,133 +170,6 @@ export default function TestPage() {
 
   const [objective, setObjective] =
     useState<string>("دخل إضافي");
-
-  // ============================================================
-  // تحميل الولايات (مع cache مدة 24 ساعة)
-  // ============================================================
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadWilayas = async () => {
-      setErrorMsg("");
-
-      const cached = readCache<WilayaItem[]>(
-        "nabda_wilayas_cache"
-      );
-
-      if (cached && !cancelled) {
-        const sorted = [...cached].sort(
-          (a, b) => a.id - b.id
-        );
-        setWilayasList(sorted);
-
-        const defaultWilaya = sorted.find(
-          (w) => w.id === 16
-        );
-
-        if (defaultWilaya) {
-          setWilayaId(defaultWilaya.id);
-          setWilayaName(defaultWilaya.nameAr);
-        } else if (sorted.length > 0) {
-          setWilayaId(sorted[0].id);
-          setWilayaName(sorted[0].nameAr);
-        }
-
-        return;
-      }
-
-      try {
-        const response = await fetch("/api/wilayas", {
-          method: "GET",
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data: WilayasResponse =
-          await response.json();
-
-        if (
-          !data.success ||
-          !Array.isArray(data.wilayas)
-        ) {
-          throw new Error(
-            data.error ||
-              "تعذر تحميل قائمة الولايات."
-          );
-        }
-
-        if (!cancelled) {
-          writeCache("nabda_wilayas_cache", data.wilayas);
-
-          const sortedWilayas = [
-            ...data.wilayas,
-          ].sort((a, b) => a.id - b.id);
-
-          setWilayasList(sortedWilayas);
-
-          const defaultWilaya =
-            sortedWilayas.find(
-              (wilaya) => wilaya.id === 16
-            );
-
-          if (defaultWilaya) {
-            setWilayaId(defaultWilaya.id);
-            setWilayaName(defaultWilaya.nameAr);
-          } else if (sortedWilayas.length > 0) {
-            setWilayaId(sortedWilayas[0].id);
-            setWilayaName(
-              sortedWilayas[0].nameAr
-            );
-          }
-        }
-      } catch (error) {
-        console.error(
-          "Load wilayas error:",
-          error
-        );
-
-        if (!cancelled) {
-          const stale =
-            readStaleCache<WilayaItem[]>(
-              "nabda_wilayas_cache"
-            );
-
-          if (stale && stale.length > 0) {
-            const sorted = [...stale].sort(
-              (a, b) => a.id - b.id
-            );
-            setWilayasList(sorted);
-
-            const defaultWilaya = sorted.find(
-              (w) => w.id === 16
-            );
-
-            if (defaultWilaya) {
-              setWilayaId(defaultWilaya.id);
-              setWilayaName(defaultWilaya.nameAr);
-            } else {
-              setWilayaId(sorted[0].id);
-              setWilayaName(sorted[0].nameAr);
-            }
-          } else {
-            setErrorMsg(
-              "تعذر تحميل قائمة الولايات."
-            );
-          }
-        }
-      }
-    };
-
-    loadWilayas();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   // ============================================================
   // تحميل البلديات عند تغيير الولاية (مع cache مدة 24 ساعة)
@@ -493,15 +358,6 @@ export default function TestPage() {
     }
 
     if (step === 3) {
-      if (!wilayaId) {
-        setErrorMsg(
-          "يرجى اختيار الولاية."
-        );
-        return false;
-      }
-    }
-
-    if (step === 4) {
       if (!communeId) {
         setErrorMsg(
           "يرجى اختيار البلدية."
@@ -510,7 +366,7 @@ export default function TestPage() {
       }
     }
 
-    if (step === 6) {
+    if (step === 5) {
       if (skills.length === 0) {
         setErrorMsg(
           "يرجى اختيار مهارة واحدة على الأقل."
@@ -531,7 +387,7 @@ export default function TestPage() {
       return;
     }
 
-    if (step < 11) {
+    if (step < 10) {
       setStep(
         (currentStep) => currentStep + 1
       );
@@ -544,7 +400,7 @@ export default function TestPage() {
       return;
     }
 
-    setShowConsent(true);
+    submitAssessment(consentVersion);
   };
 
   // ============================================================
@@ -636,6 +492,8 @@ export default function TestPage() {
       const payload = {
         userId: sessionUser?.id ?? null,
 
+        name: userName || undefined,
+
         capital: getEffectiveCapital(),
 
         workspace,
@@ -723,9 +581,14 @@ export default function TestPage() {
     }
   };
 
-  const handleConsentGranted = (version: string) => {
+  const handleConsentGranted = (version: string, profile?: { name: string; wilayaId: number; wilayaName: string }) => {
+    setConsentVersion(version);
+    if (profile) {
+      setUserName(profile.name);
+      setWilayaId(profile.wilayaId);
+      setWilayaName(profile.wilayaName);
+    }
     setShowConsent(false);
-    submitAssessment(version);
   };
 
   const handleConsentCancel = () => {
@@ -873,6 +736,7 @@ export default function TestPage() {
       <ConsentGate
         purpose="assessment"
         sessionId={sessionId}
+        showNameWilaya
         onGranted={handleConsentGranted}
         onCancel={handleConsentCancel}
       />
@@ -897,7 +761,7 @@ export default function TestPage() {
             </div>
 
             <span className="text-xs font-mono px-3 py-1 rounded-full bg-slate-800 text-indigo-400 border border-slate-700 whitespace-nowrap">
-              السؤال {step} من 11
+              السؤال {step} من 10
             </span>
           </div>
 
@@ -905,7 +769,7 @@ export default function TestPage() {
             <div
               className="bg-gradient-to-r from-indigo-500 to-sky-400 h-full transition-all duration-300 ease-out"
               style={{
-                width: `${(step / 11) * 100}%`,
+                width: `${(step / 10) * 100}%`,
               }}
             />
           </div>
@@ -1028,65 +892,7 @@ export default function TestPage() {
               <div className="space-y-2">
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
                   <MapPin className="w-6 h-6 text-indigo-600" />
-                  السؤال 3: في أي ولاية تقيم وتريد إطلاق المشروع؟
-                </h2>
-
-                <p className="text-xs text-slate-500">
-                  حدد ولايتك لتطبيق شروط الطبيعة الجغرافية والسوق المحلي.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-slate-700">
-                  اختر الولاية:
-                </label>
-
-                <select
-                  value={wilayaId}
-                  onChange={(e) => {
-                    const idNum = Number(e.target.value);
-
-                    const found = wilayasList.find(
-                      (wilaya) => wilaya.id === idNum
-                    );
-
-                    setWilayaId(idNum);
-
-                    if (found) {
-                      setWilayaName(found.nameAr);
-                    }
-
-                    setCommuneId(0);
-                    setCommuneName("");
-                  }}
-                  disabled={wilayasList.length === 0}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 text-sm font-bold bg-white disabled:bg-slate-100"
-                >
-                  {wilayasList.length === 0 ? (
-                    <option value={16}>
-                      جاري تحميل الولايات...
-                    </option>
-                  ) : (
-                    wilayasList.map((wilaya) => (
-                      <option
-                        key={wilaya.id}
-                        value={wilaya.id}
-                      >
-                        {wilaya.code} - {wilaya.nameAr} ({wilaya.nameFr})
-                      </option>
-                    ))
-                  )}
-                </select>
-              </div>
-            </div>
-          )}
-
-          {step === 4 && (
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
-                  <MapPin className="w-6 h-6 text-indigo-600" />
-                  السؤال 4: ما هي البلدية التابعة لولاية {wilayaName}؟
+                  السؤال 3: ما هي البلدية التابعة لولاية {wilayaName}؟
                 </h2>
 
                 <p className="text-xs text-slate-500">
@@ -1135,12 +941,12 @@ export default function TestPage() {
             </div>
           )}
 
-          {step === 5 && (
+          {step === 4 && (
             <div className="space-y-6">
               <div className="space-y-2">
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
                   <Clock className="w-6 h-6 text-indigo-600" />
-                  السؤال 5: كم عدد الساعات المتاحة لديك يوميًا؟
+                  السؤال 4: كم عدد الساعات المتاحة لديك يوميًا؟
                 </h2>
 
                 <p className="text-xs text-slate-500">
@@ -1171,12 +977,12 @@ export default function TestPage() {
             </div>
           )}
 
-          {step === 6 && (
+          {step === 5 && (
             <div className="space-y-6">
               <div className="space-y-2">
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
                   <Briefcase className="w-6 h-6 text-indigo-600" />
-                  السؤال 6: ما هي الخبرات والمهارات التي تمتلكها؟
+                  السؤال 5: ما هي الخبرات والمهارات التي تمتلكها؟
                 </h2>
 
                 <p className="text-xs text-slate-500">
@@ -1216,12 +1022,12 @@ export default function TestPage() {
             </div>
           )}
 
-          {step === 7 && (
+          {step === 6 && (
             <div className="space-y-6">
               <div className="space-y-2">
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
                   <Laptop className="w-6 h-6 text-indigo-600" />
-                  السؤال 7: ما هي طريقة العمل المفضلة لديك؟
+                  السؤال 6: ما هي طريقة العمل المفضلة لديك؟
                 </h2>
 
                 <p className="text-xs text-slate-500">
@@ -1254,12 +1060,12 @@ export default function TestPage() {
             </div>
           )}
 
-          {step === 8 && (
+          {step === 7 && (
             <div className="space-y-6">
               <div className="space-y-2">
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
                   <AlertTriangle className="w-6 h-6 text-amber-500" />
-                  السؤال 8: ما هو مستوى المخاطرة المالي المقبول بالنسبة لك؟
+                  السؤال 7: ما هو مستوى المخاطرة المالي المقبول بالنسبة لك؟
                 </h2>
 
                 <p className="text-xs text-slate-500">
@@ -1300,12 +1106,12 @@ export default function TestPage() {
             </div>
           )}
 
-          {step === 9 && (
+          {step === 8 && (
             <div className="space-y-6">
               <div className="space-y-2">
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
                   <Car className="w-6 h-6 text-indigo-600" />
-                  السؤال 9: ما هي وسيلة النقل المتوفرة لديك؟
+                  السؤال 8: ما هي وسيلة النقل المتوفرة لديك؟
                 </h2>
 
                 <p className="text-xs text-slate-500">
@@ -1338,12 +1144,12 @@ export default function TestPage() {
             </div>
           )}
 
-          {step === 10 && (
+          {step === 9 && (
             <div className="space-y-6">
               <div className="space-y-2">
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
                   <ShieldCheck className="w-6 h-6 text-indigo-600" />
-                  السؤال 10: هل لديك مصدر دخل آخر حاليًا؟
+                  السؤال 9: هل لديك مصدر دخل آخر حاليًا؟
                 </h2>
 
                 <p className="text-xs text-slate-500">
@@ -1384,12 +1190,12 @@ export default function TestPage() {
             </div>
           )}
 
-          {step === 11 && (
+          {step === 10 && (
             <div className="space-y-6">
               <div className="space-y-2">
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2">
                   <Target className="w-6 h-6 text-indigo-600" />
-                  السؤال 11: ما هو هدفك المباشر من إطلاق هذا المشروع؟
+                  السؤال 10: ما هو هدفك المباشر من إطلاق هذا المشروع؟
                 </h2>
 
                 <p className="text-xs text-slate-500">
@@ -1458,7 +1264,7 @@ export default function TestPage() {
                 <span>
                   جاري تحليل البيانات...
                 </span>
-              ) : step === 11 ? (
+              ) : step === 10 ? (
                 <>
                   <span>
                     مشاهدة أفضل المشاريع المقترحة

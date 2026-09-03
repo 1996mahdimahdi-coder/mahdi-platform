@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Loader2, BookOpen, Clock, ChevronDown, ChevronRight, PlayCircle } from "lucide-react";
+import { Loader2, BookOpen, Clock, ChevronDown, ChevronRight, PlayCircle, ExternalLink } from "lucide-react";
 import type { CourseItem, CourseLessonItem } from "@/lib/noCapital/types";
 
 type YouTubeResult = { type: "video"; id: string } | { type: "playlist"; id: string };
@@ -168,7 +168,21 @@ export default function CourseDetailPage() {
 
                       {lesson.videoUrl && (() => {
                         const yt = parseYouTubeUrl(lesson.videoUrl);
-                        if (!yt) return null;
+                        if (!yt) {
+                          return (
+                            <div className="mt-3">
+                              <a
+                                href={lesson.videoUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-sky-50 text-sky-700 text-[11px] font-bold border border-sky-200 hover:bg-sky-100 transition-colors"
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                                فيديو خارجي — اضغط للمشاهدة
+                              </a>
+                            </div>
+                          );
+                        }
                         const isPlaylist = yt.type === "playlist";
                         const src = isPlaylist
                           ? `https://www.youtube.com/embed/videoseries?list=${yt.id}`

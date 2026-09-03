@@ -41,7 +41,7 @@ function translateKey(key: string): string {
     algerianUsers: "مستخدمو الجزائر", businessAdoption: "تبني الأعمال",
     avgOpenRate: "معدل الفتح", pagesManaged: "الصفحات المُدارة",
     avgMonthly: "متوسط شهري", avgSession: "متوسط الجلسة",
-    successRate: "نسبة النجاح", paybackPeriod: "فترة الاسترداد",
+    successRate: "مؤشر الطلب", paybackPeriod: "فترة الاسترداد",
     profitMargin: "هامش الربح", avgRepair: "متوسط الإصلاح",
     monthlyRepairs: "إصلاحات شهرية", avgCPC: "متوسط CPC",
     avgCPM: "متوسط CPM", avgCTR: "متوسط CTR",

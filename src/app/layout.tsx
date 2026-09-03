@@ -2,7 +2,6 @@
 import type { ReactNode } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import VisitorOnboarding from "@/components/VisitorOnboarding";
 import WelcomeBanner from "@/components/WelcomeBanner";
 import FloatingChatButton from "@/components/ai/FloatingChatButton";
 import AdContainer from "@/components/AdContainer";
@@ -64,7 +63,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body className="font-official bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col">
         <CapacitorBridge />
-        <VisitorOnboarding />
         <Navbar />
         <WelcomeBanner />
         <main className="flex-1">

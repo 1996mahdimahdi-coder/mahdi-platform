@@ -167,8 +167,11 @@ function ProjectsGridInner({ projects }: { projects: Project[] }) {
             </div>
             <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
               <Award className="w-4 h-4 text-amber-400" />
-              <span>مرتبة حسب: % نسبة النجاح + سرعة الدوران</span>
+              <span>مرتبة حسب: مؤشر الطلب + سرعة الدوران</span>
             </div>
+            <p className="text-[10px] text-slate-500 italic">
+              مؤشر الطلب هو محاكاة تقديرية لأغراض الاختبار — ليست ضماناً للنجاح.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -196,7 +199,7 @@ function ProjectsGridInner({ projects }: { projects: Project[] }) {
                   <div className="flex items-center justify-between text-[11px] font-bold">
                     <span className="flex items-center gap-1 text-indigo-300">
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      نسبة النجاح
+                      مؤشر الطلب
                     </span>
                     <span className="text-indigo-300 font-mono">{item.successRate}</span>
                   </div>
