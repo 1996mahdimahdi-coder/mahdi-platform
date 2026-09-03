@@ -712,7 +712,7 @@ export default function ResultsPage() {
 
         <div className="text-center py-4">
           <a
-            href="https://t.me/+xvIo0_hK5k9mOWVk"
+            href="https://t.me/NABDA2026"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-500 text-white font-extrabold text-xs hover:bg-sky-600 transition-colors"

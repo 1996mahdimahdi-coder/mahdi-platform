@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Loader2, BookOpen, Inbox, ChevronLeft, Send, FileText } from "lucide-react";
 import type { LibraryBookItem } from "@/lib/noCapital/types";
 
-const TELEGRAM_URL = "https://t.me/+xvIo0_hK5k9mOWVk";
+const TELEGRAM_URL = "https://t.me/NABDA2026";
 
 export default function LibraryPage() {
   const [books, setBooks] = useState<LibraryBookItem[]>([]);
@@ -179,7 +179,9 @@ export default function LibraryPage() {
                         </span>
 
                         <a
-                          href={TELEGRAM_URL}
+                          href={`https://t.me/NABDA2026?text=${encodeURIComponent(
+                            `السلام عليكم، أريد شراء كتاب من مكتبة NABDA.\nعنوان الكتاب: ${book.title}`
+                          )}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-sky-500 text-white text-[11px] font-extrabold hover:bg-sky-600 transition-colors"

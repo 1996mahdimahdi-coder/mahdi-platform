@@ -6,8 +6,6 @@ import { useParams } from "next/navigation";
 import { Loader2, BookOpen, ChevronLeft, Send, CheckCircle2, ListChecks, FileText } from "lucide-react";
 import type { LibraryBookItem } from "@/lib/noCapital/types";
 
-const TELEGRAM_URL = "https://t.me/+xvIo0_hK5k9mOWVk";
-
 export default function LibraryBookDetailPage() {
   const params = useParams<{ slug: string }>();
   const slug = params.slug;
@@ -104,7 +102,9 @@ export default function LibraryBookDetailPage() {
 
             <div className="pt-2">
               <a
-                href={TELEGRAM_URL}
+                href={`https://t.me/NABDA2026?text=${encodeURIComponent(
+                  `السلام عليكم، أريد شراء كتاب من مكتبة NABDA.\nعنوان الكتاب: ${book.title}`
+                )}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-sky-500 text-white font-extrabold text-sm hover:bg-sky-600 transition-colors shadow-md"

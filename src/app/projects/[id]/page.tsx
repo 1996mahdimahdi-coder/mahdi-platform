@@ -516,7 +516,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
         <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center gap-3 border-t border-slate-700">
           <a
-            href="https://t.me/+xvIo0_hK5k9mOWVk"
+            href={`https://t.me/NABDA2026?text=${encodeURIComponent(
+              `السلام عليكم، أريد طلب دراسة المشروع الكاملة — 490 دج.\nاسم المشروع: ${project.projectName}`
+            )}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-sky-500 text-white font-extrabold text-sm hover:bg-sky-600 transition-colors shadow-md"
