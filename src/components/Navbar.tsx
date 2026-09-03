@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import type { ReactNode } from "react";
 import {
   Sparkles,
   Calculator,
@@ -18,12 +19,39 @@ import {
   GraduationCap,
   Layers,
   Library,
-  Search
+  ChevronDown
 } from "lucide-react";
 import GlobalSearch from "@/components/GlobalSearch";
 
+type NavItem = { href: string; label: string; icon?: ReactNode };
+
+const MAIN_LINKS: NavItem[] = [
+  { href: "/test", label: "اختبر وضعي", icon: <Sparkles className="w-4 h-4 text-indigo-600" /> },
+  { href: "/no-capital", label: "بدون رأس مال", icon: <Rocket className="w-4 h-4 text-emerald-600" /> },
+  { href: "/projects", label: "المشاريع", icon: <Compass className="w-4 h-4 text-slate-500" /> },
+  { href: "/learn", label: "تعلم", icon: <GraduationCap className="w-4 h-4 text-slate-500" /> },
+];
+
+const TOOLS_LINKS: NavItem[] = [
+  { href: "/calculator", label: "حاسبة الربح", icon: <Calculator className="w-4 h-4 text-slate-500" /> },
+  { href: "/simulator", label: "المحاكاة", icon: <TrendingUp className="w-4 h-4 text-slate-500" /> },
+  { href: "/idea-test", label: "اختبار فكرة", icon: <Lightbulb className="w-4 h-4 text-amber-500" /> },
+  { href: "/plan", label: "خطة 30 يوم", icon: <CalendarCheck className="w-4 h-4 text-slate-500" /> },
+];
+
+const CONTENT_LINKS: NavItem[] = [
+  { href: "/domains", label: "المجالات", icon: <Layers className="w-4 h-4 text-slate-500" /> },
+  { href: "/legal-guide", label: "الدليل القانوني", icon: <span className="text-sm">⚖️</span> },
+  { href: "/blog", label: "المقالات", icon: <FileText className="w-4 h-4 text-slate-500" /> },
+];
+
+const PRODUCTS_LINKS: NavItem[] = [
+  { href: "/library", label: "مكتبة NABDA", icon: <Library className="w-4 h-4 text-slate-500" /> },
+];
+
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileGroup, setMobileGroup] = useState<string | null>(null);
   const [user, setUser] = useState<{ name: string; role: string } | null>(null);
   const [authLoaded, setAuthLoaded] = useState(false);
 
@@ -89,91 +117,97 @@ export default function Navbar() {
 
           {/* Desktop Nav Links */}
           <nav className="font-official hidden lg:flex items-center gap-1 xl:gap-2 text-[15px] font-bold text-slate-900">
-            <Link
-              href="/test"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors font-bold"
-            >
-              <Sparkles className="w-4 h-4 text-indigo-600" />
-              اختبر وضعي
-            </Link>
-            <Link
-              href="/no-capital"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors font-bold"
-            >
-              <Rocket className="w-4 h-4 text-emerald-600" />
-              بدون رأس مال
-            </Link>
-            <Link
-              href="/learn"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              <GraduationCap className="w-4 h-4 text-slate-500" />
-              تعلم
-            </Link>
-            <Link
-              href="/projects"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              <Compass className="w-4 h-4 text-slate-500" />
-              المشاريع
-            </Link>
-            <Link
-              href="/domains"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              <Layers className="w-4 h-4 text-slate-500" />
-              المجالات
-            </Link>
-            <Link
-              href="/legal-guide"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              <span className="text-sm">⚖️</span>
-              الدليل القانوني
-            </Link>
-            <Link
-              href="/calculator"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              <Calculator className="w-4 h-4 text-slate-500" />
-              حاسبة الربح
-            </Link>
-            <Link
-              href="/simulator"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              <TrendingUp className="w-4 h-4 text-slate-500" />
-              المحاكاة
-            </Link>
-            <Link
-              href="/idea-test"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              <Lightbulb className="w-4 h-4 text-amber-500" />
-              اختبار فكرة
-            </Link>
-            <Link
-              href="/plan"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              <CalendarCheck className="w-4 h-4 text-slate-500" />
-              خطة 30 يوم
-            </Link>
-            <Link
-              href="/blog"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              <FileText className="w-4 h-4 text-slate-500" />
-              المقالات
-            </Link>
-            <Link
-              href="/library"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
-            >
-              <Library className="w-4 h-4 text-slate-500" />
-              مكتبة NABDA
-            </Link>
+            {MAIN_LINKS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors"
+              >
+                {item.icon}
+                {item.label}
+              </Link>
+            ))}
 
+            {/* أدوات dropdown */}
+            <div className="relative group">
+              <button
+                type="button"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <Calculator className="w-4 h-4 text-slate-500" />
+                أدوات
+                <ChevronDown className="w-4 h-4 text-slate-400 transition-transform group-hover:rotate-180" />
+              </button>
+              <div className="absolute right-0 top-full pt-1 hidden group-hover:block">
+                <div className="w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                  {TOOLS_LINKS.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-sm transition-colors"
+                    >
+                      {item.icon}
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* محتوى dropdown */}
+            <div className="relative group">
+              <button
+                type="button"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <Layers className="w-4 h-4 text-slate-500" />
+                محتوى
+                <ChevronDown className="w-4 h-4 text-slate-400 transition-transform group-hover:rotate-180" />
+              </button>
+              <div className="absolute right-0 top-full pt-1 hidden group-hover:block">
+                <div className="w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                  {CONTENT_LINKS.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-sm transition-colors"
+                    >
+                      {item.icon}
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* منتجات dropdown */}
+            <div className="relative group">
+              <button
+                type="button"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 transition-colors cursor-pointer"
+              >
+                <Library className="w-4 h-4 text-amber-600" />
+                منتجات
+                <ChevronDown className="w-4 h-4 text-amber-500 transition-transform group-hover:rotate-180" />
+              </button>
+              <div className="absolute right-0 top-full pt-1 hidden group-hover:block">
+                <div className="w-56 rounded-2xl border border-amber-200 bg-white p-2 shadow-xl">
+                  <div className="px-3 pt-1 pb-2 text-[11px] font-bold text-amber-700">
+                    منتجات قابلة للشراء
+                  </div>
+                  {PRODUCTS_LINKS.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-sm transition-colors"
+                    >
+                      {item.icon}
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </div>
           </nav>
 
           {/* Right Actions / Auth */}
@@ -220,7 +254,10 @@ export default function Navbar() {
               </Link>
             )}
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => {
+                setMobileMenuOpen(!mobileMenuOpen);
+                if (mobileMenuOpen) setMobileGroup(null);
+              }}
               className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               aria-label="القائمة"
             >
@@ -253,14 +290,6 @@ export default function Navbar() {
             ابدأ بدون رأس مال
           </Link>
           <Link
-            href="/learn"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800 font-medium"
-          >
-            <GraduationCap className="w-4 h-4 text-slate-500" />
-            تعلم وأنشئ محتوى
-          </Link>
-          <Link
             href="/projects"
             onClick={() => setMobileMenuOpen(false)}
             className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800 font-medium"
@@ -269,69 +298,106 @@ export default function Navbar() {
             تصفح جميع المشاريع
           </Link>
           <Link
-            href="/domains"
+            href="/learn"
             onClick={() => setMobileMenuOpen(false)}
             className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800 font-medium"
           >
-            <Layers className="w-4 h-4 text-slate-500" />
-            مجالات المشاريع
+            <GraduationCap className="w-4 h-4 text-slate-500" />
+            تعلم وأنشئ محتوى
           </Link>
-          <Link
-            href="/legal-guide"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800 font-medium"
-          >
-            <span className="text-sm">⚖️</span>
-            الدليل القانوني
-          </Link>
-          <Link
-            href="/calculator"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800 font-medium"
-          >
-            <Calculator className="w-4 h-4 text-slate-500" />
-            حاسبة الربح ونقطة التعادل
-          </Link>
-          <Link
-            href="/simulator"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800 font-medium"
-          >
-            <TrendingUp className="w-4 h-4 text-slate-500" />
-            محاكاة السيناريوهات
-          </Link>
-          <Link
-            href="/idea-test"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800 font-medium"
-          >
-            <Lightbulb className="w-4 h-4 text-amber-500" />
-            اختبار فكرة خاصة
-          </Link>
-          <Link
-            href="/plan"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800 font-medium"
-          >
-            <CalendarCheck className="w-4 h-4 text-slate-500" />
-            خطة تنفيذ 30 يوم
-          </Link>
-          <Link
-            href="/blog"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800 font-medium"
-          >
-            <FileText className="w-4 h-4 text-slate-500" />
-            المقالات والنصائح
-          </Link>
-          <Link
-            href="/library"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800 font-medium"
-          >
-            <Library className="w-4 h-4 text-slate-500" />
-            مكتبة NABDA
-          </Link>
+
+          {/* أدوات group */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setMobileGroup(mobileGroup === "tools" ? null : "tools")}
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-100 text-slate-800 font-medium"
+            >
+              <span className="flex items-center gap-2">
+                <Calculator className="w-4 h-4 text-slate-500" />
+                أدوات
+              </span>
+              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${mobileGroup === "tools" ? "rotate-180" : ""}`} />
+            </button>
+            {mobileGroup === "tools" && (
+              <div className="pr-3 space-y-1">
+                {TOOLS_LINKS.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-700 font-medium"
+                  >
+                    {item.icon}
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* محتوى group */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setMobileGroup(mobileGroup === "content" ? null : "content")}
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-100 text-slate-800 font-medium"
+            >
+              <span className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-slate-500" />
+                محتوى
+              </span>
+              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${mobileGroup === "content" ? "rotate-180" : ""}`} />
+            </button>
+            {mobileGroup === "content" && (
+              <div className="pr-3 space-y-1">
+                {CONTENT_LINKS.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-700 font-medium"
+                  >
+                    {item.icon}
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* منتجات group */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setMobileGroup(mobileGroup === "products" ? null : "products")}
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 font-medium"
+            >
+              <span className="flex items-center gap-2">
+                <Library className="w-4 h-4 text-amber-600" />
+                منتجات
+              </span>
+              <ChevronDown className={`w-4 h-4 text-amber-500 transition-transform ${mobileGroup === "products" ? "rotate-180" : ""}`} />
+            </button>
+            {mobileGroup === "products" && (
+              <div className="pr-3 space-y-1">
+                <div className="px-3 pt-1.5 text-[11px] font-bold text-amber-700">
+                  منتجات قابلة للشراء
+                </div>
+                {PRODUCTS_LINKS.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-700 font-medium"
+                  >
+                    {item.icon}
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="pt-2 border-t border-slate-100 flex flex-col gap-2">
             {!authLoaded ? (
