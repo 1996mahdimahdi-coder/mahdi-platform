@@ -14,7 +14,8 @@ import {
   Compass,
   CheckCircle2,
   X,
-  FileText
+  FileText,
+  Library
 } from "lucide-react";
 import { getCsrfToken } from "@/lib/clientCsrf";
 
@@ -306,13 +307,23 @@ export default function AdminDashboardPage() {
           </button>
         </div>
 
-        <Link
-          href="/admin/sources"
-          className="px-4 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-extrabold text-xs flex items-center gap-1.5 shadow-md hover:bg-amber-400 transition-colors"
-        >
-          <FileText className="w-4 h-4" />
-          إدارة المصادر
-        </Link>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            href="/admin/library"
+            className="px-4 py-2.5 rounded-xl bg-slate-700 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md hover:bg-slate-600 transition-colors"
+          >
+            <Library className="w-4 h-4" />
+            📚 مكتبة NABDA
+          </Link>
+
+          <Link
+            href="/admin/sources"
+            className="px-4 py-2.5 rounded-xl bg-amber-500 text-slate-950 font-extrabold text-xs flex items-center gap-1.5 shadow-md hover:bg-amber-400 transition-colors"
+          >
+            <FileText className="w-4 h-4" />
+            إدارة المصادر
+          </Link>
+        </div>
       </div>
 
       {/* TAB 1: STATS OVERVIEW */}
