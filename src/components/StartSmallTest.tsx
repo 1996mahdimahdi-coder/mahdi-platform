@@ -25,7 +25,6 @@ interface StartSmallTestProps {
   projectName: string;
   projectId: string;
   category: string;
-  recommendedCapital: number;
   netProfitMonthly: number;
   breakEvenUnits: number;
   onClose?: () => void;
@@ -115,18 +114,17 @@ export default function StartSmallTest({
   projectName,
   projectId,
   category,
-  recommendedCapital,
   netProfitMonthly,
   breakEvenUnits,
   onClose,
 }: StartSmallTestProps) {
   const [plan, setPlan] = useState<TestPlan>({
-    budget: Math.min(20000, Math.round(recommendedCapital * 0.2)),
+    budget: 0,
     duration: 21,
     location: "محلي (بلدية واحدة)",
     testAudience: "العملاء المحتملون مباشرة",
-    unitPrice: 1500,
-    expectedSales: 10,
+    unitPrice: 0,
+    expectedSales: 0,
     completedStages: [false, false, false, false, false, false],
   });
 
@@ -463,13 +461,12 @@ export default function StartSmallTest({
             </label>
             <input
               type="number"
-              value={plan.budget}
+              min="0"
+              value={plan.budget || ""}
               onChange={(e) => setPlan({ ...plan, budget: Number(e.target.value) })}
+              placeholder="أدخل ميزانية الاختبار"
               className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-mono"
             />
-            <p className="text-[10px] text-slate-500">
-              {Math.round((plan.budget / recommendedCapital) * 100)}% من رأس المال المتاح للبدء
-            </p>
           </div>
 
           <div className="space-y-1">
@@ -523,8 +520,10 @@ export default function StartSmallTest({
             <label className="text-slate-700">سعر بيع الوحدة التجريبي (دج)</label>
             <input
               type="number"
-              value={plan.unitPrice}
+              min="0"
+              value={plan.unitPrice || ""}
               onChange={(e) => setPlan({ ...plan, unitPrice: Number(e.target.value) })}
+              placeholder="أدخل قيمة"
               className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-mono"
             />
           </div>
@@ -533,8 +532,10 @@ export default function StartSmallTest({
             <label className="text-slate-700">عدد المبيعات المتوقع خلال الاختبار</label>
             <input
               type="number"
-              value={plan.expectedSales}
+              min="0"
+              value={plan.expectedSales || ""}
               onChange={(e) => setPlan({ ...plan, expectedSales: Number(e.target.value) })}
+              placeholder="أدخل العدد"
               className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-indigo-500 text-sm font-mono"
             />
           </div>

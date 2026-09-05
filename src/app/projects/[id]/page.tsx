@@ -4,10 +4,10 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import {
   Compass,
-  DollarSign,
   Calculator,
   Calendar,
   CheckCircle2,
+  CheckSquare,
   TrendingUp,
   ShieldCheck,
   ChevronLeft,
@@ -19,7 +19,9 @@ import {
   FileText,
   Download,
   Loader2,
-  Send
+  Lock,
+  Send,
+  Square
 } from "lucide-react";
 import {
   calculateFinancials,
@@ -38,6 +40,39 @@ import {
   buildStudyPurchaseUrl,
 } from "@/lib/noCapital/studySales";
 
+const MARKET_TEST_STAGES = [
+  {
+    id: 0,
+    title: "البحث عن المنافسين",
+    tasks: ["وجدت 3–5 منافسين", "سجلت أسعارهم", "درست نقاط قوتهم وضعفهم", "حددت USP"],
+  },
+  {
+    id: 1,
+    title: "تحديد السعر التجريبي",
+    tasks: ["حسبت التكلفة الكاملة للوحدة", "حددت سعر البيع التجريبي", "حددت هامش الربح المستهدف"],
+  },
+  {
+    id: 2,
+    title: "اختبار الطلب",
+    tasks: ["أنشأت إعلانات تجريبية", "استهدفت جمهوراً محدداً", "سجلت النقرات والرسائل"],
+  },
+  {
+    id: 3,
+    title: "طلبات فعلية",
+    tasks: ["حصلت على طلبات فعلية", "سجلت ملاحظات العملاء", "قست سرعة قرار الشراء"],
+  },
+  {
+    id: 4,
+    title: "تحليل النتائج",
+    tasks: ["حسبت معدل التحويل", "حسبت CAC", "قيّمت رضا العملاء"],
+  },
+  {
+    id: 5,
+    title: "القرار",
+    tasks: ["لخصت النتائج", "قررت Start / Test More / Stop", "سجلت الدروس المستفادة"],
+  },
+];
+
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const { id } = resolvedParams;
@@ -47,14 +82,14 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const [errorMsg, setErrorMsg] = useState("");
 
   // Interactive Financial Calculator States
-  const [purchasePrice, setPurchasePrice] = useState<number>(500);
-  const [salePrice, setSalePrice] = useState<number>(1500);
-  const [salesUnits, setSalesUnits] = useState<number>(50);
-  const [deliveryCost, setDeliveryCost] = useState<number>(200);
-  const [packagingCost, setPackagingCost] = useState<number>(50);
-  const [adSpend, setAdSpend] = useState<number>(5000);
-  const [fixedCosts, setFixedCosts] = useState<number>(3000);
-  const [returnRate, setReturnRate] = useState<number>(5);
+  const [purchasePrice, setPurchasePrice] = useState<number>(0);
+  const [salePrice, setSalePrice] = useState<number>(0);
+  const [salesUnits, setSalesUnits] = useState<number>(0);
+  const [deliveryCost, setDeliveryCost] = useState<number>(0);
+  const [packagingCost, setPackagingCost] = useState<number>(0);
+  const [adSpend, setAdSpend] = useState<number>(0);
+  const [fixedCosts, setFixedCosts] = useState<number>(0);
+  const [returnRate, setReturnRate] = useState<number>(0);
 
   // Capital Slider State
   const [selectedCapital, setSelectedCapital] = useState<number>(100000);
@@ -65,6 +100,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     stage: "preparing",
     progress: 0,
   });
+
+  // Interactive 6-Stage Market Test Checklist State
+  const [stageChecks, setStageChecks] = useState<boolean[][]>(() =>
+    MARKET_TEST_STAGES.map((s) => s.tasks.map(() => false))
+  );
 
   useEffect(() => {
     fetchProject();
@@ -184,10 +224,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         const p = data.project;
         setProject(p);
         setSelectedCapital(p.minCapital || 100000);
-        setFixedCosts(p.fixedCosts || 3000);
-        if (p.initialStock && p.initialStock > 0) {
-          setPurchasePrice(Math.round(p.initialStock / 100) || 500);
-        }
       } else {
         setErrorMsg(data.error || "المشروع غير موجود");
       }
@@ -245,10 +281,12 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
   const capitalAllocation = calculateCapitalAllocation(selectedCapital);
 
+  const hasValidInputs = purchasePrice > 0 && salePrice > 0 && salesUnits > 0;
+
   const shouldIStart = evaluateShouldIStart(
-    selectedCapital,
-    project.minCapital,
-    project.minCapital,
+    0,
+    0,
+    0,
     calc.netProfitMonthly,
     calc.breakEvenUnits,
     salesUnits,
@@ -258,6 +296,17 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const videos = getCapitalProjectVideos(project.projectId);
 
   const studyPurchaseUrl = buildStudyPurchaseUrl(project.projectName, project.projectId);
+
+  const toggleCheck = (stageIdx: number, taskIdx: number) => {
+    setStageChecks((prev) =>
+      prev.map((tasks, si) =>
+        si === stageIdx ? tasks.map((t, ti) => (ti === taskIdx ? !t : t)) : tasks
+      )
+    );
+  };
+
+  const completedStagesCount = stageChecks.filter((tasks) => tasks.every(Boolean)).length;
+  const stagesProgressPercent = Math.round((completedStagesCount / MARKET_TEST_STAGES.length) * 100);
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12 print:py-2 print:px-0">
@@ -318,8 +367,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* Overview Cards & Basic Parameters */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
+      <div>
+        <div className="space-y-6">
           <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
               <Compass className="w-5 h-5 text-indigo-600" />
@@ -371,170 +420,25 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
 
-        {/* Right Sidebar: Start Capital (free minimum only) */}
-        <div className="space-y-6">
-          <div className="bg-slate-900 text-white p-6 sm:p-8 rounded-3xl space-y-6 shadow-xl border border-slate-800">
-            <h3 className="text-base font-bold flex items-center gap-2 border-b border-slate-800 pb-3">
-              <DollarSign className="w-5 h-5 text-indigo-400" />
-              رأس المال
-            </h3>
+</div>
 
-            <div className="space-y-3 text-xs">
-              <button
-                type="button"
-                onClick={() => setSelectedCapital(project.minCapital)}
-                className={`w-full text-right p-4 rounded-2xl border transition-all ${
-                  selectedCapital === project.minCapital
-                    ? "bg-slate-800 border-indigo-500 shadow-sm"
-                    : "bg-slate-800/40 border-slate-700 hover:bg-slate-800"
-                }`}
-              >
-                <span className="text-slate-400 block text-[10px]">رأس المال الأدنى للبدء</span>
-                <span className="font-extrabold text-base text-white font-mono">
-                  {project.minCapital?.toLocaleString()} دج
-                </span>
-              </button>
-
-              <p className="text-[11px] text-slate-400 leading-relaxed bg-slate-800/40 border border-slate-700/60 rounded-xl p-3">
-                مستويات رأس المال المدروسة كاملة (البداية الموصى بها والمتوسطة) ضمن الدراسة التفصيلية.
-              </p>
-            </div>
-
-            {/* Slider to adjust capital */}
-            <div className="pt-2 border-t border-slate-800 space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">تعديل المبلغ يدوياً:</span>
-                <span className="font-mono font-bold text-indigo-400">
-                  {selectedCapital.toLocaleString()} دج
-                </span>
-              </div>
-              <input
-                type="range"
-                min={project.minCapital || 10000}
-                max={Math.max((project.minCapital || 10000) * 5, 250000)}
-                step={5000}
-                value={selectedCapital}
-                onChange={(e) => setSelectedCapital(Number(e.target.value))}
-                className="w-full accent-indigo-500 cursor-pointer"
-              />
-            </div>
-          </div>
+      {/* FREE SECTION — interactive tools driven by user inputs only */}
+      <section className="rounded-3xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-white p-6 sm:p-8 shadow-sm space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-600 text-white text-xs font-extrabold w-fit">
+            <Sparkles className="w-3.5 h-3.5" />
+            مجاني — أدوات تفاعلية
+          </span>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900">
+            🟢 الأدوات المجانية — احسب بنفسك
+          </h2>
         </div>
-      </div>
-
-      {/* Paid Study Offer — 490 دج (non-blocking upsell) */}
-      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 text-white rounded-3xl p-6 sm:p-8 border border-slate-700 shadow-xl space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-700 pb-5">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold">
-              <FileText className="w-4 h-4" />
-              {PAID_STUDY_SALES_ENABLED ? "عرض مدفوع — متوفر الآن" : "عرض مدفوع — قيد الإعداد"}
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black flex items-center gap-2">
-              <span>📊</span> دراسة مشروع كاملة
-            </h2>
-          </div>
-
-          <div className="text-center bg-slate-900/80 border border-slate-700 px-6 py-4 rounded-2xl shrink-0">
-            <span className="text-[11px] text-slate-400 block font-bold">السعر</span>
-            <span className="text-3xl font-black text-indigo-400 font-mono">490 دج</span>
-          </div>
-        </div>
-
-        <p className="text-sm text-slate-300 leading-relaxed">
-          دراسة تفصيلية خاصة بهذا المشروع، تتضمن معلومات وتحليلات غير معروضة في النسخة المجانية، وتُعدّ وتُرسل لك عبر Telegram بعد تأكيد الدفع.
+        <p className="text-sm text-slate-600 leading-relaxed max-w-4xl">
+          استخدم أدوات الحساب واختبار المشروع وأدخل أرقامك بنفسك لتحصل على نتائج مبنية على بياناتك.
         </p>
-
-        <div className="grid sm:grid-cols-2 gap-2 text-xs text-slate-200">
-          {[
-            "قائمة المعدات والتجهيزات بالتفصيل",
-            "المهارات المطلوبة للبدء في هذا المشروع",
-            "معوقات المشروع وتنبيهات مهمة قبل الانطلاق",
-            "طريقة التسعير ومعادلات الربح ونقطة التعادل",
-          ].map((point, idx) => (
-            <div key={idx} className="flex items-start gap-2">
-              <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-              <span>{point}</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center gap-3 border-t border-slate-700">
-          {PAID_STUDY_SALES_ENABLED ? (
-            <a
-              href={studyPurchaseUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-sky-500 text-white font-extrabold text-sm hover:bg-sky-600 transition-colors shadow-md"
-            >
-              <Send className="w-4 h-4" />
-              اطلب الدراسة عبر Telegram
-            </a>
-          ) : (
-            <span className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-700 text-slate-300 font-extrabold text-sm cursor-not-allowed">
-              <FileText className="w-4 h-4" />
-              الدراسة قيد الإعداد
-            </span>
-          )}
-
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-indigo-300 font-bold">لإتمام الشراء والتواصل معنا عبر Telegram</p>
-            <p className="text-[11px] text-slate-400 leading-snug">
-              تُسلَّم الدراسة بعد تأكيد الدفع، وتشمل أقساماً تفصيلية غير معروضة في النسخة المجانية: المزايا، المخاطر، خطة 30 يوماً، المعدات، التسعير والأرباح، والجوانب القانونية.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* CAPITAL ALLOCATION BREAKDOWN */}
-      <section className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-          <div>
-            <h2 className="text-xl font-black text-slate-900">
-              مقترح توزيع رأس المال ({selectedCapital.toLocaleString()} دج)
-            </h2>
-            <p className="text-xs text-slate-500 mt-1">
-              النسب التشغيلية المقترحة لتوزيع ميزانيتك قبل الشراء والتنفيذ
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 text-xs font-bold">
-          <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 space-y-1">
-            <span className="text-indigo-800 block text-[11px]">المخزون/البضاعة ({capitalAllocation.stock.percent}%)</span>
-            <span className="text-lg font-black text-indigo-900 font-mono">
-              {capitalAllocation.stock.amount.toLocaleString()} دج
-            </span>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-cyan-50 border border-cyan-200 space-y-1">
-            <span className="text-cyan-800 block text-[11px]">المعدات والأدوات ({capitalAllocation.equipment.percent}%)</span>
-            <span className="text-lg font-black text-cyan-900 font-mono">
-              {capitalAllocation.equipment.amount.toLocaleString()} دج
-            </span>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 space-y-1">
-            <span className="text-indigo-800 block text-[11px]">التسويق والإعلانات ({capitalAllocation.marketing.percent}%)</span>
-            <span className="text-lg font-black text-indigo-900 font-mono">
-              {capitalAllocation.marketing.amount.toLocaleString()} دج
-            </span>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 space-y-1">
-            <span className="text-amber-800 block text-[11px]">مصاريف التشغيل ({capitalAllocation.operations.percent}%)</span>
-            <span className="text-lg font-black text-amber-900 font-mono">
-              {capitalAllocation.operations.amount.toLocaleString()} دج
-            </span>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-slate-100 border border-slate-200 space-y-1">
-            <span className="text-slate-700 block text-[11px]">احتياطي الطوارئ ({capitalAllocation.reserve.percent}%)</span>
-            <span className="text-lg font-black text-slate-900 font-mono">
-              {capitalAllocation.reserve.amount.toLocaleString()} دج
-            </span>
-          </div>
-        </div>
+        <p className="text-[11px] sm:text-xs text-emerald-800 bg-emerald-100/70 border border-emerald-200 rounded-xl px-3 py-2 leading-relaxed">
+          💡 النتائج هنا محسوبة من الأرقام التي تدخلها أنت، وليست توصيات جاهزة خاصة بهذا المشروع.
+        </p>
       </section>
 
       {/* INTERACTIVE PROFIT CALCULATOR & BREAK-EVEN TOOL */}
@@ -551,19 +455,21 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
 
-        {/* Inputs Sliders & Controls */}
+        {/* User Inputs — لا قيم جاهزة، الحقول فارغة حتى يدخل المستخدم أرقامه */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-800/80 p-6 rounded-2xl border border-slate-700/80 text-xs">
           {/* Purchase Price Input */}
           <div className="space-y-2">
             <div className="flex justify-between">
               <label className="font-bold text-slate-300">سعر الشراء / تكلفة الوحدة:</label>
-              <span className="font-mono text-indigo-400 font-bold">{purchasePrice} دج</span>
+              <span className="font-mono text-indigo-400 font-bold">{purchasePrice > 0 ? `${purchasePrice.toLocaleString()} دج` : "—"}</span>
             </div>
             <input
               type="number"
-              value={purchasePrice}
-              onChange={(e) => setPurchasePrice(Number(e.target.value))}
-              className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono"
+              min="0"
+              value={purchasePrice || ""}
+              onChange={(e) => setPurchasePrice(e.target.value === "" ? 0 : Number(e.target.value))}
+              placeholder="أدخل القيمة"
+              className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono placeholder:text-slate-500"
             />
           </div>
 
@@ -571,13 +477,15 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <div className="space-y-2">
             <div className="flex justify-between">
               <label className="font-bold text-slate-300">سعر البيع للزبون:</label>
-              <span className="font-mono text-indigo-400 font-bold">{salePrice} دج</span>
+              <span className="font-mono text-indigo-400 font-bold">{salePrice > 0 ? `${salePrice.toLocaleString()} دج` : "—"}</span>
             </div>
             <input
               type="number"
-              value={salePrice}
-              onChange={(e) => setSalePrice(Number(e.target.value))}
-              className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono"
+              min="0"
+              value={salePrice || ""}
+              onChange={(e) => setSalePrice(e.target.value === "" ? 0 : Number(e.target.value))}
+              placeholder="أدخل القيمة"
+              className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono placeholder:text-slate-500"
             />
           </div>
 
@@ -585,16 +493,15 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <div className="space-y-2">
             <div className="flex justify-between">
               <label className="font-bold text-slate-300">المبيعات المتوقعة شهرياً:</label>
-              <span className="font-mono text-indigo-400 font-bold">{salesUnits} وحدة</span>
+              <span className="font-mono text-indigo-400 font-bold">{salesUnits > 0 ? `${salesUnits} وحدة` : "—"}</span>
             </div>
             <input
-              type="range"
-              min="5"
-              max="500"
-              step="5"
-              value={salesUnits}
-              onChange={(e) => setSalesUnits(Number(e.target.value))}
-              className="w-full accent-indigo-500 cursor-pointer"
+              type="number"
+              min="0"
+              value={salesUnits || ""}
+              onChange={(e) => setSalesUnits(e.target.value === "" ? 0 : Number(e.target.value))}
+              placeholder="أدخل العدد"
+              className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono placeholder:text-slate-500"
             />
           </div>
 
@@ -602,13 +509,15 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <div className="space-y-2">
             <div className="flex justify-between">
               <label className="font-bold text-slate-300">مصاريف الشحن للوحدة:</label>
-              <span className="font-mono text-slate-300">{deliveryCost} دج</span>
+              <span className="font-mono text-slate-300">{deliveryCost > 0 ? `${deliveryCost.toLocaleString()} دج` : "—"}</span>
             </div>
             <input
               type="number"
-              value={deliveryCost}
-              onChange={(e) => setDeliveryCost(Number(e.target.value))}
-              className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono"
+              min="0"
+              value={deliveryCost || ""}
+              onChange={(e) => setDeliveryCost(e.target.value === "" ? 0 : Number(e.target.value))}
+              placeholder="أدخل القيمة"
+              className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono placeholder:text-slate-500"
             />
           </div>
 
@@ -616,31 +525,37 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           <div className="space-y-2">
             <div className="flex justify-between">
               <label className="font-bold text-slate-300">ميزانية الإعلانات الشهرية:</label>
-              <span className="font-mono text-slate-300">{adSpend} دج</span>
+              <span className="font-mono text-slate-300">{adSpend > 0 ? `${adSpend.toLocaleString()} دج` : "—"}</span>
             </div>
             <input
               type="number"
-              value={adSpend}
-              onChange={(e) => setAdSpend(Number(e.target.value))}
-              className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono"
+              min="0"
+              value={adSpend || ""}
+              onChange={(e) => setAdSpend(e.target.value === "" ? 0 : Number(e.target.value))}
+              placeholder="أدخل القيمة"
+              className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono placeholder:text-slate-500"
             />
           </div>
 
           {/* Fixed Costs Monthly */}
           <div className="space-y-2">
             <div className="flex justify-between">
-              <label className="font-bold text-slate-300">المصاريف الثابتة الشهري:</label>
-              <span className="font-mono text-slate-300">{fixedCosts} دج</span>
+              <label className="font-bold text-slate-300">المصاريف الثابتة الشهرية:</label>
+              <span className="font-mono text-slate-300">{fixedCosts > 0 ? `${fixedCosts.toLocaleString()} دج` : "—"}</span>
             </div>
             <input
               type="number"
-              value={fixedCosts}
-              onChange={(e) => setFixedCosts(Number(e.target.value))}
-              className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono"
+              min="0"
+              value={fixedCosts || ""}
+              onChange={(e) => setFixedCosts(e.target.value === "" ? 0 : Number(e.target.value))}
+              placeholder="أدخل القيمة"
+              className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono placeholder:text-slate-500"
             />
           </div>
         </div>
 
+        {hasValidInputs ? (
+          <>
         {/* Realtime Outputs Box */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-slate-800/90 p-5 rounded-2xl border border-slate-700 space-y-1">
@@ -759,10 +674,18 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             </div>
           </div>
         </div>
+          </>
+        ) : (
+          <div className="bg-slate-800/60 border border-dashed border-slate-700 rounded-2xl p-6 text-center text-xs text-slate-400 leading-relaxed">
+            أدخل أرقامك في الحقول أعلاه (سعر الشراء، سعر البيع، والمبيعات المتوقعة على الأقل)
+            لتظهر لك نتائج الحساب، نقطة التعادل، وسيناريوهات المبيعات مباشرة.
+          </div>
+        )}
       </section>
 
       {/* SHOULD I START? VERDICT DECISION BOX */}
-      <section className="space-y-6">
+      {hasValidInputs ? (
+        <section className="space-y-6">
         <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1">
@@ -786,12 +709,17 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             projectName={project.projectName}
             projectId={project.projectId}
             category={project.category}
-            recommendedCapital={project.minCapital}
             netProfitMonthly={calc.netProfitMonthly}
             breakEvenUnits={calc.breakEvenUnits}
           />
         )}
       </section>
+      ) : (
+        <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 text-[11px] text-amber-800 leading-relaxed">
+          💡 التقييم الميداني (هل أبدأ بهذا المشروع؟) يُحتسب تلقائياً من الأرقام التي تدخلها في الحاسبة أعلاه.
+          أدخل قيمك حتى يظهر هنا.
+        </div>
+      )}
 
       {/* 30-DAY EXECUTION PLAN & PRE-LAUNCH MARKET TEST */}
       <section className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-8">
@@ -817,38 +745,65 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           </p>
         </div>
 
-        {/* Pre-launch 6-Stage Market Test Box */}
+        {/* Pre-launch 6-Stage Market Test — interactive general checklist */}
         <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-6 rounded-2xl space-y-4">
-          <h3 className="font-bold text-sm text-indigo-400 flex items-center gap-2">
-            <Target className="w-4 h-4" />
-            مراحل اختبار السوق الـ 6 قبل شراء الكميات الكبيرة
-          </h3>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <h3 className="font-bold text-sm text-indigo-400 flex items-center gap-2">
+              <Target className="w-4 h-4" />
+              مراحل اختبار السوق الـ 6 — قائمة تفقد تحسبها بنفسك
+            </h3>
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-200 text-xs font-mono font-bold">
+              {completedStagesCount}/6
+            </span>
+          </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 text-[11px] text-center">
-            <div className="bg-slate-800 p-3 rounded-xl border border-slate-700 space-y-1">
-              <span className="text-indigo-400 font-bold block">1. المنافسين</span>
-              <span className="text-slate-300">تحليل 3 منافسين محليين</span>
-            </div>
-            <div className="bg-slate-800 p-3 rounded-xl border border-slate-700 space-y-1">
-              <span className="text-indigo-400 font-bold block">2. السعر</span>
-              <span className="text-slate-300">تحديد هامش الربح</span>
-            </div>
-            <div className="bg-slate-800 p-3 rounded-xl border border-slate-700 space-y-1">
-              <span className="text-indigo-400 font-bold block">3. اختبار الطلب</span>
-              <span className="text-slate-300">نشر عينات وصور</span>
-            </div>
-            <div className="bg-slate-800 p-3 rounded-xl border border-slate-700 space-y-1">
-              <span className="text-indigo-400 font-bold block">4. الطلبات</span>
-              <span className="text-slate-300">استقبال طلبات أولية</span>
-            </div>
-            <div className="bg-slate-800 p-3 rounded-xl border border-slate-700 space-y-1">
-              <span className="text-indigo-400 font-bold block">5. التحليل</span>
-              <span className="text-slate-300">قياس التكلفة للزبون</span>
-            </div>
-            <div className="bg-slate-800 p-3 rounded-xl border border-slate-700 space-y-1">
-              <span className="text-indigo-400 font-bold block">6. القرار</span>
-              <span className="text-slate-300">Start / Test / Stop</span>
-            </div>
+          {/* Progress Bar */}
+          <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 transition-all duration-300"
+              style={{ width: `${stagesProgressPercent}%` }}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+            {MARKET_TEST_STAGES.map((stage, si) => {
+              const done = stageChecks[si].every(Boolean);
+              return (
+                <div
+                  key={stage.id}
+                  className={`rounded-xl border p-3 space-y-2 ${
+                    done ? "bg-indigo-950/60 border-indigo-500/50" : "bg-slate-800 border-slate-700"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <h4 className={`font-bold ${done ? "text-indigo-300" : "text-slate-200"}`}>
+                      {stage.id + 1}. {stage.title}
+                    </h4>
+                    {done && <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />}
+                  </div>
+                  <ul className="space-y-1">
+                    {stage.tasks.map((task, ti) => (
+                      <li key={ti}>
+                        <button
+                          type="button"
+                          onClick={() => toggleCheck(si, ti)}
+                          className={`w-full text-right flex items-start gap-2 py-0.5 ${
+                            stageChecks[si][ti] ? "text-emerald-300" : "text-slate-300 hover:text-slate-100"
+                          }`}
+                        >
+                          {stageChecks[si][ti] ? (
+                            <CheckSquare className="w-3.5 h-3.5 shrink-0 mt-0.5 text-emerald-400" />
+                          ) : (
+                            <Square className="w-3.5 h-3.5 shrink-0 mt-0.5 text-slate-500" />
+                          )}
+                          <span>{task}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -859,6 +814,78 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             <strong>الجوانب القانونية والإدارية للقطاع:</strong> التفاصيل الخاصة بالتراخيص والمتطلبات
             الإدارية تظهر ضمن الدراسة التفصيلية.
           </span>
+        </div>
+      </section>
+
+      {/* PAID SECTION — NABDA prepared project-specific study */}
+      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 text-white rounded-3xl p-6 sm:p-8 border border-slate-700 shadow-xl space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-700 pb-5">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold">
+              <Lock className="w-3.5 h-3.5" />
+              {PAID_STUDY_SALES_ENABLED ? "دراسة مدفوعة — متوفرة الآن" : "دراسة مدفوعة — قيد الإعداد"}
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black flex items-center gap-2">
+              <span>🔒</span> الدراسة التفصيلية لهذا المشروع
+            </h2>
+          </div>
+
+          <div className="text-center bg-slate-900/80 border border-slate-700 px-6 py-4 rounded-2xl shrink-0">
+            <span className="text-[11px] text-slate-400 block font-bold">السعر</span>
+            <span className="text-3xl font-black text-indigo-400 font-mono">490 دج</span>
+          </div>
+        </div>
+
+        <p className="text-sm text-slate-300 leading-relaxed">
+          تشمل الدراسة تحليلاً جاهزاً ومخصصاً لهذا المشروع، وليس مجرد حاسبة تعتمد على مدخلاتك.
+        </p>
+
+        <div className="grid sm:grid-cols-2 gap-2 text-xs text-slate-200">
+          {[
+            "تحليل المشروع",
+            "استراتيجية اختبار السوق",
+            "خطة تنفيذ 30 يوم",
+            "التسعير المقترح",
+            "تحليل المنافسة",
+            "المزايا ونقاط القوة",
+            "المخاطر والأخطاء الشائعة",
+            "المعدات المطلوبة",
+            "الملاحظات القانونية",
+            "رأس المال الموصى به",
+            "المنطقة والجمهور المستهدف",
+            "التحليل والاستراتيجية الخاصة بالمشروع",
+          ].map((point, idx) => (
+            <div key={idx} className="flex items-start gap-2">
+              <CheckCircle2 className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+              <span>{point}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center gap-3 border-t border-slate-700">
+          {PAID_STUDY_SALES_ENABLED ? (
+            <a
+              href={studyPurchaseUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-sky-500 text-white font-extrabold text-sm hover:bg-sky-600 transition-colors shadow-md"
+            >
+              <Send className="w-4 h-4" />
+              اطلب الدراسة عبر Telegram
+            </a>
+          ) : (
+            <span className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-700 text-slate-300 font-extrabold text-sm cursor-not-allowed">
+              <Lock className="w-4 h-4" />
+              الدراسة قيد الإعداد
+            </span>
+          )}
+
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-indigo-300 font-bold">لإتمام الشراء والتواصل معنا عبر Telegram</p>
+            <p className="text-[11px] text-slate-400 leading-snug">
+              تُسلَّم الدراسة بعد تأكيد الدفع، وتشمل أقساماً تفصيلية غير معروضة في النسخة المجانية: المزايا، المخاطر، خطة 30 يوماً، المعدات، التسعير والأرباح، والجوانب القانونية.
+            </p>
+          </div>
         </div>
       </section>
 
