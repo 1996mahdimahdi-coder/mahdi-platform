@@ -83,7 +83,7 @@ export interface ResultsPdfData {
 let fontRegularBase64: string | null = null;
 let fontBoldBase64: string | null = null;
 
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
+export function arrayBufferToBase64(buffer: ArrayBuffer): string {
   let binary = "";
   const bytes = new Uint8Array(buffer);
   const chunkSize = 0x8000;
@@ -167,7 +167,7 @@ async function loadArabicFonts(pdf: jsPDF): Promise<void> {
    Formatting helpers
    ========================================================= */
 
-function textValue(value: unknown): string {
+export function textValue(value: unknown): string {
   if (
     value === null ||
     value === undefined ||
@@ -179,7 +179,7 @@ function textValue(value: unknown): string {
   return String(value);
 }
 
-function formatNumber(value: unknown): string {
+export function formatNumber(value: unknown): string {
   if (
     typeof value !== "number" ||
     !Number.isFinite(value)
@@ -190,7 +190,7 @@ function formatNumber(value: unknown): string {
   return new Intl.NumberFormat("ar-DZ").format(value);
 }
 
-function formatMoney(value: unknown): string {
+export function formatMoney(value: unknown): string {
   if (
     typeof value !== "number" ||
     !Number.isFinite(value)
@@ -201,7 +201,7 @@ function formatMoney(value: unknown): string {
   return `${new Intl.NumberFormat("ar-DZ").format(value)} دج`;
 }
 
-function formatBoolean(value: unknown): string {
+export function formatBoolean(value: unknown): string {
   if (value === true) {
     return "نعم";
   }
@@ -217,7 +217,7 @@ function formatBoolean(value: unknown): string {
    Arabic text preparation
    ========================================================= */
 
-function prepareArabicText(text: string): string {
+export function prepareArabicText(text: string): string {
   const value = String(text ?? "");
 
   if (!value) {
@@ -247,7 +247,7 @@ function prepareArabicText(text: string): string {
    Text rendering
    ========================================================= */
 
-function addText(
+export function addText(
   pdf: jsPDF,
   text: string,
   x: number,
@@ -277,7 +277,7 @@ function addText(
    File name
    ========================================================= */
 
-function safeFileName(value: string): string {
+export function safeFileName(value: string): string {
   return String(value || "project")
     .replace(/[<>:"/|?*]+/g, "-")
     .replace(/\s+/g, " ")
@@ -288,7 +288,7 @@ function safeFileName(value: string): string {
    PDF creation
    ========================================================= */
 
-function createPdf(): jsPDF {
+export function createPdf(): jsPDF {
   return new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -301,7 +301,7 @@ function createPdf(): jsPDF {
    Page header
    ========================================================= */
 
-function addPageHeader(
+export function addPageHeader(
   pdf: jsPDF,
   title: string,
   pageWidth: number,
@@ -336,7 +336,7 @@ function addPageHeader(
    Section title
    ========================================================= */
 
-function addSectionTitle(
+export function addSectionTitle(
   pdf: jsPDF,
   title: string,
   pageWidth: number,

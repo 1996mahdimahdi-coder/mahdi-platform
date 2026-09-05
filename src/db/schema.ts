@@ -5,6 +5,7 @@ import type {
   NoCapitalAnswer,
   NoCapitalRecommendationSummary,
   ExecutionPhase,
+  PaidStudy,
 } from "@/lib/noCapital/types";
 
 // Wilayas table
@@ -367,6 +368,9 @@ export const noCapitalProjects = pgTable(
     legalNotes: text("legal_notes"),
     source: text("source").default("دراسة ميدانية وسوق جزائري 2025"),
     active: boolean("active").notNull().default(true),
+    // Paid Study — ADMIN-ONLY. Stored as JSONB per project. Never exposed via
+    // public pages/APIs/search/sitemap/PDF. Phase 4 owns selling/delivery.
+    study: jsonb("study").$type<PaidStudy | null>().default(sql`NULL`),
     lastUpdated: timestamp("last_updated").defaultNow(),
   },
   (t) => [

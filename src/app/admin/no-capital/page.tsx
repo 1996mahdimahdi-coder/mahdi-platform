@@ -15,12 +15,14 @@ import {
   SlidersHorizontal,
   ChevronLeft,
   Library,
+  FileBadge2,
 } from "lucide-react";
 
 const sections = [
   { icon: FolderOpen, title: "المجالات والتصنيفات", desc: "إدارة المجالات والتصنيفات الفرعية", href: "/admin/categories", color: "bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white" },
   { icon: HelpCircle, title: "أسئلة اختبار بدون رأس مال", desc: "بنك الأسئلة والخيارات", href: "/admin/no-capital/questions", color: "bg-sky-50 text-sky-600 group-hover:bg-sky-600 group-hover:text-white" },
   { icon: Briefcase, title: "مشاريع بدون رأس مال", desc: "ملفات المشاريع المقترحة", href: "/admin/no-capital/projects", color: "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white" },
+  { icon: FileBadge2, title: "الدراسات المدفوعة (Paid Studies)", desc: "الدراسات الاحترافية لكل مشروع", href: "/admin/no-capital/studies", color: "bg-fuchsia-50 text-fuchsia-600 group-hover:bg-fuchsia-600 group-hover:text-white" },
   { icon: SlidersHorizontal, title: "قواعد التوصية", desc: "تحكم في أوزان المحرك حسب السؤال والخيار", href: "/admin/no-capital/rules", color: "bg-pink-50 text-pink-600 group-hover:bg-pink-600 group-hover:text-white" },
   { icon: ShieldCheck, title: "شروط الموافقة (Consent)", desc: "إصدارات نص الموافقة القانونية", href: "/admin/consent", color: "bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white" },
   { icon: BookOpen, title: "الدورات", desc: "دورات مجانية مع الدروس", href: "/admin/courses", color: "bg-rose-50 text-rose-600 group-hover:bg-rose-600 group-hover:text-white" },

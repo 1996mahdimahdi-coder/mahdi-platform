@@ -50,6 +50,191 @@ export type NoCapitalProfile = {
   legalNotes?: string | null;
 };
 
+// ============================================================================
+// Paid Study — the paid "study" that will be sold/delivered for a no-capital
+// project (Phase 4). In Phase 3 this is an ADMIN-ONLY data structure stored as
+// jsonb on noCapitalProjects.study. It is deliberately NOT exposed through any
+// public page, public API, search, sitemap, plan route, or the free PDF.
+//
+// Draft-safety rule: any study must start as status "draft" and must only be
+// considered deliverable once status === "approved". The public layer is
+// responsible for never reading this field.
+// ============================================================================
+
+export type StudyStatus = "draft" | "review" | "approved";
+
+export type StudySourceStatus =
+  | "VERIFIED"
+  | "BENCHMARK"
+  | "SUGGESTED"
+  | "NEEDS_VALIDATION";
+
+export type StudyPricingModel =
+  | "per_word"
+  | "per_minute"
+  | "per_project"
+  | "monthly_retainer"
+  | "package";
+
+export type StudyDifficulty = "low" | "medium" | "high";
+
+export type StudyEquipmentTier = "free" | "pro";
+
+export type StudyPlanWeek = 1 | 2 | 3 | 4;
+
+export type StudyIdealClient = {
+  persona: string;
+  orgType?: string;
+  platform?: string;
+  dzEligible?: boolean;
+  notes?: string;
+};
+
+export type StudyEquipment = {
+  item: string;
+  tier: StudyEquipmentTier;
+  purpose?: string;
+  source?: string;
+  sourceStatus: StudySourceStatus;
+};
+
+export type StudyPricing = {
+  model: StudyPricingModel;
+  globalMinUsd?: number;
+  globalMaxUsd?: number;
+  dzSuggestedDzd?: number;
+  dzPriceStatus: StudySourceStatus;
+  source?: string;
+  note?: string;
+};
+
+export type StudyProfitModel = {
+  priceAnchor?: string;
+  hoursPerUnit?: number;
+  grossPerHour?: number;
+  breakEvenUnits?: number;
+  notes?: string;
+};
+
+export type StudyBusinessModel = {
+  offerModel?: string;
+  valueProposition?: string;
+  repeatClientStrategy?: string;
+};
+
+export type StudyClientAcquisition = {
+  channel: string;
+  difficulty?: StudyDifficulty;
+  outreachTargetCount?: number;
+  messageScript?: string;
+  followUpScript?: string;
+};
+
+export type StudyWorkflowStep = {
+  stage: string;
+  detail: string;
+  deliverable?: string;
+};
+
+export type StudyCompetition = {
+  segment: string;
+  intensity?: StudyDifficulty;
+  positioning?: string;
+  notes?: string;
+};
+
+export type StudyMistake = {
+  mistake: string;
+  prevention?: string;
+};
+
+export type StudyRedFlag = {
+  flag: string;
+  why?: string;
+  protection?: string;
+};
+
+export type StudyMarketing = {
+  channels: string[];
+  contentTypes: string[];
+  cta?: string;
+  kpis: string[];
+};
+
+export type StudyPlanWeekBlock = {
+  week: StudyPlanWeek;
+  tasks: string[];
+  outreach?: string[];
+  content?: string[];
+  kpis?: string[];
+};
+
+export type StudyGrowthStep = {
+  from: string;
+  to: string;
+  tactic: string;
+};
+
+export type StudyLegalDz = {
+  autoEntrepreneur?: string;
+  ifu?: string;
+  casnos?: string;
+  tva?: string;
+  crypto?: string;
+  notes?: string;
+  needsValidation: boolean;
+};
+
+export type StudyCaseStudy = {
+  scenario: string;
+  inputs?: string[];
+  outcome?: string;
+  isSample: true;
+};
+
+export type StudySource = {
+  title: string;
+  url?: string;
+  sourceType: "OFFICIAL" | "BENCHMARK" | "REFERENCE";
+  verifiedAt?: string;
+  notes?: string;
+};
+
+export type PaidStudyMeta = {
+  paidValueScore?: number;
+  lastVerified?: string;
+  researchVersion?: string;
+};
+
+export type PaidStudy = {
+  version: number;
+  status: StudyStatus;
+  summary: {
+    overview: string;
+  };
+  idealClients: StudyIdealClient[];
+  skills: {
+    minimum: string[];
+    advanced: string[];
+  };
+  equipment: StudyEquipment[];
+  pricing: StudyPricing[];
+  profitModel: StudyProfitModel;
+  businessModel: StudyBusinessModel;
+  firstClientAcquisition: StudyClientAcquisition[];
+  workflow: StudyWorkflowStep[];
+  marketCompetition: StudyCompetition[];
+  commonMistakes: StudyMistake[];
+  redFlags: StudyRedFlag[];
+  marketing: StudyMarketing;
+  plan30Days: StudyPlanWeekBlock[];
+  growthPath: StudyGrowthStep[];
+  legalDz: StudyLegalDz;
+  caseStudy: StudyCaseStudy;
+  sources: StudySource[];
+  meta: PaidStudyMeta;
+};
+
 export type NoCapitalDimensionScores = {
   mode: number;
   effort: number;
