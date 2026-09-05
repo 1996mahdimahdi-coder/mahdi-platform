@@ -71,13 +71,19 @@ export async function registerDeviceToken(
 }
 
 export async function unregisterDeviceToken(
+  userId: number,
   token: string
 ): Promise<{ success: boolean }> {
   try {
     await db
       .update(deviceTokens)
       .set({ active: false, updatedAt: new Date() })
-      .where(eq(deviceTokens.token, token));
+      .where(
+        and(
+          eq(deviceTokens.token, token),
+          eq(deviceTokens.userId, userId)
+        )
+      );
 
     return { success: true };
   } catch (e) {

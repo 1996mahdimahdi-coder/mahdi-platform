@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
+import { csrfGuard } from "@/lib/csrf";
 import { registerDeviceToken, unregisterDeviceToken } from "@/lib/push";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  const csrfErr = await csrfGuard(request);
+  if (csrfErr) return csrfErr;
+
   const session = await getSession();
   if (!session) {
     return NextResponse.json({ success: false, error: "غير مصرح" }, { status: 401 });
@@ -27,6 +31,9 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const csrfErr = await csrfGuard(request);
+  if (csrfErr) return csrfErr;
+
   const session = await getSession();
   if (!session) {
     return NextResponse.json({ success: false, error: "غير مصرح" }, { status: 401 });
@@ -44,6 +51,6 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ success: false, error: "token مطلوب" }, { status: 400 });
   }
 
-  const result = await unregisterDeviceToken(token);
+  const result = await unregisterDeviceToken(session.userId, token);
   return NextResponse.json({ success: result.success });
 }

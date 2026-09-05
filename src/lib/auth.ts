@@ -1,150 +1,27 @@
-import {
-  createHmac,
-  timingSafeEqual,
-} from "node:crypto";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
+import {
+  SESSION_COOKIE_NAME,
+  SESSION_MAX_AGE_SECONDS,
+  verifySessionToken,
+} from "@/lib/sessionToken";
 
-export const SESSION_COOKIE_NAME =
-  "nabda_session";
+export {
+  SESSION_COOKIE_NAME,
+  SESSION_MAX_AGE_SECONDS,
+  createSessionToken,
+  verifySessionToken,
+  verifySessionTokenMinimal,
+} from "@/lib/sessionToken";
+export type {
+  SessionPayload,
+  VerifiedSession,
+} from "@/lib/sessionToken";
 
-export const SESSION_MAX_AGE_SECONDS =
-  60 * 60 * 24;
-
-export type SessionPayload = {
-  version: 1;
-  userId: number;
-  role: string;
-  tokenVersion: number;
-  issuedAt: number;
-  expiresAt: number;
-};
-
-function getAuthSecret(): string {
-  const secret = process.env.AUTH_SECRET;
-
-  if (!secret || secret.length < 32) {
-    throw new Error(
-      "AUTH_SECRET must contain at least 32 characters"
-    );
-  }
-
-  return secret;
-}
-
-function signValue(value: string): string {
-  return createHmac(
-    "sha256",
-    getAuthSecret()
-  )
-    .update(value)
-    .digest("base64url");
-}
-
-export function createSessionToken(user: {
-  id: number;
-  role: string;
-  tokenVersion: number;
-}): string {
-  const now = Math.floor(Date.now() / 1000);
-
-  const payload: SessionPayload = {
-    version: 1,
-    userId: user.id,
-    role: user.role,
-    tokenVersion: user.tokenVersion,
-    issuedAt: now,
-    expiresAt:
-      now + SESSION_MAX_AGE_SECONDS,
-  };
-
-  const encodedPayload = Buffer.from(
-    JSON.stringify(payload),
-    "utf8"
-  ).toString("base64url");
-
-  const signature = signValue(encodedPayload);
-
-  return encodedPayload + "." + signature;
-}
-
-export function verifySessionToken(
-  token: string | undefined
-): SessionPayload | null {
-  if (!token) return null;
-
-  try {
-    const parts = token.split(".");
-
-    if (parts.length !== 2) return null;
-
-    const [encodedPayload, signature] = parts;
-
-    if (!encodedPayload || !signature) {
-      return null;
-    }
-
-    const expectedSignature =
-      signValue(encodedPayload);
-
-    const actualBuffer = Buffer.from(
-      signature,
-      "base64url"
-    );
-
-    const expectedBuffer = Buffer.from(
-      expectedSignature,
-      "base64url"
-    );
-
-    if (
-      actualBuffer.length !==
-      expectedBuffer.length
-    ) {
-      return null;
-    }
-
-    if (
-      !timingSafeEqual(
-        actualBuffer,
-        expectedBuffer
-      )
-    ) {
-      return null;
-    }
-
-    const payload = JSON.parse(
-      Buffer.from(
-        encodedPayload,
-        "base64url"
-      ).toString("utf8")
-    ) as Partial<SessionPayload>;
-
-    const now = Math.floor(Date.now() / 1000);
-
-    if (
-      payload.version !== 1 ||
-      !Number.isInteger(payload.userId) ||
-      Number(payload.userId) <= 0 ||
-      typeof payload.role !== "string" ||
-      !Number.isInteger(payload.issuedAt) ||
-      !Number.isInteger(payload.expiresAt) ||
-      Number(payload.expiresAt) <= now
-    ) {
-      return null;
-    }
-
-    return payload as SessionPayload;
-  } catch {
-    return null;
-  }
-}
-
-export async function getSession():
-  Promise<SessionPayload | null> {
+export async function getSession(): Promise<import("@/lib/sessionToken").SessionPayload | null> {
   const cookieStore = await cookies();
 
   const token = cookieStore.get(
