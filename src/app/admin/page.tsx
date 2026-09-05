@@ -15,7 +15,8 @@ import {
   CheckCircle2,
   X,
   FileText,
-  Library
+  Library,
+  FileBadge2
 } from "lucide-react";
 import { getCsrfToken } from "@/lib/clientCsrf";
 
@@ -322,6 +323,14 @@ export default function AdminDashboardPage() {
           >
             <FileText className="w-4 h-4" />
             إدارة المصادر
+          </Link>
+
+          <Link
+            href="/admin/no-capital/studies"
+            className="px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md hover:bg-indigo-700 transition-colors"
+          >
+            <FileBadge2 className="w-4 h-4" />
+            📚 الدراسات المدفوعة
           </Link>
         </div>
       </div>
