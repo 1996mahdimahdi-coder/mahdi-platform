@@ -7,8 +7,6 @@ export interface ProjectPdfData {
   description?: string;
 
   minCapital?: number;
-  recommendedCapital?: number;
-  maxCapital?: number;
 
   riskLevel?: string;
   difficulty?: string;
@@ -20,12 +18,6 @@ export interface ProjectPdfData {
   transportRequired?: boolean;
 
   seasonality?: string;
-  competitionLevel?: string;
-  targetArea?: string;
-
-  advantages?: string[];
-  risks?: string[];
-  launchPlan?: string[];
 
   calc?: {
     grossRevenue?: number;
@@ -65,7 +57,6 @@ export interface ResultsPdfData {
       projectName?: string;
       projectId?: string;
       category?: string;
-      recommendedCapital?: number;
     };
 
     totalScore?: number;
@@ -490,14 +481,6 @@ export async function downloadProjectPdf(
       formatMoney(data.minCapital),
     ],
     [
-      "رأس المال المقترح",
-      formatMoney(data.recommendedCapital),
-    ],
-    [
-      "رأس المال الأقصى",
-      formatMoney(data.maxCapital),
-    ],
-    [
       "رأس المال المختار",
       formatMoney(data.selectedCapital),
     ],
@@ -588,14 +571,6 @@ export async function downloadProjectPdf(
       "الموسمية",
       textValue(data.seasonality),
     ],
-    [
-      "مستوى المنافسة",
-      textValue(data.competitionLevel),
-    ],
-    [
-      "المنطقة المستهدفة",
-      textValue(data.targetArea),
-    ],
   ];
 
   for (const [label, value] of characteristics) {
@@ -610,92 +585,6 @@ export async function downloadProjectPdf(
     );
 
     y += 1;
-  }
-
-  /* Advantages */
-
-  if (data.advantages?.length) {
-    ensureSpace(25);
-
-    y = addSectionTitle(
-      pdf,
-      "مزايا المشروع",
-      pageWidth,
-      margin,
-      y + 8
-    );
-
-    for (const item of data.advantages) {
-      ensureSpace(12);
-
-      y = addText(
-        pdf,
-        `• ${item}`,
-        pageWidth - margin,
-        y,
-        contentWidth
-      );
-
-      y += 2;
-    }
-  }
-
-  /* Risks */
-
-  if (data.risks?.length) {
-    ensureSpace(25);
-
-    y = addSectionTitle(
-      pdf,
-      "المخاطر",
-      pageWidth,
-      margin,
-      y + 8
-    );
-
-    for (const item of data.risks) {
-      ensureSpace(12);
-
-      y = addText(
-        pdf,
-        `• ${item}`,
-        pageWidth - margin,
-        y,
-        contentWidth
-      );
-
-      y += 2;
-    }
-  }
-
-  /* Launch plan */
-
-  if (data.launchPlan?.length) {
-    ensureSpace(25);
-
-    y = addSectionTitle(
-      pdf,
-      "خطة الإطلاق",
-      pageWidth,
-      margin,
-      y + 8
-    );
-
-    data.launchPlan.forEach(
-      (item, index) => {
-        ensureSpace(12);
-
-        y = addText(
-          pdf,
-          `${index + 1}. ${item}`,
-          pageWidth - margin,
-          y,
-          contentWidth
-        );
-
-        y += 2;
-      }
-    );
   }
 
   /* Profit scenarios */
@@ -924,16 +813,6 @@ export async function downloadResultsPdf(
         pdf,
         `التصنيف: ${textValue(
           result.project?.category
-        )}`,
-        pageWidth - margin,
-        y,
-        contentWidth
-      );
-
-      y = addText(
-        pdf,
-        `رأس المال المقترح: ${formatMoney(
-          result.project?.recommendedCapital
         )}`,
         pageWidth - margin,
         y,

@@ -8,9 +8,21 @@ import type { PaidStudy } from "@/lib/noCapital/types";
 type FetchPayload = {
   success: boolean;
   slug?: string | null;
+  projectId?: string | null;
   nameAr?: string | null;
+  projectName?: string | null;
   study?: unknown;
   error?: string;
+};
+
+type Props = {
+  projectId: string;
+  /** Admin study endpoint. Defaults to the no-capital studies endpoint. */
+  endpoint?: string;
+  /** Response field carrying the identifier used in the PDF/file name. */
+  slugKey?: "slug" | "projectId";
+  /** Response field carrying the project display name (Arabic). */
+  nameKey?: "nameAr" | "projectName";
 };
 
 /**
@@ -21,7 +33,12 @@ type FetchPayload = {
  * non-approved study. No server-side PDF is created and no public endpoint is
  * involved.
  */
-export default function AdminStudyPdfDownload({ projectId }: { projectId: string }) {
+export default function AdminStudyPdfDownload({
+  projectId,
+  endpoint,
+  slugKey = "slug",
+  nameKey = "nameAr",
+}: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
@@ -31,7 +48,7 @@ export default function AdminStudyPdfDownload({ projectId }: { projectId: string
     setError(null);
     setReady(false);
     try {
-      const res = await fetch(`/api/admin/no-capital/studies/${projectId}`, { cache: "no-store" });
+      const res = await fetch(endpoint ?? `/api/admin/no-capital/studies/${projectId}`, { cache: "no-store" });
       const data = (await res.json()) as FetchPayload;
       if (!res.ok || !data.success) throw new Error(data.error ?? "تعذر تحميل الدراسة من خادم الإدارة.");
       if (!data.study) throw new Error("الدراسة غير متوفرة.");
@@ -40,16 +57,19 @@ export default function AdminStudyPdfDownload({ projectId }: { projectId: string
         throw new Error("لا يمكن توليد PDF إلا لدراسة معتمدة (approved).");
       }
 
+      const slug = data[slugKey] ?? undefined;
+      const projectNameAr = data[nameKey] ?? undefined;
+
       const bytes = await buildStudyPdfBytes(study, {
-        slug: data.slug ?? undefined,
-        projectNameAr: data.nameAr ?? undefined,
+        slug,
+        projectNameAr,
       });
 
       const blob = new Blob([bytes as unknown as BlobPart], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
-      anchor.download = studyPdfFileName({ slug: data.slug ?? undefined });
+      anchor.download = studyPdfFileName({ slug });
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();

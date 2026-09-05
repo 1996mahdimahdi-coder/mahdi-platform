@@ -96,6 +96,8 @@ export type StudyEquipment = {
   purpose?: string;
   source?: string;
   sourceStatus: StudySourceStatus;
+  /** Estimated acquisition cost in DZD — used by capital projects. */
+  cost?: number;
 };
 
 export type StudyPricing = {
@@ -204,6 +206,22 @@ export type PaidStudyMeta = {
   paidValueScore?: number;
   lastVerified?: string;
   researchVersion?: string;
+  /** Discriminator: which product family owns this study. Defaults to "no_capital". */
+  studyKind?: "no_capital" | "capital";
+};
+
+/** Recommended capital bands for a capital project (from legacy min/rec/max). */
+export type StudyStartupCapital = {
+  min: number;
+  recommended: number;
+  max: number;
+};
+
+/** Optional market-test strategy for capital projects (curated in Admin). */
+export type StudyMarketTestPlan = {
+  steps: string[];
+  channels?: string[];
+  kpis?: string[];
 };
 
 export type PaidStudy = {
@@ -233,6 +251,13 @@ export type PaidStudy = {
   caseStudy: StudyCaseStudy;
   sources: StudySource[];
   meta: PaidStudyMeta;
+  // --- Optional capital-project extensions (backfilled from legacy columns) ---
+  /** Minimum / recommended / maximum startup capital in DZD. */
+  startupCapital?: StudyStartupCapital;
+  /** Project strengths (from legacy advantages column). */
+  strengths?: string[];
+  /** Specific pre-launch market-test strategy for this project. */
+  marketTestPlan?: StudyMarketTestPlan;
 };
 
 export type NoCapitalDimensionScores = {

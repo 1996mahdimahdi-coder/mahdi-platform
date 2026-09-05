@@ -16,7 +16,6 @@ async function getProjects() {
         description: projects.description,
         riskLevel: projects.riskLevel,
         minCapital: projects.minCapital,
-        recommendedCapital: projects.recommendedCapital,
         homeBased: projects.homeBased,
         onlinePossible: projects.onlinePossible,
         workLocation: projects.workLocation,

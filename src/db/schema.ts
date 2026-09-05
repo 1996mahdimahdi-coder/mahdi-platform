@@ -72,6 +72,10 @@ export const projects = pgTable("projects", {
   legalNotes: text("legal_notes").default("ظ„ط§ ظٹظ‚طھط¶ظٹ ط¥ط¬ط±ط§ط،ط§طھ ظ…ط¹ظ‚ط¯ط© ظپظٹ ط§ظ„ط¨ط¯ط§ظٹط© ط§ظ„طھط¬ط±ظٹط¨ظٹط©"),
   
   source: text("source").default("ط¯ط±ط§ط³ط© ظ…ظٹط¯ط§ظ†ظٹط© ظˆط³ظˆظ‚ ط¬ط²ط§ط¦ط±ظٹ 2025"),
+  // Paid Study — ADMIN-ONLY (classic capital projects). Reuses the exact same
+  // PaidStudy contract as no_capital_projects.study. Never exposed via public
+  // pages/APIs/search/sitemap/free PDF. Phase M delivers selling after approval.
+  study: jsonb("study").$type<PaidStudy | null>().default(sql`NULL`),
   lastUpdated: timestamp("last_updated").defaultNow(),
 });
 

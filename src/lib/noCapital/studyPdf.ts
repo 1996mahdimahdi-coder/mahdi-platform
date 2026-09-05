@@ -528,7 +528,8 @@ function renderSources(pager: Pager, s: PaidStudy): void {
 }
 
 function renderMeta(pager: Pager, s: PaidStudy): void {
-  fieldLine(pager, "قيمة المحتوى (من 10)", s.meta.paidValueScore);
+  // Internal editorial scoring (paidValueScore) is intentionally not rendered:
+  // the buyer PDF only carries information relevant to the professional.
   fieldLine(pager, "آخر تحقق", s.meta.lastVerified);
   fieldLine(pager, "إصدار البحث", s.meta.researchVersion);
 }

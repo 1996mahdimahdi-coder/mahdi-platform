@@ -730,8 +730,6 @@ export async function POST(request: Request) {
       category: r.project.category,
       description: r.project.description,
       minCapital: r.project.minCapital,
-      recommendedCapital: r.project.recommendedCapital,
-      maxCapital: r.project.maxCapital,
       difficulty: r.project.difficulty,
       scalability: r.project.scalability,
       riskLevel: r.project.riskLevel,

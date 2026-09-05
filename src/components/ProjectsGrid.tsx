@@ -25,7 +25,6 @@ type Project = {
   description: string;
   riskLevel: string;
   minCapital: number;
-  recommendedCapital: number;
   homeBased: boolean;
   onlinePossible: boolean;
   workLocation: string;
@@ -203,6 +202,9 @@ function ProjectsGridInner({ projects }: { projects: Project[] }) {
                     </span>
                     <span className="text-indigo-300 font-mono">{item.successRate}</span>
                   </div>
+                  <p className="text-[9px] text-slate-500 italic leading-snug">
+                    محاكاة تقديرية لأغراض الاختبار — ليست ضماناً.
+                  </p>
                   <div className="flex items-center justify-between text-[11px] font-bold">
                     <span className="flex items-center gap-1 text-amber-300">
                       <TrendingUp className="w-3.5 h-3.5" />
@@ -223,7 +225,7 @@ function ProjectsGridInner({ projects }: { projects: Project[] }) {
           <div className="p-3 rounded-xl bg-slate-800/50 border border-slate-700/60 text-[11px] text-slate-300 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
             <span>
-              نسب النجاح ومعدلات الأرباح المذكورة أعلاه مبنية على متوسط دراسات ميدانية وتجارب ناجحة في عدة ولايات جزائرية، ولا تُعد ضماناً فردياً. النتيجة تعتمد على الالتزام والتسويق المحلي.
+              مؤشرات الطلب ومعدلات الأرباح المذكورة أعلاه مبنية على متوسط دراسات ميدانية وتجارب ناجحة في عدة ولايات جزائرية، ولا تُعد ضماناً فردياً. النتيجة تعتمد على الالتزام والتسويق المحلي.
             </span>
           </div>
         </section>
@@ -403,12 +405,6 @@ function ProjectsGridInner({ projects }: { projects: Project[] }) {
                 </p>
               </div>
               <div className="pt-3 border-t border-slate-100 space-y-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">رأس المال الموصى به:</span>
-                  <span className="font-extrabold text-indigo-700 text-sm font-mono">
-                    {p.recommendedCapital?.toLocaleString()} دج
-                  </span>
-                </div>
                 <div className="flex items-center justify-between text-xs text-slate-500">
                   <span>الأدنى للبداية: {p.minCapital?.toLocaleString()} دج</span>
                   <span>{p.homeBased ? "من المنزل" : "محل / خروج"}</span>

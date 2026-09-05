@@ -32,9 +32,7 @@ interface ProjectResult {
   projectName: string;
   category?: string;
   description?: string;
-  minCapital?: number;
-  recommendedCapital?: number;
-  maxCapital?: number;
+minCapital?: number;
   difficulty?: string;
   scalability?: string;
   riskLevel?: string;
@@ -208,11 +206,10 @@ export default function ResultsPage() {
       downloadResultsPdf({
         userInput: resultData.userInput || {},
         top5Results: (resultData.top5Results || []).map((project) => ({
-          project: {
+project: {
             projectName: project.projectName,
             projectId: project.projectId,
             category: project.category,
-            recommendedCapital: project.recommendedCapital,
           },
           totalScore: project.totalScore,
           recommendation: project.recommendation,
@@ -531,17 +528,13 @@ export default function ResultsPage() {
                 </span>
               </div>
 
-              <div className="bg-white p-3 rounded-xl border border-slate-200">
+<div className="bg-white p-3 rounded-xl border border-slate-200">
                 <span className="text-slate-400 block text-[10px]">
-                  رأس المال الموصى به
+                  مستوى المخاطرة
                 </span>
 
-                <span className="font-extrabold text-indigo-700">
-                  {topMatch.recommendedCapital
-                    ? `${topMatch.recommendedCapital.toLocaleString(
-                        "ar-DZ"
-                      )} دج`
-                    : "غير محدد"}
+                <span className="font-bold text-slate-800">
+                  {topMatch.riskLevel || "غير محدد"}
                 </span>
               </div>
 
@@ -667,19 +660,7 @@ export default function ResultsPage() {
                   )}
 
                 <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-4 text-slate-600 flex-wrap">
-                    {project.recommendedCapital && (
-                      <span>
-                        موصى به:{" "}
-                        <strong>
-                          {project.recommendedCapital.toLocaleString(
-                            "ar-DZ"
-                          )}{" "}
-                          دج
-                        </strong>
-                      </span>
-                    )}
-
+<div className="flex items-center gap-4 text-slate-600 flex-wrap">
                     <span>
                       العمل:{" "}
                       <strong>

@@ -332,6 +332,14 @@ export default function AdminDashboardPage() {
             <FileBadge2 className="w-4 h-4" />
             📚 الدراسات المدفوعة
           </Link>
+
+          <Link
+            href="/admin/projects/studies"
+            className="px-4 py-2.5 rounded-xl bg-fuchsia-600 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md hover:bg-fuchsia-700 transition-colors"
+          >
+            <FileBadge2 className="w-4 h-4" />
+            دراسات مشاريع رأس المال
+          </Link>
         </div>
       </div>
 

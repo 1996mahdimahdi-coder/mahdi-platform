@@ -174,6 +174,9 @@ export function validateStudy(raw: unknown): string[] {
         if (!isOneOf(e.sourceStatus, STUDY_SOURCE_STATUSES)) {
           errors.push(`equipment[${i}].sourceStatus غير صالح.`);
         }
+        if (e.cost != null && (typeof e.cost !== "number" || !Number.isFinite(e.cost) || e.cost < 0)) {
+          errors.push(`equipment[${i}].cost يجب أن يكون رقماً موجباً إذا وُجد.`);
+        }
       }
     }
   }
@@ -381,8 +384,48 @@ export function validateStudy(raw: unknown): string[] {
         errors.push("meta.paidValueScore يجب أن يكون بين 0 و 10.");
       }
     }
+    if (raw.meta.studyKind != null && !["no_capital", "capital"].includes(String(raw.meta.studyKind))) {
+      errors.push("meta.studyKind يجب أن يكون no_capital أو capital.");
+    }
   } else {
     errors.push("قسم البيانات الوصفية (meta) يجب أن يكون كائناً صالحاً.");
+  }
+
+  // Optional capital-project extensions ------------------------------------
+  if (raw.startupCapital != null) {
+    const cap = raw.startupCapital;
+    if (
+      !isRecord(cap) ||
+      typeof cap.min !== "number" ||
+      !Number.isFinite(cap.min) ||
+      cap.min < 0 ||
+      typeof cap.recommended !== "number" ||
+      !Number.isFinite(cap.recommended) ||
+      cap.recommended < 0 ||
+      typeof cap.max !== "number" ||
+      !Number.isFinite(cap.max) ||
+      cap.max < 0
+    ) {
+      errors.push(
+        "startupCapital يجب أن يحتوي على min و recommended و max أرقاماً موجبة."
+      );
+    }
+  }
+
+  if (raw.strengths != null && !isStringArray(raw.strengths)) {
+    errors.push("strengths يجب أن يكون مصفوفة نصوص.");
+  }
+
+  if (raw.marketTestPlan != null) {
+    const plan = raw.marketTestPlan;
+    if (
+      !isRecord(plan) ||
+      !isStringArray(plan.steps) ||
+      (plan.channels != null && !isStringArray(plan.channels)) ||
+      (plan.kpis != null && !isStringArray(plan.kpis))
+    ) {
+      errors.push("marketTestPlan يجب أن يحتوي على steps كمصفوفة نصوص (channels/kpis اختيارية كمصفوفة نصوص).");
+    }
   }
 
   return errors;

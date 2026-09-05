@@ -330,24 +330,25 @@ export default function PaidStudyEditor({ initial, onSave, saving, error }: Edit
 
   const sections: { id: string; title: string }[] = [
     { id: "summary", title: "1. Summary" },
-    { id: "idealClients", title: "2. Ideal Clients" },
-    { id: "skills", title: "3. Skills" },
-    { id: "equipment", title: "4. Equipment" },
-    { id: "pricing", title: "5. Pricing" },
-    { id: "profitModel", title: "6. Profit Model" },
-    { id: "businessModel", title: "7. Business Model" },
-    { id: "firstClientAcquisition", title: "8. First Client Acquisition" },
-    { id: "workflow", title: "9. Workflow" },
-    { id: "marketCompetition", title: "10. Competition" },
-    { id: "commonMistakes", title: "11. Common Mistakes" },
-    { id: "redFlags", title: "12. Red Flags" },
-    { id: "marketing", title: "13. Marketing" },
-    { id: "plan30Days", title: "14. 30-Day Plan" },
-    { id: "growthPath", title: "15. Growth" },
-    { id: "legalDz", title: "16. Legal Algeria" },
-    { id: "caseStudy", title: "17. Case Study" },
-    { id: "sources", title: "18. Sources" },
-    { id: "meta", title: "19. Meta / Review" },
+    { id: "capital", title: "2. Capital (رأس المال)" },
+    { id: "idealClients", title: "3. Ideal Clients" },
+    { id: "skills", title: "4. Skills" },
+    { id: "equipment", title: "5. Equipment" },
+    { id: "pricing", title: "6. Pricing" },
+    { id: "profitModel", title: "7. Profit Model" },
+    { id: "businessModel", title: "8. Business Model" },
+    { id: "firstClientAcquisition", title: "9. First Client Acquisition" },
+    { id: "workflow", title: "10. Workflow" },
+    { id: "marketCompetition", title: "11. Competition" },
+    { id: "commonMistakes", title: "12. Common Mistakes" },
+    { id: "redFlags", title: "13. Red Flags" },
+    { id: "marketing", title: "14. Marketing" },
+    { id: "plan30Days", title: "15. 30-Day Plan" },
+    { id: "growthPath", title: "16. Growth" },
+    { id: "legalDz", title: "17. Legal Algeria" },
+    { id: "caseStudy", title: "18. Case Study" },
+    { id: "sources", title: "19. Sources" },
+    { id: "meta", title: "20. Meta / Review" },
   ];
 
   return (
@@ -420,6 +421,59 @@ export default function PaidStudyEditor({ initial, onSave, saving, error }: Edit
           </Section>
         )}
 
+        {activeSection === "capital" && (
+          <Section title="رأس المال (Capital)" hint="خاص بمشاريع رأس المال — المُعبّأ تلقائياً من الأعمدة الكلاسيكية min/rec/max.">
+            <div className="grid sm:grid-cols-3 gap-4">
+              <NumberInput
+                label="الحد الأدنى (min DZD)"
+                value={study.startupCapital?.min}
+                onChange={(v) =>
+                  set("startupCapital", {
+                    min: v ?? 0,
+                    recommended: study.startupCapital?.recommended ?? 0,
+                    max: study.startupCapital?.max ?? 0,
+                  })
+                }
+              />
+              <NumberInput
+                label="الموصى به (recommended DZD)"
+                value={study.startupCapital?.recommended}
+                onChange={(v) =>
+                  set("startupCapital", {
+                    min: study.startupCapital?.min ?? 0,
+                    recommended: v ?? 0,
+                    max: study.startupCapital?.max ?? 0,
+                  })
+                }
+              />
+              <NumberInput
+                label="الحد الأقصى (max DZD)"
+                value={study.startupCapital?.max}
+                onChange={(v) =>
+                  set("startupCapital", {
+                    min: study.startupCapital?.min ?? 0,
+                    recommended: study.startupCapital?.recommended ?? 0,
+                    max: v ?? 0,
+                  })
+                }
+              />
+            </div>
+
+            <TagsInput
+              label="نقاط القوة (strengths)"
+              hint="من عمود المزايا الكلاسيكي (advantages)"
+              value={study.strengths ?? []}
+              onChange={(v) => set("strengths", v)}
+            />
+
+            <Section title="خطة اختبار السوق (marketTestPlan)" hint="استراتيجية اختبار السوق قبل الإطلاق (خاصة بمشاريع رأس المال).">
+              <TagsInput label="الخطوات (steps)" value={study.marketTestPlan?.steps ?? []} onChange={(v) => set("marketTestPlan", { ...(study.marketTestPlan ?? { steps: [] }), steps: v })} />
+              <TagsInput label="القنوات (channels)" value={study.marketTestPlan?.channels ?? []} onChange={(v) => set("marketTestPlan", { ...(study.marketTestPlan ?? { steps: [] }), channels: v })} />
+              <TagsInput label="مؤشرات القياس (kpis)" value={study.marketTestPlan?.kpis ?? []} onChange={(v) => set("marketTestPlan", { ...(study.marketTestPlan ?? { steps: [] }), kpis: v })} />
+            </Section>
+          </Section>
+        )}
+
         {activeSection === "idealClients" && (
           <Section title="العملاء المثاليون (Ideal Clients)" hint="من يدفع لخدمتك ولماذا؟">
             <RepeatableRows
@@ -473,6 +527,7 @@ export default function PaidStudyEditor({ initial, onSave, saving, error }: Edit
                       onChange={(v) => update({ ...item, tier: v ?? "free" })}
                       render={(v) => (v === "free" ? "free" : "pro")}
                     />
+                    <NumberInput label="التكلفة التقديرية (cost DZD)" value={item.cost} onChange={(v) => update({ ...item, cost: v })} />
                     <div className="sm:col-span-2">
                       <TextArea label="الغرض (purpose)" value={item.purpose ?? ""} onChange={(v) => update({ ...item, purpose: v })} rows={1} />
                     </div>
@@ -787,6 +842,13 @@ export default function PaidStudyEditor({ initial, onSave, saving, error }: Edit
               <NumberInput label="نقاط القيمة المدفوعة (paidValueScore 0-10)" value={study.meta.paidValueScore} onChange={(v) => set("meta", { ...study.meta, paidValueScore: v })} />
               <TextInput label="آخر تحقق (lastVerified)" value={study.meta.lastVerified ?? ""} onChange={(v) => set("meta", { ...study.meta, lastVerified: v })} />
               <TextInput label="إصدار البحث (researchVersion)" value={study.meta.researchVersion ?? ""} onChange={(v) => set("meta", { ...study.meta, researchVersion: v })} />
+              <SelectInput
+                label="نوع الدراسة (studyKind)"
+                value={study.meta.studyKind ?? "no_capital"}
+                options={["no_capital", "capital"] as const}
+                onChange={(v) => set("meta", { ...study.meta, studyKind: v ?? "no_capital" })}
+                render={(v) => (v === "capital" ? "Capital (رأس مال)" : "No-capital (بدون رأس مال)")}
+              />
             </div>
           </Section>
         )}

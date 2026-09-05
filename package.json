@@ -7,6 +7,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "check": "pnpm typecheck",
+    "test": "tsx src/lib/noCapital/studyValidation.test.ts && tsx src/lib/noCapital/phase35Drafts.test.ts && tsx src/lib/noCapital/phase42PdfExport.test.ts && tsx src/lib/financialCalc.test.ts && tsx src/lib/noCapital/capitalStudyIntegration.test.ts",
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
