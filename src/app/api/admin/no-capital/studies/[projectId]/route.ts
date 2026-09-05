@@ -69,7 +69,7 @@ function toStudy(raw: unknown) {
 
 async function loadProject(id: number) {
   return db
-    .select({ id: noCapitalProjects.id, slug: noCapitalProjects.slug })
+    .select({ id: noCapitalProjects.id, slug: noCapitalProjects.slug, nameAr: noCapitalProjects.nameAr })
     .from(noCapitalProjects)
     .where(eq(noCapitalProjects.id, id))
     .limit(1);
@@ -97,7 +97,7 @@ export async function GET(request: Request, context: { params: Promise<{ project
     const study = studyRow[0]?.study ?? emptyPaidStudyDraft();
 
     return NextResponse.json(
-      { success: true, projectId: id, study },
+      { success: true, projectId: id, slug: project.slug, nameAr: project.nameAr, study },
       { headers: PRIVATE_NO_STORE_HEADERS }
     );
   } catch (error) {

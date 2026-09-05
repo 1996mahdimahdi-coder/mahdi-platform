@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import AdminShell from "@/components/admin/AdminShell";
 import PaidStudyEditor from "@/components/admin/PaidStudyEditor";
+import AdminStudyPdfDownload from "@/components/admin/AdminStudyPdfDownload";
 import { getCsrfToken } from "@/lib/clientCsrf";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import { emptyPaidStudyDraft } from "@/lib/noCapital/studyValidation";
@@ -79,7 +80,7 @@ export default function AdminPaidStudyEditPage() {
       title="تحرير الدراسة المدفوعة"
       subtitle={`مشروع رقم ${projectId}`}
     >
-      <div className="mb-5 flex items-center justify-between">
+      <div className="mb-5 flex items-center justify-between gap-3 flex-wrap">
         <Link
           href="/admin/no-capital/studies"
           className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-emerald-600"
@@ -88,11 +89,14 @@ export default function AdminPaidStudyEditPage() {
           العودة لقائمة الدراسات
         </Link>
 
-        {savedMsg && (
-          <span className="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
-            {savedMsg}
-          </span>
-        )}
+        <div className="flex items-center gap-3 flex-wrap">
+          {study?.status === "approved" && <AdminStudyPdfDownload projectId={projectId} />}
+          {savedMsg && (
+            <span className="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
+              {savedMsg}
+            </span>
+          )}
+        </div>
       </div>
 
       {loading ? (
