@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { categories, noCapitalProjects } from "@/db/schema";
-import { getStudySaleInfo } from "@/lib/noCapital/studySales";
 
 export const dynamic = "force-dynamic";
 
@@ -42,8 +41,6 @@ export async function GET(
       }
     }
 
-    const sale = getStudySaleInfo(row.study);
-
     return NextResponse.json({
       success: true,
       project: {
@@ -66,9 +63,6 @@ export async function GET(
         steps: row.steps,
         legalNotes: row.legalNotes,
         source: row.source,
-        hasPaidStudy: sale.hasPaidStudy,
-        studyAvailable: sale.studyAvailable,
-        priceDzd: sale.studyAvailable ? sale.priceDzd : null,
       },
     });
   } catch (error) {

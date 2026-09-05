@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Wrench, Brain, Clock, AlertTriangle, ThumbsUp, ThumbsDown, Target, Users, Megaphone, ChevronLeft, FileText, Send } from "lucide-react";
+import { ArrowRight, Wrench, Brain, Clock, AlertTriangle, ThumbsUp, ThumbsDown, Target, Megaphone, ChevronLeft } from "lucide-react";
 import NoCapitalActions from "@/components/NoCapitalActions";
 import ProjectVideo from "@/components/ProjectVideo";
 import { getProjectVideos } from "@/lib/projectVideos";
@@ -10,8 +10,6 @@ import { db } from "@/db";
 import { categories, noCapitalProjects } from "@/db/schema";
 import { DEFAULT_NO_CAPITAL_PROJECTS } from "@/lib/noCapital/defaults";
 import { DEFAULT_FIRST_ORDER_PLAN, DEFAULT_MARKETING_PLANS } from "@/lib/noCapital/publicData";
-import { buildStudyPurchaseUrl, getStudySaleInfo } from "@/lib/noCapital/studySales";
-import type { PaidStudy } from "@/lib/noCapital/types";
 
 export const dynamic = "force-dynamic";
 
@@ -67,12 +65,6 @@ export default async function NoCapitalProjectPage(props: {
   }
 
   if (!project) notFound();
-
-  const study = (project.study ?? null) as PaidStudy | null;
-  const sale = getStudySaleInfo(study);
-  const purchaseUrl = sale.studyAvailable
-    ? buildStudyPurchaseUrl(project.nameAr as string, project.slug as string)
-    : null;
 
   const nameAr = project.nameAr as string;
   const description = project.description as string;
@@ -157,29 +149,6 @@ export default async function NoCapitalProjectPage(props: {
           {reason && (
             <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-sm text-emerald-800">
               <span className="font-extrabold">لماذا تم اقتراحه لك:</span> {reason}
-            </div>
-          )}
-
-          {purchaseUrl && (
-            <div className="bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-200 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="flex-1">
-                <h3 className="font-black text-sm text-slate-900 flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-indigo-600" />
-                  الدراسة التفصيلية
-                </h3>
-                <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                  دراسة متعمقة بخطوات عملية، تسعير، خطة 30 يوماً وأسئلة قانونية — <span className="font-bold text-indigo-700">{sale.priceDzd.toLocaleString("ar-DZ")} دج</span>.
-                </p>
-              </div>
-              <a
-                href={purchaseUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-sky-500 text-white font-extrabold text-sm hover:bg-sky-600 transition-colors shadow-md shrink-0"
-              >
-                <Send className="w-4 h-4" />
-                شراء الدراسة عبر Telegram
-              </a>
             </div>
           )}
         </div>
