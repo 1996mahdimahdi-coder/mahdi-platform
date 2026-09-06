@@ -8,10 +8,29 @@ import {
   SESSION_COOKIE_NAME,
 } from "@/lib/auth";
 import { verifyGoogleIdToken } from "@/lib/google-verify";
+import {
+  checkRateLimit,
+  clientIpKey,
+  RATE_LIMITS,
+  rateLimitExceededResponse,
+} from "@/lib/rateLimit";
+import { logSecurity } from "@/lib/securityLog";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  const ipLimit = RATE_LIMITS.google.ip;
+
+  const ipCheck = await checkRateLimit({
+    key: clientIpKey(request, "google-capacitor"),
+    limit: ipLimit.limit,
+    windowSeconds: ipLimit.windowSeconds,
+  });
+
+  if (!ipCheck.allowed) {
+    return rateLimitExceededResponse(ipCheck);
+  }
+
   let body: { idToken?: string } = {};
 
   try {
@@ -41,11 +60,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const { payload, error: verifyError } = await verifyGoogleIdToken(idToken, audience);
+  const { payload } = await verifyGoogleIdToken(idToken, audience);
 
   if (!payload || !payload.email || payload.email_verified === false) {
+    logSecurity("auth.google_token_invalid");
+
     return NextResponse.json(
-      { success: false, error: "Invalid Google token.", details: verifyError || "email_missing_or_unverified" },
+      { success: false, error: "Invalid Google token." },
       { status: 401 }
     );
   }

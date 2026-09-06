@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { or, ilike, sql } from "drizzle-orm";
+import { and, eq, ilike, inArray, or } from "drizzle-orm";
 import { db } from "@/db";
 import {
   projects,
@@ -11,6 +11,12 @@ import {
   hookLibrary,
 } from "@/db/schema";
 import { isMissingTableError, serializeRow } from "@/lib/noCapital/fallback";
+import {
+  checkRateLimit,
+  clientIpKey,
+  RATE_LIMITS,
+  rateLimitExceededResponse,
+} from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +41,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 const MAX_PER_TYPE = 5;
 const TOTAL_LIMIT = 30;
+const MAX_QUERY_LENGTH = 100;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -42,6 +49,25 @@ export async function GET(request: Request) {
 
   if (!q || q.length < 2) {
     return NextResponse.json({ success: true, results: [], query: q ?? "" });
+  }
+
+  if (q.length > MAX_QUERY_LENGTH) {
+    return NextResponse.json(
+      { success: false, error: "\u0627\u0633\u062a\u0639\u0644\u0627\u0645 \u0627\u0644\u0628\u062d\u062b \u0637\u0648\u064a\u0644 \u062c\u062f\u064b\u0627." },
+      { status: 400 },
+    );
+  }
+
+  const searchLimit = RATE_LIMITS.search.ip;
+
+  const searchCheck = await checkRateLimit({
+    key: clientIpKey(request, "search"),
+    limit: searchLimit.limit,
+    windowSeconds: searchLimit.windowSeconds,
+  });
+
+  if (!searchCheck.allowed) {
+    return rateLimitExceededResponse(searchCheck);
   }
 
   const pattern = `%${q}%`;
@@ -95,9 +121,12 @@ export async function GET(request: Request) {
         })
         .from(noCapitalProjects)
         .where(
-          or(
-            ilike(noCapitalProjects.nameAr, pattern),
-            ilike(noCapitalProjects.description, pattern),
+          and(
+            or(
+              ilike(noCapitalProjects.nameAr, pattern),
+              ilike(noCapitalProjects.description, pattern),
+            ),
+            eq(noCapitalProjects.active, true),
           ),
         )
         .limit(MAX_PER_TYPE);
@@ -163,9 +192,12 @@ export async function GET(request: Request) {
         })
         .from(courses)
         .where(
-          or(
-            ilike(courses.title, pattern),
-            ilike(courses.summary, pattern),
+          and(
+            or(
+              ilike(courses.title, pattern),
+              ilike(courses.summary, pattern),
+            ),
+            eq(courses.published, true),
           ),
         )
         .limit(MAX_PER_TYPE);
@@ -195,9 +227,19 @@ export async function GET(request: Request) {
         })
         .from(courseLessons)
         .where(
-          or(
-            ilike(courseLessons.title, pattern),
-            ilike(courseLessons.summary, pattern),
+          and(
+            or(
+              ilike(courseLessons.title, pattern),
+              ilike(courseLessons.summary, pattern),
+            ),
+            eq(courseLessons.published, true),
+            inArray(
+              courseLessons.courseId,
+              db
+                .select({ id: courses.id })
+                .from(courses)
+                .where(eq(courses.published, true)),
+            ),
           ),
         )
         .limit(MAX_PER_TYPE);
@@ -228,9 +270,12 @@ export async function GET(request: Request) {
         })
         .from(videos)
         .where(
-          or(
-            ilike(videos.title, pattern),
-            ilike(videos.description, pattern),
+          and(
+            or(
+              ilike(videos.title, pattern),
+              ilike(videos.description, pattern),
+            ),
+            eq(videos.published, true),
           ),
         )
         .limit(MAX_PER_TYPE);
@@ -261,10 +306,13 @@ export async function GET(request: Request) {
         })
         .from(hookLibrary)
         .where(
-          or(
-            ilike(hookLibrary.title, pattern),
-            ilike(hookLibrary.hookText, pattern),
-            ilike(hookLibrary.type, pattern),
+          and(
+            or(
+              ilike(hookLibrary.title, pattern),
+              ilike(hookLibrary.hookText, pattern),
+              ilike(hookLibrary.type, pattern),
+            ),
+            eq(hookLibrary.published, true),
           ),
         )
         .limit(MAX_PER_TYPE);

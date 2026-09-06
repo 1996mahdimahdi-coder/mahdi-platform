@@ -14,6 +14,7 @@ import {
 } from "@/lib/rateLimit";
 import { isMissingTableError, serializeRows, serializeRow } from "@/lib/noCapital/fallback";
 import { csrfGuard } from "@/lib/csrf";
+import { logSecurity } from "@/lib/securityLog";
 
 // ============================================================================
 // Generic admin CRUD factory for the NABDA growth resources (categories,
@@ -36,6 +37,8 @@ export async function requireAdmin() {
   }
 
   if (session.role !== "admin") {
+    logSecurity("auth.forbidden_admin");
+
     return { session: null, response: forbiddenResponse() };
   }
 

@@ -15,6 +15,7 @@ import {
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
 import { csrfGuard } from "@/lib/csrf";
+import { logSecurity } from "@/lib/securityLog";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,8 @@ async function requireAdmin() {
   }
 
   if (session.role !== "admin") {
+    logSecurity("auth.forbidden_admin");
+
     return {
       session: null,
       response: forbiddenResponse(),

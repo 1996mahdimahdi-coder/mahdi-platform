@@ -16,8 +16,12 @@ import {
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
 import { csrfGuard } from "@/lib/csrf";
+import { hashForLog, logSecurity } from "@/lib/securityLog";
 
 export const dynamic = "force-dynamic";
+
+const DUMMY_BCRYPT_HASH =
+  "$2b$12$Y.PdX6Az5.V57S3BJ20aK.F2mYnIByD3DWbbHeIGU5r5XDKGTPS3a";
 
 const NO_STORE_HEADERS = {
   "Cache-Control": "private, no-store",
@@ -140,6 +144,10 @@ export async function POST(request: Request) {
 
   if (!emailCheck.allowed) {
     loginDiag("rateLimit:email:rejected");
+    logSecurity("auth.login_rate_limited", {
+      emailHash: hashForLog(email),
+    });
+
     return rateLimitExceededResponse(emailCheck);
   }
 
@@ -155,6 +163,12 @@ export async function POST(request: Request) {
     const user = userRows[0];
 
     let passwordMatches = false;
+    let authFailedReason:
+      | "unknown_email"
+      | "bad_credentials"
+      | "account_disabled"
+      | null = null;
+
     if (user) {
       loginDiag("bcrypt.compare:start");
       passwordMatches = await bcrypt.compare(
@@ -162,8 +176,17 @@ export async function POST(request: Request) {
         user.passwordHash
       );
       loginDiag("bcrypt.compare:done");
+
+      if (!passwordMatches) {
+        authFailedReason = "bad_credentials";
+      } else if (user.role === "disabled") {
+        authFailedReason = "account_disabled";
+      }
     } else {
-      loginDiag("bcrypt.compare:skipped-no-user");
+      loginDiag("bcrypt.compare:dummy:start");
+      await bcrypt.compare(password, DUMMY_BCRYPT_HASH);
+      loginDiag("bcrypt.compare:dummy:done");
+      authFailedReason = "unknown_email";
     }
 
     if (
@@ -171,6 +194,11 @@ export async function POST(request: Request) {
       !passwordMatches ||
       user.role === "disabled"
     ) {
+      logSecurity("auth.login_failed", {
+        reason: authFailedReason,
+        emailHash: hashForLog(email),
+      });
+
       return jsonError(
         "\u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a \u0623\u0648 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u063a\u064a\u0631 \u0635\u062d\u064a\u062d\u0629.",
         401

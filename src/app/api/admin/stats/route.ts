@@ -13,6 +13,7 @@ import {
   RATE_LIMITS,
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
+import { logSecurity } from "@/lib/securityLog";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,8 @@ export async function GET() {
   }
 
   if (session.role !== "admin") {
+    logSecurity("auth.forbidden_admin");
+
     return forbiddenResponse();
   }
 

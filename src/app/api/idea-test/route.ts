@@ -50,6 +50,19 @@ export async function POST(request: Request) {
   const csrfErr = await csrfGuard(request);
   if (csrfErr) return csrfErr;
 
+  const contentLength = Number(
+    request.headers.get("content-length") ?? 0
+  );
+
+  if (
+    Number.isFinite(contentLength) &&
+    contentLength > 30_000
+  ) {
+    return badRequest(
+      "\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0637\u0644\u0628 \u0643\u0628\u064a\u0631\u0629 \u062c\u062f\u064b\u0627."
+    );
+  }
+
   // H1 rate limiting: this endpoint can call OpenAI when a key is set,
   // so anonymous bursts are bounded per IP.
   const ipLimit = RATE_LIMITS.ideaTest.ip;
@@ -62,6 +75,18 @@ export async function POST(request: Request) {
 
   if (!ipCheck.allowed) {
     return rateLimitExceededResponse(ipCheck);
+  }
+
+  const globalLimit = RATE_LIMITS.ideaTest.global;
+
+  const globalCheck = await checkRateLimit({
+    key: "idea-test:global",
+    limit: globalLimit.limit,
+    windowSeconds: globalLimit.windowSeconds,
+  });
+
+  if (!globalCheck.allowed) {
+    return rateLimitExceededResponse(globalCheck);
   }
 
   let body: unknown;
@@ -85,6 +110,12 @@ export async function POST(request: Request) {
   }
 
   const input = body as Record<string, unknown>;
+
+  if (JSON.stringify(body).length > 30_000) {
+    return badRequest(
+      "\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0637\u0644\u0628 \u0643\u0628\u064a\u0631\u0629 \u062c\u062f\u064b\u0627."
+    );
+  }
 
   const ideaTitle =
     typeof input.ideaTitle === "string"

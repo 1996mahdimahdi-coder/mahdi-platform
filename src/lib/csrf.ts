@@ -4,6 +4,7 @@ import {
   timingSafeEqual,
 } from "node:crypto";
 import { NextResponse } from "next/server";
+import { logSecurity } from "@/lib/securityLog";
 
 const CSRF_COOKIE = "nabda_csrf";
 const CSRF_HEADER = "x-csrf-token";
@@ -133,11 +134,15 @@ export async function csrfGuard(
   const headerToken = request.headers.get(CSRF_HEADER);
 
   if (hasCookie && !headerToken) {
+    logSecurity("csrf.blocked", { reason: "missing_header" });
+
     return csrfErrorResponse();
   }
 
   const token = headerToken || (await getCsrfTokenFromRequest(request));
   if (!token || !verifyCsrfToken(token)) {
+    logSecurity("csrf.blocked", { reason: "invalid_token" });
+
     return csrfErrorResponse();
   }
   return null;

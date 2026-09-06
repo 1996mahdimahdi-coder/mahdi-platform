@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isIP } from "node:net";
 import { pool } from "@/db";
+import { logSecurity } from "@/lib/securityLog";
 
 // ============================================================
 // H1 — Rate limiting (PostgreSQL fixed-window counters).
@@ -42,6 +43,13 @@ export const RATE_LIMITS = {
   },
   ideaTest: {
     ip: { limit: 15, windowSeconds: 15 * 60 },
+    global: { limit: 240, windowSeconds: 15 * 60 },
+  },
+  search: {
+    ip: { limit: 30, windowSeconds: 60 },
+  },
+  google: {
+    ip: { limit: 20, windowSeconds: 15 * 60 },
   },
   visitor: {
     ip: { limit: 5, windowSeconds: 60 * 60 },
@@ -109,6 +117,11 @@ export async function checkRateLimit({
 
     if (count > limit) {
       const windowEnd = windowStart + windowSeconds;
+
+      logSecurity("rate_limit.exceeded", {
+        limit,
+        windowSeconds,
+      });
 
       return {
         allowed: false,
