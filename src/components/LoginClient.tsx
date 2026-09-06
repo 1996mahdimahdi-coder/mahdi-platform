@@ -15,6 +15,10 @@ import { isCapacitor } from "@/lib/capacitor";
  * On Capacitor (mobile app) the native Google Sign-In is used and the ID token
  * is exchanged via /api/auth/google/capacitor. Nothing here rebuilds the auth
  * system, creates its own sessions, or touches CSRF / rate limits.
+ *
+ * The optional ?redirect= query param (set by the proxy when a protected path
+ * such as /admin or /dashboard is opened) is forwarded to the OAuth init route
+ * and honored by the callback, returning the user to the path they intended.
  */
 export default function LoginClient() {
   // Surfaced via the callback redirect (?error=google). Read from the client
@@ -84,7 +88,13 @@ export default function LoginClient() {
       return;
     }
 
-    window.location.href = "/api/auth/google";
+    // Forward the intended destination (if any) to the OAuth init route so the
+    // callback can return the user to the protected path they tried to open.
+    const params = new URLSearchParams(window.location.search);
+    const redirectTo = params.get("redirect");
+    const target = redirectTo ? `/api/auth/google?redirect=${encodeURIComponent(redirectTo)}` : "/api/auth/google";
+
+    window.location.href = target;
   }
 
   return (

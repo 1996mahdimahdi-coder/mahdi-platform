@@ -9,11 +9,18 @@ import {
   SESSION_COOKIE_NAME,
 } from "@/lib/auth";
 import { verifyGoogleIdToken, type GoogleIdTokenPayload } from "@/lib/google-verify";
+import { getSafeRedirectPath } from "@/lib/authRedirect";
 
 export const dynamic = "force-dynamic";
 
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const OAUTH_STATE_COOKIE = "nabda_oauth_state";
+const REDIRECT_COOKIE = "nabda_redirect";
+
+function readCookie(header: string, name: string): string | null {
+  const match = header.match(new RegExp("(?:^|;\\s*)" + name + "=([^;]*)"));
+  return match ? decodeURIComponent(match[1]) : null;
+}
 
 type GoogleTokenResponse = {
   access_token?: string;
@@ -159,7 +166,6 @@ export async function GET(request: Request) {
       );
       return NextResponse.redirect(loginErrorUrl);
     }
-
     const email = payload.email.toLowerCase();
     const name = (payload.name || email.split("@")[0]).slice(0, 80);
 
@@ -210,8 +216,24 @@ export async function GET(request: Request) {
       })
     );
 
-    const response = NextResponse.redirect(new URL("/", url.origin));
+    // Return the user to their intended protected path (e.g. /login?redirect=/admin
+    // -> /admin) when present and safe, otherwise default to "/". Authorization is
+    // re-checked on the destination by the proxy and admin/dashboard layouts, so a
+    // redirect never bypasses protection.
+    const cookieHeader = request.headers.get("cookie") || "";
+    const redirectPath = getSafeRedirectPath(readCookie(cookieHeader, REDIRECT_COOKIE));
+
+    const destination = redirectPath ? new URL(redirectPath, url.origin) : new URL("/", url.origin);
+
+    const response = NextResponse.redirect(destination);
     response.cookies.set(SESSION_COOKIE_NAME, token, getSessionCookieOptions());
+    response.cookies.set(REDIRECT_COOKIE, "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 0,
+    });
     invalidateStateCookie(response);
     return response;
   } catch (err) {

@@ -49,8 +49,14 @@ export function proxy(request: NextRequest) {
   const isAdminRoute = pathname === "/admin" || pathname.startsWith("/admin/");
   const isDashboardRoute =
     pathname === "/dashboard" || pathname.startsWith("/dashboard/");
+  // The home page now requires a session. /login stays public (not matched),
+  // so it never redirects and cannot loop. This is a DB-free edge check using
+  // the same cryptographically verified session token as admin/dashboard.
+  const isHomeRoute = pathname === "/";
 
-  if (!isAdminRoute && !isDashboardRoute) return NextResponse.next();
+  if (!isAdminRoute && !isDashboardRoute && !isHomeRoute) {
+    return NextResponse.next();
+  }
 
   const requireAdmin = isAdminRoute;
   const ok = hasValidSession(request, requireAdmin);
@@ -64,5 +70,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/dashboard/:path*"],
+  matcher: ["/", "/admin/:path*", "/dashboard/:path*"],
 };

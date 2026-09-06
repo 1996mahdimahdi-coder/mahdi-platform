@@ -1,7 +1,7 @@
 ﻿import type { Metadata } from "next";
-import { count, countDistinct } from "drizzle-orm";
+import { count } from "drizzle-orm";
 import { db } from "@/db";
-import { projects, wilayas } from "@/db/schema";
+import { wilayas } from "@/db/schema";
 import { PROJECT_COUNT } from "@/lib/constants";
 import LoginClient from "@/components/LoginClient";
 
@@ -25,25 +25,21 @@ export const dynamic = "force-dynamic";
  *     the advertised catalog size, labelled as مرشحة "وأفكار" (not a live
  *     COUNT of the projects table).
  *   - Wilayas: live COUNT(*) FROM wilayas (verified 69).
- *   - Fields: live COUNT(DISTINCT category) FROM projects (verified 6).
- * Any failed aggregate degrades to the verified static value so login never
- * hard-fails.
+ *   - Domains: fixed platform taxonomy stat (23 categories as defined in
+ *     DEFAULT_DOMAINS and managed via admin). Not a live DB aggregate since
+ *     the projects table only uses a subset of the full taxonomy.
  */
 export default async function LoginPage() {
   let wilayaCount = 69;
-  let fieldCount = 6;
 
   try {
     const [wRow] = await db.select({ value: count() }).from(wilayas).limit(1);
-    const [fRow] = await db
-      .select({ value: countDistinct(projects.category) })
-      .from(projects)
-      .limit(1);
     if (wRow && wRow.value > 0) wilayaCount = wRow.value;
-    if (fRow && fRow.value > 0) fieldCount = fRow.value;
   } catch {
-    // Keep verified fallbacks.
+    // Keep verified fallback.
   }
+
+  const fieldCount = 23;
 
   return (
     <div dir="rtl" className="w-full max-w-6xl mx-auto px-4 py-10 sm:py-14">
