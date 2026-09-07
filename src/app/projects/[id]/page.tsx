@@ -21,6 +21,8 @@ import {
   Loader2,
   Lock,
   Send,
+  BookOpen,
+  MessageCircle,
   Square
 } from "lucide-react";
 import {
@@ -37,8 +39,11 @@ import ShareButtons from "@/components/ShareButtons";
 import { getCapitalProjectVideos } from "@/lib/projectVideos";
 import {
   PAID_STUDY_SALES_ENABLED,
+  PAID_STUDY_TELEGRAM_HANDLE,
   buildStudyPurchaseUrl,
+  buildWhatsAppStudyPurchaseUrl,
 } from "@/lib/noCapital/studySales";
+import { buildWhatsAppContactUrl } from "@/lib/contactChannels";
 
 const MARKET_TEST_STAGES = [
   {
@@ -296,6 +301,16 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
   const videos = getCapitalProjectVideos(project.projectId);
 
   const studyPurchaseUrl = buildStudyPurchaseUrl(project.projectName, project.projectId);
+
+  const bookOrderUrl = `https://t.me/${PAID_STUDY_TELEGRAM_HANDLE}?text=${encodeURIComponent(
+    `السلام عليكم، أريد طلب كتاب الدراسة التفصيلية للمشروع: ${project.projectName ?? ""} (${project.projectId}).`
+  )}`;
+
+  const whatsappStudyUrl = buildWhatsAppStudyPurchaseUrl(project.projectName, project.projectId);
+
+  const whatsappBookUrl = buildWhatsAppContactUrl(
+    `السلام عليكم، أريد طلب كتاب الدراسة التفصيلية للمشروع: ${project.projectName ?? ""} (${project.projectId}).`
+  );
 
   const toggleCheck = (stageIdx: number, taskIdx: number) => {
     setStageChecks((prev) =>
@@ -862,26 +877,56 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
           ))}
         </div>
 
-        <div className="pt-2 flex flex-col sm:flex-row items-start sm:items-center gap-3 border-t border-slate-700">
-          {PAID_STUDY_SALES_ENABLED ? (
-            <a
-              href={studyPurchaseUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-sky-500 text-white font-extrabold text-sm hover:bg-sky-600 transition-colors shadow-md"
-            >
-              <Send className="w-4 h-4" />
-              اطلب الدراسة عبر Telegram
-            </a>
-          ) : (
-            <span className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-700 text-slate-300 font-extrabold text-sm cursor-not-allowed">
-              <Lock className="w-4 h-4" />
-              الدراسة قيد الإعداد
-            </span>
-          )}
+        <div className="pt-2 flex flex-col lg:flex-row items-start lg:items-center gap-3 border-t border-slate-700">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+              <a
+                href={studyPurchaseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-sky-500 text-white font-extrabold text-sm hover:bg-sky-600 transition-colors shadow-md"
+              >
+                <Send className="w-4 h-4" />
+                اطلب الدراسة التفصيلية
+              </a>
+              <a
+                href={bookOrderUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-white/10 border border-slate-600 text-white font-extrabold text-sm hover:bg-white/20 transition-colors"
+              >
+                <BookOpen className="w-4 h-4" />
+                اطلب الكتاب
+              </a>
+            </div>
+
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+              <a
+                href={whatsappStudyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-500 text-white font-extrabold text-sm hover:bg-emerald-600 transition-colors shadow-md"
+              >
+                <MessageCircle className="w-4 h-4" />
+                اطلب الدراسة التفصيلية عبر WhatsApp
+              </a>
+              <a
+                href={whatsappBookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 font-extrabold text-sm hover:bg-emerald-500/25 transition-colors"
+              >
+                <BookOpen className="w-4 h-4" />
+                اطلب الكتاب عبر WhatsApp
+              </a>
+            </div>
+          </div>
 
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-indigo-300 font-bold">لإتمام الشراء والتواصل معنا عبر Telegram</p>
+            <p className="text-xs text-indigo-300 font-bold flex items-center gap-1.5">
+              <Send className="w-3.5 h-3.5" />
+              طلب الدراسة أو الكتاب يتم مباشرة عبر Telegram أو WhatsApp
+            </p>
             <p className="text-[11px] text-slate-400 leading-snug">
               تُسلَّم الدراسة بعد تأكيد الدفع، وتشمل أقساماً تفصيلية غير معروضة في النسخة المجانية: المزايا، المخاطر، خطة 30 يوماً، المعدات، التسعير والأرباح، والجوانب القانونية.
             </p>

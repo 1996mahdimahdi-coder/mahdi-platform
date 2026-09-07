@@ -13,9 +13,12 @@ import {
   Target,
   Rocket,
   GraduationCap,
+  Send,
+  MessageCircle,
 } from "lucide-react";
 import ServiceOnboardingBanner from "@/components/ServiceOnboardingBanner";
 import DownloadBanner from "@/components/DownloadBanner";
+import { CONTACT_LINKS } from "@/lib/email/config";
 
 export const metadata: Metadata = {
   title: "NABDA — اختبر مشروعك قبل ما تبدأ في الجزائر",
@@ -418,6 +421,83 @@ export default function HomePage() {
               <span>جرب المحاكاة التفاعلية</span>
               <ArrowLeft className="w-4 h-4" />
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Community Channels (Telegram + WhatsApp) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-700 via-sky-500 to-indigo-600 text-white p-8 sm:p-12 border border-sky-300 shadow-xl">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.06)_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_80%_60%_at_50%_40%,#000_60%,transparent_100%)]" />
+
+          <div className="relative grid lg:grid-cols-[1.6fr,1fr] gap-8 items-center">
+            <div className="space-y-6">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 text-white text-xs font-extrabold ring-1 ring-white/30">
+                <Send className="w-3.5 h-3.5" />
+                مجتمع NABDA DZ الأسبوعي
+              </span>
+
+              <h2 className="text-2xl sm:text-4xl font-black leading-tight">
+                تابعنا أسبوعياً على Telegram أو WhatsApp
+              </h2>
+
+              <p className="text-sm sm:text-base text-sky-50 leading-relaxed max-w-2xl">
+                نعرض ونختار مشاريع ومحتوى عملياً بشكل أسبوعي، مع التركيز كل أسبوع على مشروع محدد في ولاية معينة، والإعلان عن الكتب والدراسات الجديدة. تابعنا واستفسر عن المشاريع عبر القناة التي تناسبك.
+              </p>
+
+              <ul className="grid sm:grid-cols-2 gap-2.5 text-xs text-sky-50 font-medium">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-white/90 shrink-0" />
+                  مشروع مختار جديد كل أسبوع
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-white/90 shrink-0" />
+                  تركيز أسبوعي على ولاية معينة
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-white/90 shrink-0" />
+                  متابعة المشاريع والتواصل والاستفسارات
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-white/90 shrink-0" />
+                  الإعلان عن الدراسات والكتب الجديدة
+                </li>
+              </ul>
+
+              <div className="pt-1 flex flex-col sm:flex-row flex-wrap items-center gap-3">
+                <a
+                  href={CONTACT_LINKS.telegram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-white text-sky-700 font-extrabold text-base hover:bg-sky-50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg"
+                >
+                  <Send className="w-5 h-5" />
+                  انضم إلى قناة Telegram
+                </a>
+                <a
+                  href={CONTACT_LINKS.whatsappChannel}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-emerald-500 text-white font-extrabold text-base hover:bg-emerald-600 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  انضم إلى قناة WhatsApp
+                </a>
+                <span dir="ltr" className="text-xs font-mono text-sky-100 bg-white/10 px-3 py-1.5 rounded-lg ring-1 ring-white/25">
+                  @NABDA2026
+                </span>
+              </div>
+
+              <p className="text-[11px] text-sky-100/90 font-medium">
+                للتواصل وطلب الدراسة أو الكتاب مباشرة عبر واتساب: <span dir="ltr" className="font-mono font-bold">{CONTACT_LINKS.whatsappContact}</span>
+              </p>
+            </div>
+
+            <div className="hidden lg:flex items-center justify-center">
+              <div className="w-40 h-40 rounded-full bg-white/10 ring-8 ring-white/10 flex items-center justify-center">
+                <MessageCircle className="w-20 h-20 text-white/90" strokeWidth={1.5} />
+              </div>
+            </div>
           </div>
         </div>
       </section>

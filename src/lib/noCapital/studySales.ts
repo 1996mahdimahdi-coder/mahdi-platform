@@ -13,6 +13,10 @@
 
 import type { PaidStudy } from "./types";
 import { shouldRedactStudy } from "./studyValidation";
+import {
+  TELEGRAM_CHANNEL_URL,
+  WHATSAPP_CONTACT_LINK,
+} from "@/lib/contactChannels";
 
 // Uniform price for the 5 no-capital paid studies (Phase 4.1).
 export const PAID_STUDY_PRICE_DZD = 490;
@@ -25,7 +29,7 @@ export const PAID_STUDY_SALES_ENABLED = false;
 
 // Telegram contact used for manual purchase + delivery (same handle as the library).
 export const PAID_STUDY_TELEGRAM_HANDLE = "NABDA2026";
-export const PAID_STUDY_TELEGRAM_URL = `https://t.me/${PAID_STUDY_TELEGRAM_HANDLE}`;
+export const PAID_STUDY_TELEGRAM_URL = TELEGRAM_CHANNEL_URL;
 
 export type StudySaleInfo = {
   hasPaidStudy: boolean;
@@ -49,11 +53,36 @@ export function getStudySaleInfo(study: PaidStudy | null | undefined): StudySale
 }
 
 /**
+ * Shared purchase-request text used by the Telegram and WhatsApp deep-links.
+ * Includes the project name (and ID when present) plus an optional wilaya.
+ */
+function buildStudyPurchaseText(
+  projectNameAr: string | null | undefined,
+  slug: string | null | undefined,
+  wilayaName?: string | null
+): string {
+  const suffix = slug ? ` (${slug})` : "";
+  const wilaya = wilayaName ? ` في ولاية ${wilayaName}` : "";
+  return `السلام عليكم، أريد شراء الدراسة التفصيلية للمشروع: ${projectNameAr ?? ""}${wilaya}${suffix} بسعر ${PAID_STUDY_PRICE_DZD} دج.`;
+}
+
+/**
  * Builds the Telegram deep-link that pre-fills a purchase request message.
  * Only used for Approved studies; callers should gate on studyAvailable first.
  */
 export function buildStudyPurchaseUrl(projectNameAr: string | null | undefined, slug: string | null | undefined): string {
-  const suffix = slug ? ` (${slug})` : "";
-  const text = `السلام عليكم، أريد شراء الدراسة التفصيلية للمشروع: ${projectNameAr ?? ""}${suffix} بسعر ${PAID_STUDY_PRICE_DZD} دج.`;
-  return `${PAID_STUDY_TELEGRAM_URL}?text=${encodeURIComponent(text)}`;
+  return `${PAID_STUDY_TELEGRAM_URL}?text=${encodeURIComponent(buildStudyPurchaseText(projectNameAr, slug))}`;
+}
+
+/**
+ * Builds the WhatsApp deep-link (chat with the NABDA contact number) that
+ * pre-fills the same purchase request message. `wilayaName` is appended to
+ * the message only when the caller has the project's wilaya available.
+ */
+export function buildWhatsAppStudyPurchaseUrl(
+  projectNameAr: string | null | undefined,
+  slug: string | null | undefined,
+  wilayaName?: string | null
+): string {
+  return `${WHATSAPP_CONTACT_LINK}?text=${encodeURIComponent(buildStudyPurchaseText(projectNameAr, slug, wilayaName))}`;
 }
