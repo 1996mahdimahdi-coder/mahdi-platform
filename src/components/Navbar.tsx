@@ -8,7 +8,6 @@ import {
   Calculator,
   Compass,
   Lightbulb,
-  CalendarCheck,
   Menu,
   X,
   User,
@@ -36,7 +35,6 @@ const TOOLS_LINKS: NavItem[] = [
   { href: "/calculator", label: "حاسبة الربح", icon: <Calculator className="w-4 h-4 text-slate-500" /> },
   { href: "/simulator", label: "المحاكاة", icon: <TrendingUp className="w-4 h-4 text-slate-500" /> },
   { href: "/idea-test", label: "اختبار فكرة", icon: <Lightbulb className="w-4 h-4 text-amber-500" /> },
-  { href: "/plan", label: "خطة 30 يوم", icon: <CalendarCheck className="w-4 h-4 text-slate-500" /> },
 ];
 
 const CONTENT_LINKS: NavItem[] = [
