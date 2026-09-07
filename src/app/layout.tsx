@@ -1,11 +1,7 @@
 ﻿import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import WelcomeBanner from "@/components/WelcomeBanner";
-import FloatingChatButton from "@/components/ai/FloatingChatButton";
-import AdContainer from "@/components/AdContainer";
 import CapacitorBridge from "@/components/CapacitorBridge";
+import SiteChrome from "@/components/SiteChrome";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -63,13 +59,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body className="font-official bg-slate-50 text-slate-900 antialiased min-h-screen flex flex-col">
         <CapacitorBridge />
-        <Navbar />
-        <WelcomeBanner />
-        <main className="flex-1">
-        <AdContainer />
-        {children}</main>
-        <Footer />
-        <FloatingChatButton />
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );
