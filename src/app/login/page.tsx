@@ -57,7 +57,6 @@ export default async function LoginPage() {
           <div className="space-y-7">
             <div className="space-y-2">
               <p className="text-indigo-600 font-black text-sm tracking-wide">
-                نبضة DZ
               </p>
               <h1 className="text-3xl sm:text-4xl font-black leading-tight text-slate-900">
                 NABDA DZ
@@ -101,7 +100,7 @@ export default async function LoginPage() {
             </p>
 
             <p className="text-sm text-slate-600 leading-relaxed">
-              اكتشف مشروعك القادم وابدأ خطوتك الأولى مع نبضة DZ.
+              اكتشف مشروعك القادم وابدأ خطوتك الأولى مع المنصة.
             </p>
 
             <ul className="space-y-2.5 text-sm text-slate-700">
