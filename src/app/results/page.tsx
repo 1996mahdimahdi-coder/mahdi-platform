@@ -40,6 +40,17 @@ minCapital?: number;
   initialStock?: number;
   totalScore: number;
   recommendation: string;
+  confidence?: "high" | "medium" | "low";
+  confidenceValue?: number;
+  dimensionBreakdown?: {
+    financial?: { score?: number; max?: number; capitalFit?: { score?: number; max?: number }; fixedCost?: { score?: number; max?: number }; variableCost?: { score?: number; max?: number } };
+    execution?: { score?: number; max?: number; hours?: { score?: number; max?: number }; workspace?: { score?: number; max?: number }; complexity?: { score?: number; max?: number } };
+    market?: { score?: number; max?: number; competition?: { score?: number; max?: number }; seasonality?: { score?: number; max?: number } };
+    risk?: { score?: number; max?: number; projectRisk?: { score?: number; max?: number }; userTolerance?: { score?: number; max?: number }; regulatory?: { score?: number; max?: number } };
+    personal?: { score?: number; max?: number; skills?: { score?: number; max?: number }; objective?: { score?: number; max?: number } };
+    location?: { score?: number; max?: number };
+    scalability?: { score?: number; max?: number };
+  };
   reasons?: string[];
 }
 
@@ -488,13 +499,76 @@ project: {
                   /100
                 </span>
 
-                <div className="mt-2">
+<div className="mt-2">
                   <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold border border-indigo-200 text-indigo-700">
                     {topMatch.recommendation}
                   </span>
                 </div>
+
+                {topMatch.confidence && (
+                  <div className="mt-2">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                      دقة التقييم:{" "}
+                      {topMatch.confidence === "high"
+                        ? "عالية"
+                        : topMatch.confidence === "medium"
+                          ? "متوسطة"
+                          : "منخفضة"}
+                      {topMatch.confidenceValue
+                        ? ` (${Math.round(topMatch.confidenceValue * 100)}%)`
+                        : ""}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
+
+            {topMatch.dimensionBreakdown && (
+              <div className="bg-white p-5 rounded-2xl border border-indigo-200 space-y-3">
+                <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <Calculator className="w-4 h-4 text-indigo-600" />
+                  تفاصيل الأبعاد (V2)
+                </h3>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[
+                    { label: "المالية", d: topMatch.dimensionBreakdown.financial },
+                    { label: "التنفيذ", d: topMatch.dimensionBreakdown.execution },
+                    { label: "السوق", d: topMatch.dimensionBreakdown.market },
+                    { label: "المخاطرة", d: topMatch.dimensionBreakdown.risk },
+                    { label: "الشخصية", d: topMatch.dimensionBreakdown.personal },
+                    { label: "الموقع", d: topMatch.dimensionBreakdown.location },
+                    { label: "التوسع", d: topMatch.dimensionBreakdown.scalability },
+                  ].map(({ label, d }) => (
+                    <div
+                      key={label}
+                      className="bg-slate-50 p-2.5 rounded-xl border border-slate-200"
+                    >
+                      <span className="text-slate-400 block text-[10px]">
+                        {label}
+                      </span>
+
+                      <span className="font-extrabold text-slate-900 text-sm">
+                        {d?.score ?? "—"}
+                      </span>
+
+                      <span className="text-[10px] text-slate-400">
+                        /{d?.max ?? "—"}
+                      </span>
+
+                      <div className="mt-1.5 h-1.5 rounded-full bg-slate-200 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-indigo-500"
+                          style={{
+                            width: `${Math.min(100, ((d?.score ?? 0) / (d?.max ?? 1)) * 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="bg-white p-5 rounded-2xl border border-indigo-200 space-y-2">
               <h3 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">

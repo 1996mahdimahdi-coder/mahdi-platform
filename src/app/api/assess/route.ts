@@ -1,20 +1,18 @@
-﻿import { eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
 
 import { db } from "@/db";
 import {
   projects,
-  scoringWeights,
   analysisResults,
   userProfiles,
   wilayas,
 } from "@/db/schema";
 
 import {
-  rankProjects,
+  rankProjectsV2,
   UserAssessmentInput,
-  DEFAULT_WEIGHTS,
   ProjectData,
 } from "@/lib/scoringEngine";
 
@@ -468,21 +466,7 @@ export async function POST(request: Request) {
     }
 
     // ============================================================
-    // 4. الحصول على أوزان التقييم
-    // ============================================================
-
-    const weightRows = await db
-      .select()
-      .from(scoringWeights)
-      .limit(1);
-
-    const weightsConfig =
-      weightRows.length > 0
-        ? weightRows[0]
-        : DEFAULT_WEIGHTS;
-
-    // ============================================================
-    // 5. تحويل مشاريع قاعدة البيانات إلى ProjectData
+    // 4. تحويل مشاريع قاعدة البيانات إلى ProjectData
     // ============================================================
 
     const typedProjects: ProjectData[] =
@@ -591,23 +575,31 @@ export async function POST(request: Request) {
 
         source:
           p.source,
+
+        workLocation:
+          p.workLocation,
+
+        skillLevel:
+          p.skillLevel,
+
+        legalStatus:
+          p.legalStatus,
       }));
 
     // ============================================================
-    // 6. تشغيل محرك التقييم
+    // 5. تشغيل محرك التقييم (V2)
     // ============================================================
 
-    const ranked = rankProjects(
+    const ranked = rankProjectsV2(
       userInput,
-      typedProjects,
-      weightsConfig
+      typedProjects
     );
 
     const top5 =
       ranked.slice(0, 5);
 
     // ============================================================
-    // 7. إنشاء شرح النتيجة
+    // 6. إنشاء شرح النتيجة
     // ============================================================
 
     let explanationText = "";
@@ -629,7 +621,7 @@ export async function POST(request: Request) {
     }
 
     // ============================================================
-    // 8. تجهيز أفضل 5 مشاريع للحفظ
+    // 7. تجهيز أفضل 5 مشاريع للحفظ
     // ============================================================
 
     const topProjectSummaries =
@@ -642,6 +634,15 @@ export async function POST(request: Request) {
 
         totalScore:
           r.totalScore,
+
+        confidence:
+          r.confidence,
+
+        confidenceValue:
+          r.confidenceValue,
+
+        dimensionBreakdown:
+          r.dimensionBreakdown,
 
         financialScore:
           r.financialScore,
@@ -669,7 +670,7 @@ export async function POST(request: Request) {
       }));
 
     // ============================================================
-    // 9. إنشاء Session ID
+    // 8. إنشاء Session ID
     // ============================================================
 
     const sessionId =
@@ -681,7 +682,7 @@ export async function POST(request: Request) {
             .substring(2, 7)}`;
 
     // ============================================================
-    // 10. حفظ نتيجة التحليل
+    // 9. حفظ نتيجة التحليل
     // ============================================================
 
     const shareToken = randomBytes(24).toString("hex");
@@ -708,7 +709,7 @@ export async function POST(request: Request) {
         .returning();
 
     // ============================================================
-    // 11. إرسال النتيجة للواجهة
+    // 10. إرسال النتيجة للواجهة
     // ============================================================
 
     return NextResponse.json({
@@ -736,6 +737,9 @@ export async function POST(request: Request) {
       homeBased: r.project.homeBased,
       initialStock: r.project.initialStock,
       totalScore: r.totalScore,
+      confidence: r.confidence,
+      confidenceValue: r.confidenceValue,
+      dimensionBreakdown: r.dimensionBreakdown,
       recommendation: r.recommendation,
       reasons: r.reasons,
     })),
