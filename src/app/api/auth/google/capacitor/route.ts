@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import {
-  createSessionToken,
+  createSession,
   getSessionCookieOptions,
   SESSION_COOKIE_NAME,
 } from "@/lib/auth";
@@ -119,7 +119,7 @@ export async function POST(request: Request) {
       tokenVersion = created.tokenVersion;
     }
 
-    const token = createSessionToken({ id: userId, role, tokenVersion });
+    const token = await createSession({ id: userId, role, tokenVersion });
 
     await logSecurity("oauth.success", "info", {
       provider: "google",

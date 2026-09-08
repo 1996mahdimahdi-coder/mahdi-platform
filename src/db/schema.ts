@@ -104,6 +104,33 @@ export const users = pgTable("users", {
   tokenVersion: integer("token_version").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
+// F8 - per-session login records (per-session logout / revocation). Every
+// issued session token is backed by exactly one row keyed by its
+// cryptographically-random jti; logout retires ONLY the current row
+// (revoked_at). users.token_version stays the user-wide invalidation
+// mechanism, reserved for a future "logout everywhere". user_agent_hmac /
+// ip_hash are optional HASHED attribution fields only - never raw UA/IP.
+// created_at/expires_at/revoked_at are timestamptz (absolute instants): the
+// 24h expiry is compared against the JS clock, so a naive timestamp column
+// would skew by the Postgres server's timezone offset.
+export const sessions = pgTable(
+  "sessions",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    jti: text("jti").notNull().unique(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    userAgentHmac: text("user_agent_hmac"),
+    ipHash: text("ip_hash"),
+  },
+  (table) => [
+    index("sessions_user_id_idx").on(table.userId),
+    index("sessions_expires_at_idx").on(table.expiresAt),
+    index("sessions_revoked_at_idx").on(table.revokedAt),
+  ]
+);
 
 // User Profiles
 export const userProfiles = pgTable("user_profiles", {

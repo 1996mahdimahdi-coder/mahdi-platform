@@ -324,6 +324,7 @@ async function main() {
       userId: 1,
       role: "admin",
       tokenVersion: 0,
+      jti: "1".repeat(64),
       issuedAt: Date.now(),
       expiresAt: Date.now() + 60 * 60 * 24 * 1000,
     };
@@ -333,8 +334,8 @@ async function main() {
   });
   run("isAdminView only for admins", () => {
     assert.equal(isAdminView(null), false);
-    assert.equal(isAdminView({ version: 1, userId: 1, role: "user", tokenVersion: 0, issuedAt: 0, expiresAt: 1 }), false);
-    assert.equal(isAdminView({ version: 1, userId: 1, role: "admin", tokenVersion: 0, issuedAt: 0, expiresAt: 1 }), true);
+    assert.equal(isAdminView({ version: 1, userId: 1, role: "user", tokenVersion: 0, jti: "1".repeat(64), issuedAt: 0, expiresAt: 1 }), false);
+    assert.equal(isAdminView({ version: 1, userId: 1, role: "admin", tokenVersion: 0, jti: "1".repeat(64), issuedAt: 0, expiresAt: 1 }), true);
   });
 
   console.log("Public routes — no paid-field leakage in responses:");

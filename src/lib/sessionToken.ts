@@ -1,5 +1,6 @@
 import {
   createHmac,
+  randomBytes,
   timingSafeEqual,
 } from "node:crypto";
 
@@ -14,6 +15,9 @@ export type SessionPayload = {
   userId: number;
   role: string;
   tokenVersion: number;
+  // F8 — per-session identifier. Bound to ONE sessions row; logout (and any
+  // future per-device revoke) targets this exact session, never siblings.
+  jti: string;
   issuedAt: number;
   expiresAt: number;
 };
@@ -49,10 +53,18 @@ function signValue(value: string): string {
     .digest("base64url");
 }
 
+// Cryptographically random per-session identifier (32 bytes, hex). It is the
+// lookup key of the F8 `sessions` row and carries no user data, timestamp or
+// guessable sequence. Purely cryptographic — safe for the Proxy edge module.
+export function generateSessionJti(): string {
+  return randomBytes(32).toString("hex");
+}
+
 export function createSessionToken(user: {
   id: number;
   role: string;
   tokenVersion: number;
+  jti: string;
 }): string {
   const now = Math.floor(Date.now() / 1000);
 
@@ -61,6 +73,7 @@ export function createSessionToken(user: {
     userId: user.id,
     role: user.role,
     tokenVersion: user.tokenVersion,
+    jti: user.jti,
     issuedAt: now,
     expiresAt:
       now + SESSION_MAX_AGE_SECONDS,
@@ -135,6 +148,12 @@ export function verifySessionToken(
       !Number.isInteger(payload.userId) ||
       Number(payload.userId) <= 0 ||
       typeof payload.role !== "string" ||
+      // F8 — a session token is only meaningful when it names a real session.
+      // Reject absent / malformed / absurdly-long jti values outright.
+      typeof payload.jti !== "string" ||
+      payload.jti.length < 16 ||
+      payload.jti.length > 128 ||
+      !/^[a-f0-9]+$/i.test(payload.jti) ||
       !Number.isInteger(payload.issuedAt) ||
       !Number.isInteger(payload.expiresAt) ||
       Number(payload.expiresAt) <= now

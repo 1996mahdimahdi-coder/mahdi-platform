@@ -3,13 +3,11 @@ import {
   getSession,
   getSessionCookieOptions,
   PRIVATE_NO_STORE_HEADERS,
+  revokeSession,
   SESSION_COOKIE_NAME,
 } from "@/lib/auth";
 import { csrfGuard } from "@/lib/csrf";
 import { logSecurity } from "@/lib/securityLog";
-import { db } from "@/db";
-import { users } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -17,20 +15,15 @@ export async function POST(request: Request) {
   const csrfErr = await csrfGuard(request);
   if (csrfErr) return csrfErr;
 
-  // Increment tokenVersion to invalidate ALL existing session tokens
-  // for this user. Any token issued before this point will fail the
-  // tokenVersion check in getSession() and return 401.
+  // F8 — logout retires ONLY the current session row (its jti), so the other
+  // browsers/devices of the same user keep working. getSession() re-checks the
+  // row on every request, so an old cookie replaying after this revoke is 401.
   const session = await getSession();
   if (session) {
-    await db
-      .update(users)
-      .set({
-        tokenVersion: sql`${users.tokenVersion} + 1`,
-      })
-      .where(eq(users.id, session.userId));
+    await revokeSession(session.jti, session.userId);
 
-    // F7 — audit the logout itself; never the session token or the new
-    // token version value.
+    // F7 — audit the logout itself; only the userId (never the session token
+    // or its jti, which would be redacted by logSecurity anyway).
     await logSecurity("auth.logout", "info", {
       userId: session.userId,
     });

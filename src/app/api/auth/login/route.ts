@@ -4,7 +4,7 @@ import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import {
-  createSessionToken,
+  createSession,
   getSessionCookieOptions,
   SESSION_COOKIE_NAME,
 } from "@/lib/auth";
@@ -211,7 +211,7 @@ export async function POST(request: Request) {
     }
 
     loginDiag("createSessionToken:start");
-    const token = createSessionToken({
+    const token = await createSession({
       id: user.id,
       role: user.role,
       tokenVersion: user.tokenVersion,

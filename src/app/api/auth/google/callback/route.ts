@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import {
-  createSessionToken,
+  createSession,
   getSessionCookieOptions,
   SESSION_COOKIE_NAME,
 } from "@/lib/auth";
@@ -213,7 +213,7 @@ export async function GET(request: Request) {
       tokenVersion = created.tokenVersion;
     }
 
-    const token = createSessionToken({ id: userId, role, tokenVersion });
+    const token = await createSession({ id: userId, role, tokenVersion });
 
     // ── DIAG: success ──
     await logSecurity("oauth.success", "info", {

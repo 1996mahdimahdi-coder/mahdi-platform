@@ -1,11 +1,13 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
+import { and, eq, gt } from "drizzle-orm";
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { sessions, users } from "@/db/schema";
 import {
   SESSION_COOKIE_NAME,
   SESSION_MAX_AGE_SECONDS,
+  createSessionToken,
+  generateSessionJti,
   verifySessionToken,
 } from "@/lib/sessionToken";
 import { logSecurity, safeErrorMessage } from "@/lib/securityLog";
@@ -14,6 +16,7 @@ export {
   SESSION_COOKIE_NAME,
   SESSION_MAX_AGE_SECONDS,
   createSessionToken,
+  generateSessionJti,
   verifySessionToken,
   verifySessionTokenMinimal,
 } from "@/lib/sessionToken";
@@ -44,15 +47,21 @@ export async function getSession(): Promise<import("@/lib/sessionToken").Session
       .where(eq(users.id, verified.userId))
       .limit(1);
 
-    if (!user || user.role === "disabled") {
+    // Token revocation: the user row must still exist and be enabled, and its
+    // current tokenVersion must match the one embedded in the token —
+    // otherwise the session was revoked for this user or the account disabled.
+    if (!user) {
       return null;
     }
 
-    // Token revocation: if the tokenVersion in the token does not match
-    // the current tokenVersion in the database, the session was revoked
-    // (e.g. user logged out). All tokens issued before the logout are
-    // now invalid.
-    if (user.tokenVersion !== verified.tokenVersion) {
+    if (!authorizeUserToken(user, verified)) {
+      return null;
+    }
+
+    // F8 — per-session revocation: the exact `sessions` row named by the
+    // token's jti must still exist, be un-revoked and un-expired. Logout now
+    // only retires the current session, so a concurrent one stays alive.
+    if (!(await isSessionActive(verified.jti))) {
       return null;
     }
 
@@ -88,6 +97,99 @@ export function getSessionCookieOptions() {
     maxAge: SESSION_MAX_AGE_SECONDS,
     priority: "high" as const,
   };
+}
+
+// ============================================================================
+// F8 — per-session records. Every issued token is backed by exactly one
+// `sessions` row keyed by its jti. Session creation is FAIL-CLOSED: if the
+// row cannot be persisted no token is minted (no orphan/unsigned session),
+// and the caller must surface the error (login flows never hand out a token
+// whose session cannot be looked up later).
+// ============================================================================
+
+export async function createSession(user: {
+  id: number;
+  role: string;
+  tokenVersion: number;
+}): Promise<string> {
+  const jti = generateSessionJti();
+  const now = new Date();
+  const expiresAt = new Date(
+    now.getTime() + SESSION_MAX_AGE_SECONDS * 1000
+  );
+
+  const [row] = await db
+    .insert(sessions)
+    .values({
+      userId: user.id,
+      jti,
+      createdAt: now,
+      expiresAt,
+    })
+    .returning({ jti: sessions.jti });
+
+  if (!row) {
+    throw new Error("session record could not be created");
+  }
+
+  return createSessionToken({ ...user, jti });
+}
+
+// True when the sessions row named by `jti` exists, was not revoked and has
+// not expired. This is the authoritative per-session gate used by getSession.
+//
+// The expiry compare uses timestamptz on both sides (see sessions.expiresAt):
+// a naive `timestamp` column would round-trip through the Postgres server's
+// local timezone and skew every JS-vs-DB time comparison by its UTC offset.
+// With absolute instants the comparison is exact regardless of server TZ.
+export async function isSessionActive(
+  jti: string
+): Promise<boolean> {
+  const [row] = await db
+    .select({
+      revokedAt: sessions.revokedAt,
+    })
+    .from(sessions)
+    .where(
+      and(
+        eq(sessions.jti, jti),
+        gt(sessions.expiresAt, new Date())
+      )
+    )
+    .limit(1);
+
+  return Boolean(row && !row.revokedAt);
+}
+
+// Revokes ONLY the given session. Idempotent: revoking again (or a session
+// that is already gone) is a no-op.
+export async function revokeSession(
+  jti: string,
+  userId: number
+): Promise<void> {
+  await db
+    .update(sessions)
+    .set({ revokedAt: new Date() })
+    .where(
+      and(
+        eq(sessions.jti, jti),
+        eq(sessions.userId, userId)
+      )
+    );
+}
+
+// Pure gate shared by getSession: the user row must be enabled and its
+// tokenVersion must match the one embedded in the token. token_version remains
+// the user-wide invalidation mechanism (reserved for a future "logout
+// everywhere"); normal logout retires only the current session via jti.
+export function authorizeUserToken(
+  user: { role: string; tokenVersion: number },
+  verified: { role: string; tokenVersion: number }
+): boolean {
+  return (
+    user.role !== "disabled" &&
+    user.tokenVersion === verified.tokenVersion
+  );
 }
 
 export const PRIVATE_NO_STORE_HEADERS = {
