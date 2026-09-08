@@ -29,7 +29,12 @@ async function requireAdmin(): Promise<
   }
 
   if (session.role !== "admin") {
-    logSecurity("auth.forbidden_admin");
+    await logSecurity(
+      "auth.forbidden_admin",
+      "warn",
+      { userId: session.userId },
+      { suppress: { key: "admin" } }
+    );
 
     return { session: null, error: forbiddenResponse() };
   }

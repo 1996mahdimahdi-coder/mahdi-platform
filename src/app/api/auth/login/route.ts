@@ -144,9 +144,12 @@ export async function POST(request: Request) {
 
   if (!emailCheck.allowed) {
     loginDiag("rateLimit:email:rejected");
-    logSecurity("auth.login_rate_limited", {
-      emailHash: hashForLog(email),
-    });
+    await logSecurity(
+      "auth.login_rate_limited",
+      "warn",
+      { emailHash: hashForLog(email) },
+      { suppress: { key: "login-email" } }
+    );
 
     return rateLimitExceededResponse(emailCheck);
   }
@@ -194,10 +197,12 @@ export async function POST(request: Request) {
       !passwordMatches ||
       user.role === "disabled"
     ) {
-      logSecurity("auth.login_failed", {
-        reason: authFailedReason,
-        emailHash: hashForLog(email),
-      });
+      await logSecurity(
+        "auth.login_failed",
+        "warn",
+        { reason: authFailedReason, emailHash: hashForLog(email) },
+        { suppress: { key: "login-fail" } }
+      );
 
       return jsonError(
         "\u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a \u0623\u0648 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u063a\u064a\u0631 \u0635\u062d\u064a\u062d\u0629.",
@@ -212,6 +217,12 @@ export async function POST(request: Request) {
       tokenVersion: user.tokenVersion,
     });
     loginDiag("createSessionToken:done");
+
+    await logSecurity("auth.login_success", "info", {
+      userId: user.id,
+      emailHash: hashForLog(email),
+      method: "password",
+    });
 
     const response = NextResponse.json(
       {

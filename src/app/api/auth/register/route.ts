@@ -15,7 +15,7 @@ import {
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
 import { csrfGuard } from "@/lib/csrf";
-import { hashForLog, logSecurity } from "@/lib/securityLog";
+import { hashForLog, logSecurity, safeErrorMessage } from "@/lib/securityLog";
 
 export const dynamic = "force-dynamic";
 
@@ -168,7 +168,7 @@ export async function POST(request: Request) {
       .limit(1);
 
     if (existing.length > 0) {
-      logSecurity("auth.register_duplicate", {
+      await logSecurity("auth.register_duplicate", "info", {
         emailHash: hashForLog(email),
       });
 
@@ -226,7 +226,9 @@ export async function POST(request: Request) {
 
     return response;
   } catch (error) {
-    console.error("Registration error:", error);
+    await logSecurity("auth.register_error", "warn", {
+      message: safeErrorMessage(error),
+    });
 
     return jsonError(
       "\u062d\u062f\u062b \u062e\u0637\u0623 \u062f\u0627\u062e\u0644\u064a. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649 \u0644\u0627\u062d\u0642\u064b\u0627.",

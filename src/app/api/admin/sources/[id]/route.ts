@@ -23,11 +23,23 @@ async function requireAdmin() {
   const session = await getSession();
 
   if (!session) {
+    await logSecurity(
+      "auth.unauthorized",
+      "warn",
+      { reason: "admin" },
+      { suppress: { key: "admin" } }
+    );
+
     return { session: null, response: unauthorizedResponse() };
   }
 
   if (session.role !== "admin") {
-    logSecurity("auth.forbidden_admin");
+    await logSecurity(
+      "auth.forbidden_admin",
+      "warn",
+      { userId: session.userId },
+      { suppress: { key: "admin" } }
+    );
 
     return { session: null, response: forbiddenResponse() };
   }
@@ -207,6 +219,14 @@ export async function PUT(
       );
     }
 
+    // F7 — audit only the successful admin action (never the body/secrets).
+    await logSecurity("admin.update", "info", {
+      userId: auth.session.userId,
+      resource: "sources",
+      resourceId: id,
+      action: "update",
+    });
+
     return NextResponse.json(
       {
         success: true,
@@ -322,6 +342,14 @@ export async function DELETE(
     }
 
     await db.delete(dataSources).where(eq(dataSources.id, id));
+
+    // F7 — audit only the successful admin action (never the body/secrets).
+    await logSecurity("admin.delete", "info", {
+      userId: auth.session.userId,
+      resource: "sources",
+      resourceId: id,
+      action: "delete",
+    });
 
     return NextResponse.json(
       {

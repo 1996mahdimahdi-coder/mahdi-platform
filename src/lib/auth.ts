@@ -8,6 +8,7 @@ import {
   SESSION_MAX_AGE_SECONDS,
   verifySessionToken,
 } from "@/lib/sessionToken";
+import { logSecurity, safeErrorMessage } from "@/lib/securityLog";
 
 export {
   SESSION_COOKIE_NAME,
@@ -64,7 +65,15 @@ export async function getSession(): Promise<import("@/lib/sessionToken").Session
       role: user.role,
     };
   } catch (error) {
-    console.error("Session verification DB error:", error);
+    // F7 — session verification is auth core: log safely (bounded message,
+    // never the DB error object) with a global flood window so a database
+    // outage cannot generate unbounded log volume.
+    await logSecurity(
+      "auth.session_error",
+      "warn",
+      { message: safeErrorMessage(error) },
+      { suppress: { key: "session" } }
+    );
     return null;
   }
 }

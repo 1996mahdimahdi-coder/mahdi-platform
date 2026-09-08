@@ -134,14 +134,24 @@ export async function csrfGuard(
   const headerToken = request.headers.get(CSRF_HEADER);
 
   if (hasCookie && !headerToken) {
-    logSecurity("csrf.blocked", { reason: "missing_header" });
+    await logSecurity(
+      "csrf.blocked",
+      "warn",
+      { reason: "missing_header" },
+      { suppress: { key: "csrf" } }
+    );
 
     return csrfErrorResponse();
   }
 
   const token = headerToken || (await getCsrfTokenFromRequest(request));
   if (!token || !verifyCsrfToken(token)) {
-    logSecurity("csrf.blocked", { reason: "invalid_token" });
+    await logSecurity(
+      "csrf.blocked",
+      "warn",
+      { reason: "invalid_token" },
+      { suppress: { key: "csrf" } }
+    );
 
     return csrfErrorResponse();
   }

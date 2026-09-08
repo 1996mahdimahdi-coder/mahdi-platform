@@ -12,6 +12,7 @@ import {
   RATE_LIMITS,
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
+import { logSecurity, safeErrorMessage } from "@/lib/securityLog";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +57,12 @@ export async function GET() {
       { headers: PRIVATE_NO_STORE_HEADERS }
     );
   } catch (error) {
-    console.error("Session user error:", error);
+    await logSecurity(
+      "auth.session_error",
+      "warn",
+      { message: safeErrorMessage(error) },
+      { suppress: { key: "me" } }
+    );
 
     return NextResponse.json(
       {

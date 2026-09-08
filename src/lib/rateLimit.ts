@@ -118,9 +118,16 @@ export async function checkRateLimit({
     if (count > limit) {
       const windowEnd = windowStart + windowSeconds;
 
-      logSecurity("rate_limit.exceeded", {
+      await logSecurity("rate_limit.exceeded", "warn", {
         limit,
         windowSeconds,
+      }, {
+        // Global DB-backed flood window per bucket: after a handful of
+        // breaches per window, further exceed events for the same bucket are
+        // suppressed. `key` is the already-namespaced / pseudonymized bucket
+        // identifier (never the raw IP/email), and it is only used to group
+        // the suppression counter — never emitted.
+        suppress: { key },
       });
 
       return {

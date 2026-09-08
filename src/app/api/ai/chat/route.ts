@@ -7,12 +7,7 @@ import { buildSystemPrompt } from "@/lib/ai/system-prompt";
 import { retrieveKnowledge, buildKnowledgeContext } from "@/lib/ai/knowledge";
 import { AI_RATE_LIMITS, AI_INPUT_LIMITS } from "@/lib/ai/types";
 import type { AIMessage, AIChatRequest, AIChatResponse } from "@/lib/ai/types";
-
-function safeLog(stage: string, extra?: Record<string, unknown>) {
-  const safe: Record<string, unknown> = { t: new Date().toISOString(), s: stage };
-  if (extra) Object.assign(safe, extra);
-  console.log(JSON.stringify(safe));
-}
+import { logSecurity, safeErrorMessage } from "@/lib/securityLog";
 
 async function rateLimitCheck(userId: number): Promise<{ allowed: boolean; response?: NextResponse }> {
   const userResult = await checkRateLimit({
@@ -62,7 +57,7 @@ export async function POST(request: Request) {
   const start = Date.now();
 
   if (!isAIConfigured()) {
-    safeLog("ai.config_missing");
+    await logSecurity("ai.blocked", "warn", { reason: "not_configured" });
     return NextResponse.json(
       { success: false, error: "المساعد الذكي غير متاح حالياً." } satisfies AIChatResponse,
       { status: 503, ...PRIVATE_NO_STORE_HEADERS }
@@ -71,13 +66,18 @@ export async function POST(request: Request) {
 
   const csrfErr = await csrfGuard(request);
   if (csrfErr) {
-    safeLog("ai.csrf_blocked");
+    // csrf.blocked (flood-suppressed) is already emitted by csrfGuard itself.
     return csrfErr;
   }
 
   const session = await getSession();
   if (!session) {
-    safeLog("ai.auth_required");
+    await logSecurity(
+      "auth.unauthorized",
+      "warn",
+      { reason: "ai_required" },
+      { suppress: { key: "ai" } }
+    );
     return unauthorizedResponse();
   }
 
@@ -85,7 +85,12 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    safeLog("ai.invalid_json", { uid: session.userId });
+    await logSecurity(
+      "ai.blocked",
+      "warn",
+      { userId: session.userId, reason: "invalid_json" },
+      { suppress: { key: `ai:${session.userId}` } }
+    );
     return NextResponse.json(
       { success: false, error: "بيانات غير صالحة." } satisfies AIChatResponse,
       { status: 400, ...PRIVATE_NO_STORE_HEADERS }
@@ -104,7 +109,15 @@ export async function POST(request: Request) {
   }
 
   const rl = await rateLimitCheck(session.userId);
-  if (!rl.allowed) return rl.response!;
+  if (!rl.allowed) {
+    await logSecurity(
+      "ai.abuse",
+      "warn",
+      { userId: session.userId },
+      { suppress: { key: `ai:${session.userId}` } }
+    );
+    return rl.response!;
+  }
 
   const lastUserMsg = body.messages.filter((m) => m.role === "user").pop();
   if (!lastUserMsg || lastUserMsg.content.trim().length < 2) {
@@ -115,7 +128,12 @@ export async function POST(request: Request) {
   }
 
   if (containsSensitiveData(lastUserMsg.content)) {
-    safeLog("ai.sensitive_input_blocked", { uid: session.userId });
+    await logSecurity(
+      "ai.blocked",
+      "warn",
+      { userId: session.userId, reason: "sensitive_input" },
+      { suppress: { key: `ai:${session.userId}` } }
+    );
     return NextResponse.json(
       { success: false, error: "يحتوي رسالتك على معلومات حساسة. يُرجى إزالتها." } satisfies AIChatResponse,
       { status: 400, ...PRIVATE_NO_STORE_HEADERS }
@@ -138,8 +156,11 @@ export async function POST(request: Request) {
       currentArticle: body.context?.currentArticle,
     });
     knowledgeContext = buildKnowledgeContext(knowledgeItems);
-  } catch (err) {
-    safeLog("ai.knowledge_error", { uid: session.userId });
+  } catch {
+    await logSecurity("ai.error", "info", {
+      userId: session.userId,
+      reason: "knowledge",
+    });
   }
 
   const systemPrompt = buildSystemPrompt(body.context);
@@ -160,7 +181,12 @@ export async function POST(request: Request) {
     });
 
     if (containsSensitiveData(reply)) {
-      safeLog("ai.sensitive_output_blocked", { uid: session.userId });
+      await logSecurity(
+        "ai.blocked",
+        "warn",
+        { userId: session.userId, reason: "sensitive_output" },
+        { suppress: { key: `ai:${session.userId}` } }
+      );
       return NextResponse.json(
         { success: false, error: "حدث خطأ أثناء توليد الرد. حاول مرة أخرى." } satisfies AIChatResponse,
         { status: 500, ...PRIVATE_NO_STORE_HEADERS }
@@ -177,7 +203,12 @@ export async function POST(request: Request) {
       }));
 
     const latency = Date.now() - start;
-    safeLog("ai.success", { uid: session.userId, ms: latency, src: sources.length, model: process.env.AI_MODEL ?? "gpt-4o-mini" });
+    await logSecurity("ai.success", "info", {
+      userId: session.userId,
+      ms: latency,
+      src: sources.length,
+      model: process.env.AI_MODEL ?? "gpt-4o-mini",
+    });
 
     return NextResponse.json(
       { success: true, reply, sources } satisfies AIChatResponse,
@@ -186,7 +217,11 @@ export async function POST(request: Request) {
   } catch (err) {
     const latency = Date.now() - start;
     const code = err instanceof Error ? err.message : "UNKNOWN";
-    safeLog("ai.generation_error", { uid: session.userId, ms: latency, code });
+    await logSecurity("ai.error", "warn", {
+      userId: session.userId,
+      ms: latency,
+      message: safeErrorMessage(err),
+    });
 
     let errorMsg = "حدث خطأ أثناء توليد الرد. حاول مرة أخرى.";
     if (code.includes("TIMEOUT")) {

@@ -23,11 +23,23 @@ async function requireAdmin() {
   const session = await getSession();
 
   if (!session) {
+    await logSecurity(
+      "auth.unauthorized",
+      "warn",
+      { reason: "admin" },
+      { suppress: { key: "admin" } }
+    );
+
     return { session: null, response: unauthorizedResponse() };
   }
 
   if (session.role !== "admin") {
-    logSecurity("auth.forbidden_admin");
+    await logSecurity(
+      "auth.forbidden_admin",
+      "warn",
+      { userId: session.userId },
+      { suppress: { key: "admin" } }
+    );
 
     return { session: null, response: forbiddenResponse() };
   }
@@ -166,6 +178,14 @@ export async function POST(request: Request) {
       createdAt: created.createdAt.toISOString(),
       updatedAt: created.updatedAt.toISOString(),
     };
+
+    // F7 — audit only the successful admin action (never the body/secrets).
+    await logSecurity("admin.create", "info", {
+      userId: auth.session.userId,
+      resource: "sources",
+      resourceId: created.id,
+      action: "create",
+    });
 
     return NextResponse.json(
       { success: true, source },

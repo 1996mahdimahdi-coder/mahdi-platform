@@ -63,7 +63,12 @@ export async function POST(request: Request) {
   const { payload } = await verifyGoogleIdToken(idToken, audience);
 
   if (!payload || !payload.email || payload.email_verified === false) {
-    logSecurity("auth.google_token_invalid");
+    await logSecurity(
+      "oauth.failure",
+      "warn",
+      { provider: "google", code: "token_invalid" },
+      { suppress: { key: "oauth-capacitor" } }
+    );
 
     return NextResponse.json(
       { success: false, error: "Invalid Google token." },
@@ -116,6 +121,13 @@ export async function POST(request: Request) {
 
     const token = createSessionToken({ id: userId, role, tokenVersion });
 
+    await logSecurity("oauth.success", "info", {
+      provider: "google",
+      userId,
+      role,
+      userIsNew: existing.length === 0,
+    });
+
     const response = NextResponse.json({ success: true });
     response.cookies.set(
       SESSION_COOKIE_NAME,
@@ -124,6 +136,12 @@ export async function POST(request: Request) {
     );
     return response;
   } catch {
+    await logSecurity(
+      "oauth.failure",
+      "warn",
+      { provider: "google", code: "server_error" },
+      { suppress: { key: "oauth-capacitor" } }
+    );
     return NextResponse.json(
       { success: false, error: "Server error during login." },
       { status: 500 }

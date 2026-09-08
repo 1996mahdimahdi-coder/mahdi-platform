@@ -159,6 +159,27 @@ export const rateLimits = pgTable("rate_limits", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// F7 — structured security events (auth, oauth, csrf, rate-limit breaches,
+// admin writes, AI abuse). Written by src/lib/securityLog.ts (console +
+// best-effort INSERT, fail-open). Rows are bounded by the retention cleanup
+// in securityLog.ts (30 days, throttled, batched).
+export const securityEvents = pgTable(
+  "security_events",
+  {
+    id: serial("id").primaryKey(),
+    event: text("event").notNull(),
+    severity: text("severity").notNull().default("info"),
+    userId: integer("user_id"),
+    payload: jsonb("payload"),
+    ipHash: text("ip_hash"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("security_events_created_at_idx").on(table.createdAt),
+    index("security_events_event_idx").on(table.event),
+  ]
+);
+
 // Verification sources for legal / financial facts
 export const verificationSources = pgTable("verification_sources", {
   id: serial("id").primaryKey(),

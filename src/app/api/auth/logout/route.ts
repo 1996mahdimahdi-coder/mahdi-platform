@@ -6,6 +6,7 @@ import {
   SESSION_COOKIE_NAME,
 } from "@/lib/auth";
 import { csrfGuard } from "@/lib/csrf";
+import { logSecurity } from "@/lib/securityLog";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
@@ -27,6 +28,12 @@ export async function POST(request: Request) {
         tokenVersion: sql`${users.tokenVersion} + 1`,
       })
       .where(eq(users.id, session.userId));
+
+    // F7 — audit the logout itself; never the session token or the new
+    // token version value.
+    await logSecurity("auth.logout", "info", {
+      userId: session.userId,
+    });
   }
 
   const response = NextResponse.json(

@@ -33,11 +33,23 @@ export async function requireAdmin() {
   const session = await getSession();
 
   if (!session) {
+    await logSecurity(
+      "auth.unauthorized",
+      "warn",
+      { reason: "admin" },
+      { suppress: { key: "admin" } }
+    );
+
     return { session: null, response: unauthorizedResponse() };
   }
 
   if (session.role !== "admin") {
-    logSecurity("auth.forbidden_admin");
+    await logSecurity(
+      "auth.forbidden_admin",
+      "warn",
+      { userId: session.userId },
+      { suppress: { key: "admin" } }
+    );
 
     return { session: null, response: forbiddenResponse() };
   }
@@ -143,6 +155,14 @@ export function createAdminRoutes(config: AdminConfig) {
           console.error(`afterCreate hook error for ${tableName}:`, e)
         );
       }
+
+      // F7 — audit only the successful admin action (never the body/secrets).
+      await logSecurity("admin.create", "info", {
+        userId: auth.session.userId,
+        resource: tableName,
+        resourceId: (created as { id?: number }).id ?? null,
+        action: "create",
+      });
       return NextResponse.json(
         { success: true, item: serializeRow(created) },
         { headers: PRIVATE_NO_STORE_HEADERS }
@@ -223,6 +243,13 @@ export function createAdminRoutes(config: AdminConfig) {
 
       if (!updated) return notFound(`${itemName} غير موجود`);
 
+      await logSecurity("admin.update", "info", {
+        userId: auth.session.userId,
+        resource: tableName,
+        resourceId: id,
+        action: "update",
+      });
+
       return NextResponse.json({ success: true, item: serializeRow(updated) }, { headers: PRIVATE_NO_STORE_HEADERS });
     } catch (error) {
       if (isMissingTableError(error)) return missingTable();
@@ -260,6 +287,13 @@ export function createAdminRoutes(config: AdminConfig) {
       if (!existing) return notFound(`${itemName} غير موجود`);
 
       await db.delete(table).where(eq(table.id, id));
+
+      await logSecurity("admin.delete", "info", {
+        userId: auth.session.userId,
+        resource: tableName,
+        resourceId: id,
+        action: "delete",
+      });
 
       return NextResponse.json(
         { success: true, message: `تم حذف ${itemName} بنجاح.` },

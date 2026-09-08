@@ -10,6 +10,7 @@ import {
 } from "@/lib/auth";
 import { verifyGoogleIdToken, type GoogleIdTokenPayload } from "@/lib/google-verify";
 import { getSafeRedirectPath } from "@/lib/authRedirect";
+import { logSecurity, safeErrorMessage } from "@/lib/securityLog";
 
 export const dynamic = "force-dynamic";
 
@@ -56,13 +57,16 @@ export async function GET(request: Request) {
 
   // ── DIAG: Path 1 — Google returned error or no code ──
   if (error || !code) {
-    console.error(
-      JSON.stringify({
-        diag: "GOOGLE_OAUTH",
+    await logSecurity(
+      "oauth.failure",
+      "warn",
+      {
+        provider: "google",
         step: "callback_missing_code_or_error",
-        error: error ?? null,
+        errorCode: error ?? null,
         codePresent: Boolean(code),
-      })
+      },
+      { suppress: { key: "oauth-callback" } }
     );
     return NextResponse.redirect(loginErrorUrl);
   }
@@ -78,26 +82,22 @@ export async function GET(request: Request) {
 
   // ── DIAG: Path 2 — state param or cookie missing ──
   if (!state || !expectedState) {
-    console.error(
-      JSON.stringify({
-        diag: "GOOGLE_OAUTH",
-        step: "state_missing",
-        stateParamPresent: Boolean(state),
-        stateCookiePresent: Boolean(expectedState),
-      })
+    await logSecurity(
+      "oauth.failure",
+      "warn",
+      { provider: "google", step: "state_missing" },
+      { suppress: { key: "oauth-callback" } }
     );
     return NextResponse.redirect(loginErrorUrl);
   }
 
   // ── DIAG: Path 3 — state mismatch ──
   if (!timingSafeStringCompare(state, expectedState)) {
-    console.error(
-      JSON.stringify({
-        diag: "GOOGLE_OAUTH",
-        step: "state_mismatch",
-        stateParamLen: state.length,
-        stateCookieLen: expectedState.length,
-      })
+    await logSecurity(
+      "oauth.failure",
+      "warn",
+      { provider: "google", step: "state_mismatch" },
+      { suppress: { key: "oauth-callback" } }
     );
     return NextResponse.redirect(loginErrorUrl);
   }
@@ -108,14 +108,17 @@ export async function GET(request: Request) {
 
   // ── DIAG: Path 4 — missing env vars ──
   if (!clientId || !clientSecret || !redirectUri) {
-    console.error(
-      JSON.stringify({
-        diag: "GOOGLE_OAUTH",
+    await logSecurity(
+      "oauth.failure",
+      "warn",
+      {
+        provider: "google",
         step: "missing_environment_variable",
         clientIdPresent: Boolean(clientId),
         clientSecretPresent: Boolean(clientSecret),
         redirectUriPresent: Boolean(redirectUri),
-      })
+      },
+      { suppress: { key: "oauth-callback" } }
     );
     return NextResponse.redirect(loginErrorUrl);
   }
@@ -137,15 +140,18 @@ export async function GET(request: Request) {
 
     // ── DIAG: Path 5 — token exchange failed or missing id_token ──
     if (!tokenRes.ok || !tokenData.id_token) {
-      console.error(
-        JSON.stringify({
-          diag: "GOOGLE_OAUTH",
+      await logSecurity(
+        "oauth.failure",
+        "warn",
+        {
+          provider: "google",
           step: tokenRes.ok ? "token_missing_id_token" : "token_exchange_failed",
           httpStatus: tokenRes.status,
-          error: tokenData.error ?? null,
+          errorCode: tokenData.error ?? null,
           errorDescription: tokenData.error_description ?? null,
           idTokenPresent: Boolean(tokenData.id_token),
-        })
+        },
+        { suppress: { key: "oauth-callback" } }
       );
       return NextResponse.redirect(loginErrorUrl);
     }
@@ -155,14 +161,17 @@ export async function GET(request: Request) {
 
     // ── DIAG: Path 6 — id_token verification / email validation failed ──
     if (!payload || !payload.email || payload.email_verified === false) {
-      console.error(
-        JSON.stringify({
-          diag: "GOOGLE_OAUTH",
+      await logSecurity(
+        "oauth.failure",
+        "warn",
+        {
+          provider: "google",
           step: "id_token_verification_failed",
           payloadPresent: Boolean(payload),
           emailPresent: Boolean(payload?.email),
           emailVerified: payload?.email_verified ?? null,
-        })
+        },
+        { suppress: { key: "oauth-callback" } }
       );
       return NextResponse.redirect(loginErrorUrl);
     }
@@ -207,14 +216,12 @@ export async function GET(request: Request) {
     const token = createSessionToken({ id: userId, role, tokenVersion });
 
     // ── DIAG: success ──
-    console.error(
-      JSON.stringify({
-        diag: "GOOGLE_OAUTH",
-        step: "success",
-        role,
-        userIsNew: existing.length === 0,
-      })
-    );
+    await logSecurity("oauth.success", "info", {
+      provider: "google",
+      userId,
+      role,
+      userIsNew: existing.length === 0,
+    });
 
     // Return the user to their intended protected path (e.g. /login?redirect=/admin
     // -> /admin) when present and safe, otherwise default to "/". Authorization is
@@ -238,13 +245,15 @@ export async function GET(request: Request) {
     return response;
   } catch (err) {
     // ── DIAG: Path 7 — unexpected exception ──
-    console.error(
-      JSON.stringify({
-        diag: "GOOGLE_OAUTH",
+    await logSecurity(
+      "oauth.failure",
+      "warn",
+      {
+        provider: "google",
         step: "unexpected_exception",
-        message: err instanceof Error ? err.message : String(err),
-        name: err instanceof Error ? err.name : undefined,
-      })
+        message: safeErrorMessage(err),
+      },
+      { suppress: { key: "oauth-callback" } }
     );
     return NextResponse.redirect(loginErrorUrl);
   }
