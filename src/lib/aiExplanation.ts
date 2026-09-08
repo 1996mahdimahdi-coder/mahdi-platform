@@ -1,8 +1,14 @@
-import { ScoredProjectResult, UserAssessmentInput } from "./scoringEngine";
+import { UserAssessmentInput } from "./scoringEngine";
+
+export interface ExplanationMatch {
+  project: { projectName: string };
+  totalScore: number;
+  recommendation: string;
+}
 
 export async function generateAnalysisExplanation(
   user: UserAssessmentInput,
-  topResults: ScoredProjectResult[]
+  topResults: ExplanationMatch[]
 ): Promise<string> {
   const topMatch = topResults[0];
   if (!topMatch) return "لم يتم العثور على مشاريع متوافقة بناءً على المدخلات.";
