@@ -69,6 +69,14 @@ export const RATE_LIMITS = {
   me: {
     user: { limit: 120, windowSeconds: 15 * 60 },
   },
+  // F9-2 — /api/push/register device-token registration (POST/DELETE).
+  // Per-user hard gate (authenticated endpoint) plus a per-IP defense-in-depth
+  // bucket via clientIpKey so account-multiplication from one address is also
+  // bounded. Legitimate usage is a handful of registrations per day.
+  pushRegister: {
+    user: { limit: 30, windowSeconds: 15 * 60 },
+    ip: { limit: 60, windowSeconds: 15 * 60 },
+  },
 } as const;
 
 export type RateLimitInput = {

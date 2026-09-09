@@ -5,6 +5,7 @@ import { checkRateLimit, rateLimitExceededResponse } from "@/lib/rateLimit";
 import { isAIConfigured, generateAIResponse } from "@/lib/ai/provider";
 import { buildSystemPrompt } from "@/lib/ai/system-prompt";
 import { retrieveKnowledge, buildKnowledgeContext } from "@/lib/ai/knowledge";
+import { checkAiChatGlobalDailyBudget } from "@/lib/ai/chatBudget";
 import { AI_RATE_LIMITS, AI_INPUT_LIMITS } from "@/lib/ai/types";
 import type { AIMessage, AIChatRequest, AIChatResponse } from "@/lib/ai/types";
 import { logSecurity, safeErrorMessage } from "@/lib/securityLog";
@@ -117,6 +118,17 @@ export async function POST(request: Request) {
       { suppress: { key: `ai:${session.userId}` } }
     );
     return rl.response!;
+  }
+
+  const globalBudget = await checkAiChatGlobalDailyBudget();
+  if (!globalBudget.allowed) {
+    await logSecurity(
+      "ai.abuse",
+      "warn",
+      { userId: session.userId, reason: "global_daily" },
+      { suppress: { key: "ai:global" } }
+    );
+    return rateLimitExceededResponse(globalBudget);
   }
 
   const lastUserMsg = body.messages.filter((m) => m.role === "user").pop();

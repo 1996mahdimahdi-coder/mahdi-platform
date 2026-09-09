@@ -56,7 +56,7 @@ export async function GET(
 
     if (!row) {
       return NextResponse.json(
-        { success: false, error: "النتيجة غير موجودة أو انتهت صلاحيتها." },
+        { success: false, error: "النتيجة غير موجودة." },
         { status: 404 }
       );
     }

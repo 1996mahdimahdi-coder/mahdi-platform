@@ -25,9 +25,8 @@ type AiChatProps = {
     currentProject?: string;
     currentArticle?: string;
     testResult?: {
-      recommendations: { slug: string; nameAr: string; score: number; reasons: string[] }[];
+      recommendations: { slug: string; nameAr: string; score: number }[];
     };
-    userName?: string;
   };
   suggestedPrompts?: string[];
   compact?: boolean;

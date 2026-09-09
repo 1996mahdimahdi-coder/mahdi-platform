@@ -9,9 +9,8 @@ export type AIChatRequest = {
     currentProject?: string;
     currentArticle?: string;
     testResult?: {
-      recommendations: { slug: string; nameAr: string; score: number; reasons: string[] }[];
+      recommendations: { slug: string; nameAr: string; score: number }[];
     };
-    userName?: string;
   };
 };
 

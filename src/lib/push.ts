@@ -38,30 +38,24 @@ export async function registerDeviceToken(
   platform: string = "android"
 ): Promise<{ success: boolean }> {
   try {
-    const existing = await db
-      .select()
-      .from(deviceTokens)
-      .where(eq(deviceTokens.token, token))
-      .limit(1);
-
-    if (existing.length > 0) {
-      await db
-        .update(deviceTokens)
-        .set({
-          userId,
-          platform,
-          active: true,
-          updatedAt: new Date(),
-        })
-        .where(eq(deviceTokens.token, token));
-    } else {
-      await db.insert(deviceTokens).values({
+    await db
+      .insert(deviceTokens)
+      .values({
         userId,
         token,
         platform,
         active: true,
+      })
+      .onConflictDoUpdate({
+        target: deviceTokens.token,
+        set: {
+          userId,
+          platform,
+          active: true,
+          updatedAt: new Date(),
+        },
+        where: eq(deviceTokens.userId, userId),
       });
-    }
 
     return { success: true };
   } catch (e) {

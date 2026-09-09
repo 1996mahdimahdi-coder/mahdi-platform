@@ -17,14 +17,6 @@ function sanitizeSlug(value: string): string {
     .slice(0, MAX_CONTEXT_FIELD_LENGTH);
 }
 
-function sanitizeName(value: string): string {
-  return value
-    .replace(/[\r\n\t]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 50);
-}
-
 export function buildSystemPrompt(context?: AIChatRequest["context"]): string {
   const sections: string[] = [];
 
@@ -80,13 +72,6 @@ export function buildSystemPrompt(context?: AIChatRequest["context"]): string {
     const recs = context.testResult.recommendations.slice(0, 5)
       .map((r) => `${sanitizeContextValue(r.nameAr)} (الدرجة: ${r.score})`).join(", ");
     sections.push(`\nنتائج اختبار المستخدم: ${recs}. اقترح عليه مشاريع متوافقة.`);
-  }
-
-  if (context?.userName) {
-    const name = sanitizeName(context.userName);
-    if (name.length >= 1) {
-      sections.push(`\nاسم المستخدم: ${name}.`)
-    }
   }
 
   return sections.join("\n");

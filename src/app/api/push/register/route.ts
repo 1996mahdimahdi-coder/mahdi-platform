@@ -2,8 +2,32 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { csrfGuard } from "@/lib/csrf";
 import { registerDeviceToken, unregisterDeviceToken } from "@/lib/push";
+import {
+  checkRateLimit,
+  clientIpKey,
+  RATE_LIMITS,
+  rateLimitExceededResponse,
+} from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
+
+async function enforceRateLimits(request: Request, userId: number) {
+  const user = await checkRateLimit({
+    key: `push:user:${userId}`,
+    limit: RATE_LIMITS.pushRegister.user.limit,
+    windowSeconds: RATE_LIMITS.pushRegister.user.windowSeconds,
+  });
+  if (!user.allowed) return rateLimitExceededResponse(user);
+
+  const ip = await checkRateLimit({
+    key: clientIpKey(request, "pushRegister"),
+    limit: RATE_LIMITS.pushRegister.ip.limit,
+    windowSeconds: RATE_LIMITS.pushRegister.ip.windowSeconds,
+  });
+  if (!ip.allowed) return rateLimitExceededResponse(ip);
+
+  return null;
+}
 
 export async function POST(request: Request) {
   const csrfErr = await csrfGuard(request);
@@ -13,6 +37,9 @@ export async function POST(request: Request) {
   if (!session) {
     return NextResponse.json({ success: false, error: "غير مصرح" }, { status: 401 });
   }
+
+  const rateLimitResponse = await enforceRateLimits(request, session.userId);
+  if (rateLimitResponse) return rateLimitResponse;
 
   let body: unknown;
   try {
@@ -38,6 +65,9 @@ export async function DELETE(request: Request) {
   if (!session) {
     return NextResponse.json({ success: false, error: "غير مصرح" }, { status: 401 });
   }
+
+  const rateLimitResponse = await enforceRateLimits(request, session.userId);
+  if (rateLimitResponse) return rateLimitResponse;
 
   let body: unknown;
   try {
