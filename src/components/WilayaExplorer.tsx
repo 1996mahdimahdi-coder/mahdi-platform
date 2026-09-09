@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { isNewProposedWilaya, NEW_DIVISION_LABEL } from "@/lib/wilayaStatus";
 
 type Commune = { id: number; wilayaId: number; nameAr: string; nameFr: string; };
 
@@ -29,7 +30,7 @@ export default function WilayaExplorer({ wilayas }: { wilayas: { id: number; cod
         className="w-full p-3 border border-slate-300 rounded-xl text-base font-bold bg-white">
         <option value="">اختر الولاية...</option>
         {wilayas.map((w) => (
-          <option key={w.id} value={w.id}>{w.code} - {w.nameAr}</option>
+          <option key={w.id} value={w.id}>{w.code} - {w.nameAr}{isNewProposedWilaya(w.code) ? ` (${NEW_DIVISION_LABEL})` : ""}</option>
         ))}
       </select>
 

@@ -408,11 +408,11 @@ async function main() {
   });
 
   console.log("Sales metadata — 490 DZD / Telegram NABDA2026:");
-  run("getStudySaleInfo handles capital approved/draft and kill-switch", () => {
+  run("getStudySaleInfo handles capital approved/draft availability states", () => {
     const approved = getStudySaleInfo(approvedStudy());
     assert.equal(approved.hasPaidStudy, true);
     assert.equal(approved.studyAvailable, PAID_STUDY_SALES_ENABLED);
-    assert.equal(approved.studyAvailable, false); // kill-switch PAID_STUDY_SALES_ENABLED = false
+    assert.equal(approved.studyAvailable, true); // sales enabled — approved study is sellable
     assert.equal(approved.priceDzd, PAID_STUDY_PRICE_DZD);
 
     const draftInfo = getStudySaleInfo(buildCapitalPaidStudyDraft(legacyProject()));

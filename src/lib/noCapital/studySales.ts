@@ -21,11 +21,10 @@ import {
 // Uniform price for the 5 no-capital paid studies (Phase 4.1).
 export const PAID_STUDY_PRICE_DZD = 490;
 
-// TEMP: global kill-switch that hides/suspends selling the paid studies in the
-// PUBLIC UI until their PDFs are manually reviewed and approved (Admin keeps
-// working independently of this switch). DB data and all study/PDF code are
-// untouched; flip this back to `true` to resume sales.
-export const PAID_STUDY_SALES_ENABLED = false;
+// Paid-study sales are LIVE: ordering + delivery happen manually via Telegram
+// (PAID_STUDY_TELEGRAM_URL -> t.me/NABDA2026) after payment confirmation.
+// studyAvailable still requires an APPROVED study (draft/review never sellable).
+export const PAID_STUDY_SALES_ENABLED = true;
 
 // Telegram contact used for manual purchase + delivery (same handle as the library).
 export const PAID_STUDY_TELEGRAM_HANDLE = "NABDA2026";

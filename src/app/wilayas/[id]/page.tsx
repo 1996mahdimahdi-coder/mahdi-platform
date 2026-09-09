@@ -6,6 +6,10 @@ import {
   SourcedStatCard,
   type StatDetail,
 } from "@/components/SourcedStatCard";
+import {
+  NEW_DIVISION_LABEL,
+  isNewProposedWilaya,
+} from "@/lib/wilayaStatus";
 
 type Wilaya = {
   id: number;
@@ -109,8 +113,13 @@ export default function WilayaDetailPage({
 
         <section className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 mb-6">
           <div className="flex flex-col gap-2">
-            <span className="text-sm text-slate-500">
+            <span className="text-sm text-slate-500 flex items-center gap-2">
               الولاية رقم {wilaya.code}
+              {isNewProposedWilaya(wilaya.code) && (
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">
+                  {NEW_DIVISION_LABEL}
+                </span>
+              )}
             </span>
 
             <h1 className="text-3xl font-black text-slate-900">

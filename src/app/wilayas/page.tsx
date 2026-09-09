@@ -2,6 +2,11 @@
 import { db } from "@/db";
 import { wilayas } from "@/db/schema";
 import WilayaExplorer from "@/components/WilayaExplorer";
+import {
+  NEW_DIVISION_HINT,
+  NEW_DIVISION_LABEL,
+  isNewProposedWilaya,
+} from "@/lib/wilayaStatus";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +27,12 @@ export default async function WilayasPage() {
     <main dir="rtl" className="min-h-screen bg-slate-50 py-10 px-4">
       <div className="max-w-5xl mx-auto bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
         <h1 className="text-3xl font-black mb-2">ولايات وبلديات الجزائر</h1>
-        <p className="text-slate-500 mb-8">{allWilayas.length} ولاية</p>
+        <p className="text-slate-500 mb-1">{allWilayas.length} ولاية</p>
+        {allWilayas.some((w) => isNewProposedWilaya(w.code)) && (
+          <p className="text-[11px] text-slate-400 mb-8">
+            {NEW_DIVISION_HINT}
+          </p>
+        )}
 
         <WilayaExplorer wilayas={allWilayas} />
 
@@ -35,6 +45,11 @@ export default async function WilayasPage() {
                 <div className="text-xs text-slate-400 font-bold">{w.code}</div>
                 <div className="font-bold text-sm">{w.nameAr}</div>
                 <div className="text-[11px] text-slate-500">{w.nameFr}</div>
+                {isNewProposedWilaya(w.code) && (
+                  <span className="mt-1 inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">
+                    {NEW_DIVISION_LABEL}
+                  </span>
+                )}
               </Link>
             ))}
           </div>
