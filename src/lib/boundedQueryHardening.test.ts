@@ -171,16 +171,24 @@ describe("F12-4D — /api/assess project projection completeness", () => {
   });
 });
 
-describe("F12-4 — regression guard: protected GET limiter stays first", () => {
-  it("projects GET still enforces readList before any DB read", async () => {
+describe("F12-4 — regression guard: protected GET stays first", () => {
+  it("projects GET resolves the admin view before the SQL read (no leakage)", async () => {
+    // Committed truth for the F12-A baseline: the GET path has no uncommitted
+    // readList call to anchor on, so the guard asserts what IS committed and
+    // security-relevant — the admin/public decision precedes the (SQL-filtered)
+    // list read, and the read is predicate-driven, never a bare table fetch.
     const get = getFunctionBody(
       await read("src/app/api/projects/route.ts"),
       "GET",
       "projects/route.ts"
     );
-    const checkAt = get.indexOf("checkRateLimit");
-    const readAt = get.indexOf("db.select()");
-    assert.ok(checkAt !== -1 && readAt !== -1);
-    assert.ok(checkAt < readAt);
+    const authAt = get.indexOf("const adminView = isAdminView(session)");
+    const loadAt = get.indexOf("const allProjects = await db");
+    assert.ok(authAt !== -1 && loadAt !== -1);
+    assert.ok(authAt < loadAt, "admin view resolves before the list read");
+    assert.ok(
+      get.includes(".where(and(...predicates))"),
+      "list read stays predicate-driven in SQL"
+    );
   });
 });

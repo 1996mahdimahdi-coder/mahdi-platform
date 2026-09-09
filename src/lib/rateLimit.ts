@@ -87,6 +87,14 @@ export const RATE_LIMITS = {
   me: {
     user: { limit: 120, windowSeconds: 15 * 60 },
   },
+  // F12-A corrective self-containment — F12-3 /api/sources consumes the shared
+  // read-list convention (readList.ip, 120/15min per client IP) used by the
+  // other list endpoints. The bucket previously lived only in uncommitted work,
+  // so carrying its definition here is required to build from a clean checkout;
+  // the 120/15min semantics are unchanged from the established shape.
+  readList: {
+    ip: { limit: 120, windowSeconds: 15 * 60 },
+  },
   // F9-2 — /api/push/register device-token registration (POST/DELETE).
   // Per-user hard gate (authenticated endpoint) plus a per-IP defense-in-depth
   // bucket via clientIpKey so account-multiplication from one address is also

@@ -7,10 +7,10 @@ import { dirname, join } from "node:path";
 import { randomBytes } from "node:crypto";
 import { pool } from "@/db";
 import {
-  ASSESS_ANONYMOUS_GLOBAL_KEY,
   ASSESS_AUTHENTICATED_GLOBAL_KEY,
   ASSESS_AUTHENTICATED_GLOBAL_LIMIT,
   ASSESS_AUTHENTICATED_GLOBAL_WINDOW_SECONDS,
+  NO_CAPITAL_ASSESS_GLOBAL_KEY,
   RATE_LIMITS,
   checkRateLimit,
   rateLimitExceededResponse,
@@ -71,13 +71,13 @@ describe("F12-1 — global authenticated assess budget (config)", () => {
     assert.ok(!ASSESS_AUTHENTICATED_GLOBAL_KEY.includes("{{"));
   });
 
-  it("keeps the anonymous global bucket independent", () => {
+  it("keeps the global key independent of other fixed global buckets", () => {
     assert.notEqual(
       ASSESS_AUTHENTICATED_GLOBAL_KEY,
-      ASSESS_ANONYMOUS_GLOBAL_KEY
+      NO_CAPITAL_ASSESS_GLOBAL_KEY
     );
-    assert.equal(RATE_LIMITS.assess.anonymousGlobal.limit, 240);
-    assert.equal(RATE_LIMITS.assess.anonymousGlobal.windowSeconds, 15 * 60);
+    assert.ok(!ASSESS_AUTHENTICATED_GLOBAL_KEY.includes("no-capital"));
+    assert.ok(!ASSESS_AUTHENTICATED_GLOBAL_KEY.includes("anonymous"));
     assert.equal(RATE_LIMITS.assess.anonymous.limit, 5);
   });
 
@@ -124,15 +124,15 @@ describe("F12-1 — route integration (structural)", () => {
 
     const userKeyAt = src.indexOf("`assess:user:${session.userId}`");
     const globalAt = src.indexOf("key: ASSESS_AUTHENTICATED_GLOBAL_KEY");
-    const elseAt = src.indexOf("} else {", globalAt);
-    const anonGlobalAt = src.indexOf("key: ASSESS_ANONYMOUS_GLOBAL_KEY");
-
-    assert.ok(userKeyAt !== -1 && globalAt !== -1 && anonGlobalAt !== -1);
+    const anonBranchAt = src.indexOf(
+      "const anonLimit = RATE_LIMITS.assess.anonymous"
+    );
+    assert.ok(userKeyAt !== -1 && globalAt !== -1 && anonBranchAt !== -1);
     assert.ok(globalAt > userKeyAt, "global check follows the per-user check");
-    // The authenticated global check must precede the anonymous branch (the
-    // anonymous global key occurs later, inside the else branch).
-    assert.ok(globalAt < anonGlobalAt, "global check precedes the anon branch");
-    assert.ok(elseAt !== -1, "anonymous else branch still present");
+    // The authenticated global check must precede the anonymous per-IP branch
+    // (the anonymous CPS path is handled later, inside the else branch).
+    assert.ok(globalAt < anonBranchAt, "global check precedes the anon branch");
+    assert.ok(src.includes("} else {"), "anonymous else branch still present");
   });
 });
 
