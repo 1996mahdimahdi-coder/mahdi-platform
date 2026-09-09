@@ -61,15 +61,22 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      result: {
-        userCapital: row.userCapital,
-        testAnswers: row.testAnswers,
-        topProjects: row.topProjects,
-        createdAt: row.createdAt,
+    return NextResponse.json(
+      {
+        success: true,
+        result: {
+          userCapital: row.userCapital,
+          testAnswers: row.testAnswers,
+          topProjects: row.topProjects,
+          createdAt: row.createdAt,
+        },
       },
-    });
+      {
+        // F10-24 — a share page is tied to a secret token; never let a
+        // shared cache store it (or let a preloaded copy persist server-side).
+        headers: { "Cache-Control": "private, no-store" },
+      }
+    );
   } catch (error) {
     console.error("Share fetch error:", error);
     return NextResponse.json(

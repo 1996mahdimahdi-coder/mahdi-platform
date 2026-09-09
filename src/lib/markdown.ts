@@ -16,12 +16,93 @@ function escapeHtml(text: string): string {
     .replace(/>/g, "&gt;");
 }
 
-function isSafeUrl(url: string): boolean {
-  const trimmed = url.trim();
-  if (/^https?:\/\//i.test(trimmed)) return true;
-  if (/^#\w/.test(trimmed)) return true;
-  if (/^\/\//.test(trimmed)) return true;
-  if (/^[a-z0-9._~:/?#\[\]@!$&'()*+,;=%-]+$/i.test(trimmed) && !/^[a-z]+:/i.test(trimmed)) return true;
+function safeCodePoint(code: number): string {
+  if (code <= 0 || code > 0x10ffff) return "\uFFFD";
+  if (code >= 0xd800 && code <= 0xdfff) return "\uFFFD";
+  return String.fromCodePoint(code);
+}
+
+function decodeHtmlEntities(input: string): string {
+  const entityRe = /&#x([0-9a-fA-F]{1,6});|&#([0-9]{1,7});|&(amp|lt|gt|quot|#39|Tab|NewLine|nbsp|colon|sol);/g;
+  const onePass = (text: string) =>
+    text.replace(
+      entityRe,
+      (_m, hex: string | undefined, dec: string | undefined, name: string | undefined) => {
+        if (hex) return safeCodePoint(parseInt(hex, 16));
+        if (dec) return safeCodePoint(parseInt(dec, 10));
+        switch (name) {
+          case "amp":
+            return "&";
+          case "lt":
+            return "<";
+          case "gt":
+            return ">";
+          case "quot":
+            return '"';
+          case "#39":
+            return "'";
+          case "Tab":
+            return "\t";
+          case "NewLine":
+            return "\n";
+          case "nbsp":
+            return "\u00A0";
+          case "colon":
+            return ":";
+          case "sol":
+            return "/";
+          default:
+            return _m;
+        }
+      }
+    );
+  // Loop with a hard bound so nested encoding (`&amp;#58;`) fully decodes
+  // without allowing a pathological input to spin forever.
+  let out = input;
+  let guard = 0;
+  while (guard < 8) {
+    const next = onePass(out);
+    if (next === out) break;
+    out = next;
+    guard++;
+  }
+  return out;
+}
+
+function tryDecodePercent(input: string): string {
+  try {
+    return decodeURIComponent(input);
+  } catch {
+    return input;
+  }
+}
+
+// F10-03 — strip every whitespace/C0/C1/format control that can be slipped
+// between scheme letters: ASCII space, C0 controls, DEL, C1, NBSP, soft
+// hyphen, Mongolian vowel separator, Unicode space range, line/paragraph
+// separators, ideographic space, BOM and zero-width joiner marks.
+const CONTROL_CHARS_RE = /[\u0020\u0000-\u001F\u007F-\u009F\u00A0\u00AD\u180E\u2000-\u200F\u2028\u2029\u205F\u3000\uFEFF]/g;
+
+const URL_SCHEME_RE = /^[a-zA-Z][a-zA-Z0-9+.-]*:/;
+
+// F10-03 — URL safety must be decided on the FULLY DECODED form: an attacker
+// can hide a scheme behind HTML entities (`java&amp;58;script:`), numeric
+// refs, percent-encoding or control-char tricks; the browser decodes the href
+// when it navigates, so we must decode first and only then allow-list the
+// scheme. Allowed: http(s), mailto, tel, frag#anchors, same-origin absolute
+// paths, protocol-relative //https URLs, and any scheme-less relative URL.
+export function isSafeUrl(rawUrl: string): boolean {
+  const decoded = tryDecodePercent(
+    decodeHtmlEntities(rawUrl)
+      .normalize("NFKC")
+      .replace(CONTROL_CHARS_RE, "")
+      .trim()
+  );
+
+  if (/^(https?|mailto|tel):/i.test(decoded)) return true;
+  if (/^#/.test(decoded)) return true;
+  if (/^\//.test(decoded)) return true;
+  if (!URL_SCHEME_RE.test(decoded)) return true;
   return false;
 }
 

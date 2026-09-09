@@ -32,7 +32,14 @@ import type {
 
 export async function loadCategories(): Promise<{ categories: CategoryItem[]; source: "database" | "defaults" }> {
   try {
-    const rows = await db.select().from(categories).orderBy(asc(categories.sortOrder));
+    // F10-14 — only ACTIVE categories are exposed to public reads so draft /
+    // hidden categories are never enumerated by /api/no-capital/assess,
+    // /api/categories or the questions loader.
+    const rows = await db
+      .select()
+      .from(categories)
+      .where(eq(categories.active, true))
+      .orderBy(asc(categories.sortOrder));
     if (rows.length === 0) return { categories: DEFAULT_CATEGORIES, source: "defaults" };
     return { categories: rows as unknown as CategoryItem[], source: "database" };
   } catch (error) {
@@ -58,8 +65,33 @@ export async function loadQuestions(): Promise<{ questions: NoCapitalQuestion[];
 
 export async function loadNoCapitalProfiles(): Promise<{ profiles: NoCapitalProfile[]; source: "database" | "defaults" }> {
   try {
+    // F10-01 — EXPLICIT safe projection only. `study` (the paid PaidStudy
+    // jsonb) and internal metadata (`active`, `lastUpdated`) are never read,
+    // so they cannot be returned by /api/no-capital/assess. This mirrors the
+    // already-redacted projection in /api/no-capital/projects/[slug].
     const projectRows = await db
-      .select()
+      .select({
+        id: noCapitalProjects.id,
+        slug: noCapitalProjects.slug,
+        nameAr: noCapitalProjects.nameAr,
+        nameFr: noCapitalProjects.nameFr,
+        categoryId: noCapitalProjects.categoryId,
+        domainId: noCapitalProjects.domainId,
+        description: noCapitalProjects.description,
+        effortLevel: noCapitalProjects.effortLevel,
+        timeRequired: noCapitalProjects.timeRequired,
+        skillsRequired: noCapitalProjects.skillsRequired,
+        toolsNeeded: noCapitalProjects.toolsNeeded,
+        startCostEstimate: noCapitalProjects.startCostEstimate,
+        startCostType: noCapitalProjects.startCostType,
+        tags: noCapitalProjects.tags,
+        risks: noCapitalProjects.risks,
+        advantages: noCapitalProjects.advantages,
+        disadvantages: noCapitalProjects.disadvantages,
+        steps: noCapitalProjects.steps,
+        legalNotes: noCapitalProjects.legalNotes,
+        source: noCapitalProjects.source,
+      })
       .from(noCapitalProjects)
       .where(eq(noCapitalProjects.active, true));
 

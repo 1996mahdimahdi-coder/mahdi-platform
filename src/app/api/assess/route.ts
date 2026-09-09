@@ -673,13 +673,27 @@ export async function POST(request: Request) {
     // 8. إنشاء Session ID
     // ============================================================
 
-    const sessionId =
+    // F10-12 — sessionId is an opaque token persisted into analysis_results
+    // and echoed back via /api/no-capital/consent; bound it to a printable
+    // token charset (1–64 of [A-Za-z0-9_-]) so oversized/control-char blobs
+    // cannot reach the DB. When absent we mint an internal one exactly as
+    // before (client-visible behavior unchanged).
+    const rawSessionId =
       typeof body.sessionId === "string" &&
       body.sessionId.trim().length > 0
         ? body.sessionId.trim()
-        : `sess_${Date.now()}_${Math.random()
-            .toString(36)
-            .substring(2, 7)}`;
+        : null;
+
+    if (rawSessionId && !/^[a-zA-Z0-9_-]{1,64}$/.test(rawSessionId)) {
+      return NextResponse.json(
+        { success: false, error: "معرّف الجلسة غير صالح." },
+        { status: 400 }
+      );
+    }
+
+    const sessionId =
+      rawSessionId ??
+      `sess_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
     // ============================================================
     // 9. حفظ نتيجة التحليل
@@ -745,6 +759,10 @@ export async function POST(request: Request) {
     })),
 
       explanationText,
+    }, {
+      // F10-24 — assessment output is user-specific: never let a shared
+      // cache (proxy/CDN/browser-on-shared-machine) store it.
+      headers: { "Cache-Control": "private, no-store" },
     });
   } catch (error: unknown) {
     console.error(

@@ -46,7 +46,14 @@ export async function POST(request: Request) {
   }
 
   const record = (body ?? {}) as Record<string, unknown>;
-  const sessionId = typeof record.sessionId === "string" && record.sessionId ? record.sessionId : "anonymous";
+  // F10-12 — sessionId is an opaque token persisted into consent_records.
+  // Bound to a printable token charset (1–64 of [A-Za-z0-9_-]) so control
+  // chars / oversized blobs cannot be smuggled into the DB.
+  const rawSessionId = typeof record.sessionId === "string" && record.sessionId ? record.sessionId : null;
+  const sessionId = rawSessionId && /^[a-zA-Z0-9_-]{1,64}$/.test(rawSessionId) ? rawSessionId : "anonymous";
+  if (rawSessionId && !/^[a-zA-Z0-9_-]{1,64}$/.test(rawSessionId)) {
+    return NextResponse.json({ success: false, error: "معرّف الجلسة غير صالح." }, { status: 400 });
+  }
   const purposeRaw = typeof record.purpose === "string" ? record.purpose : "assessment";
   const purpose = (VALID_PURPOSES as readonly string[]).includes(purposeRaw) ? purposeRaw : "assessment";
   const version = typeof record.version === "string" ? record.version : "";

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { wilayas, communes, wilayaStats, dataSources } from "@/db/schema";
 import {
@@ -59,10 +59,30 @@ export async function GET(
       );
 
       if (sourceIds.length > 0) {
+        // F10-13 — only PUBLISHED sources can back a publicly shown claim,
+        // and only the SourceRef projection is read (never internal registry
+        // metadata such as `notes`/`accessedAt`).
         const sources = await db
-          .select()
+          .select({
+            id: dataSources.id,
+            name: dataSources.name,
+            institution: dataSources.institution,
+            sourceType: dataSources.sourceType,
+            category: dataSources.category,
+            confidenceGrade: dataSources.confidenceGrade,
+            documentTitle: dataSources.documentTitle,
+            documentYear: dataSources.documentYear,
+            documentType: dataSources.documentType,
+            url: dataSources.url,
+            lastVerifiedAt: dataSources.lastVerifiedAt,
+          })
           .from(dataSources)
-          .where(inArray(dataSources.id, sourceIds));
+          .where(
+            and(
+              inArray(dataSources.id, sourceIds),
+              eq(dataSources.published, true)
+            )
+          );
 
         populationSource =
           stats.populationSourceId != null
@@ -101,7 +121,24 @@ export async function GET(
       success: true,
       wilaya,
       communes: communeList,
-      stats: stats ?? null,
+      // F10-13 — explicit public projection of the wilaya stats row; internal
+      // registry artifacts (populationSourceId/areaSourceId provider FKs,
+      // createdAt, updatedAt) are never serialized to the client.
+      stats: stats
+        ? {
+            id: stats.id,
+            wilayaId: stats.wilayaId,
+            population: stats.population,
+            populationYear: stats.populationYear,
+            populationConfidence: stats.populationConfidence,
+            areaKm2: stats.areaKm2,
+            areaYear: stats.areaYear,
+            areaConfidence: stats.areaConfidence,
+            density: stats.density,
+            densityType: stats.densityType,
+            lastVerifiedAt: stats.lastVerifiedAt,
+          }
+        : null,
       population,
       area,
       density,

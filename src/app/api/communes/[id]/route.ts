@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { communes, wilayas, communeStats, dataSources } from "@/db/schema";
 import {
@@ -54,10 +54,30 @@ export async function GET(
       );
 
       if (sourceIds.length > 0) {
+        // F10-13 — only PUBLISHED sources can back a publicly shown claim,
+        // and only the SourceRef projection is read (never internal registry
+        // metadata such as `notes`/`accessedAt`).
         const sources = await db
-          .select()
+          .select({
+            id: dataSources.id,
+            name: dataSources.name,
+            institution: dataSources.institution,
+            sourceType: dataSources.sourceType,
+            category: dataSources.category,
+            confidenceGrade: dataSources.confidenceGrade,
+            documentTitle: dataSources.documentTitle,
+            documentYear: dataSources.documentYear,
+            documentType: dataSources.documentType,
+            url: dataSources.url,
+            lastVerifiedAt: dataSources.lastVerifiedAt,
+          })
           .from(dataSources)
-          .where(inArray(dataSources.id, sourceIds));
+          .where(
+            and(
+              inArray(dataSources.id, sourceIds),
+              eq(dataSources.published, true)
+            )
+          );
 
         populationSource =
           stats.populationSourceId != null
@@ -96,7 +116,48 @@ export async function GET(
       success: true,
       commune: row.commune,
       wilaya: row.wilaya,
-      stats: row.stats,
+      // F10-13 — explicit public projection of the stats row. Everything the
+      // commune page actually renders is kept; internal registry artifacts
+      // (populationSourceId/areaSourceId provider FKs, createdAt, updatedAt)
+      // are never serialized to the client.
+      stats: row.stats
+        ? {
+            id: row.stats.id,
+            communeId: row.stats.communeId,
+            population: row.stats.population,
+            populationSource: row.stats.populationSource,
+            populationYear: row.stats.populationYear,
+            populationConfidence: row.stats.populationConfidence,
+            areaKm2: row.stats.areaKm2,
+            areaSource: row.stats.areaSource,
+            areaYear: row.stats.areaYear,
+            areaConfidence: row.stats.areaConfidence,
+            density: row.stats.density,
+            densityType: row.stats.densityType,
+            dairaNameAr: row.stats.dairaNameAr,
+            dairaNameFr: row.stats.dairaNameFr,
+            dairaSource: row.stats.dairaSource,
+            wilayaId: row.stats.wilayaId,
+            wilayaSource: row.stats.wilayaSource,
+            merchantCount: row.stats.merchantCount,
+            merchantCountSource: row.stats.merchantCountSource,
+            merchantCountYear: row.stats.merchantCountYear,
+            commercialActivities: row.stats.commercialActivities,
+            commercialActivitiesSource: row.stats.commercialActivitiesSource,
+            marketScore: row.stats.marketScore,
+            marketScoreMethod: row.stats.marketScoreMethod,
+            purchasingPowerScore: row.stats.purchasingPowerScore,
+            purchasingPowerMethod: row.stats.purchasingPowerMethod,
+            competitionScore: row.stats.competitionScore,
+            competitionMethod: row.stats.competitionMethod,
+            commercialActivityScore: row.stats.commercialActivityScore,
+            commercialActivityMethod: row.stats.commercialActivityMethod,
+            overallScore: row.stats.overallScore,
+            overallScoreMethod: row.stats.overallScoreMethod,
+            notes: row.stats.notes,
+            lastVerifiedAt: row.stats.lastVerifiedAt,
+          }
+        : null,
       population,
       area,
       density,

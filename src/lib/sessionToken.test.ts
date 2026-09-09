@@ -349,7 +349,6 @@ describe("F8 — route wiring invariants (static source audit)", () => {
   it("every login flow mints a fresh per-session token via createSession", () => {
     for (const rel of [
       "src/app/api/auth/login/route.ts",
-      "src/app/api/auth/register/route.ts",
       "src/app/api/auth/google/callback/route.ts",
       "src/app/api/auth/google/capacitor/route.ts",
     ]) {
@@ -357,5 +356,12 @@ describe("F8 — route wiring invariants (static source audit)", () => {
       assert.ok(src.includes("createSession("), `${rel} must call createSession`);
       assert.ok(!src.includes("createSessionToken("), `${rel} must not mint un-keyed tokens`);
     }
+  });
+
+  it("register is NOT a login flow: it must never mint a session/cookie", () => {
+    const src = read("src/app/api/auth/register/route.ts");
+    assert.ok(!src.includes("createSession("), "register must not auto-login");
+    assert.ok(!src.includes("SESSION_COOKIE_NAME"), "register must not set a session cookie");
+    assert.ok(!src.includes("getSessionCookieOptions"), "register must not touch cookie options");
   });
 });

@@ -10,7 +10,8 @@ import {
 } from "@/lib/auth";
 import { verifyGoogleIdToken, type GoogleIdTokenPayload } from "@/lib/google-verify";
 import { getSafeRedirectPath } from "@/lib/authRedirect";
-import { logSecurity, safeErrorMessage } from "@/lib/securityLog";
+import { checkRateLimit, clientIpKey, RATE_LIMITS } from "@/lib/rateLimit";
+import { hashForLog, logSecurity, safeErrorMessage } from "@/lib/securityLog";
 
 export const dynamic = "force-dynamic";
 
@@ -193,6 +194,30 @@ export async function GET(request: Request) {
       role = existing[0].role;
       tokenVersion = existing[0].tokenVersion;
     } else {
+      // F10-08 — bound NEW account creation per IP. Normal logins hit the
+      // `existing` branch and are never throttled; only the account-creation
+      // step is capped (5/15m), so an IP-rotating attacker cannot mass-create
+      // users (each correlated to a real Google email) via OAuth.
+      const signupLimit = RATE_LIMITS.google.signup;
+      const signupCheck = await checkRateLimit({
+        key: clientIpKey(request, "google:signup"),
+        limit: signupLimit.limit,
+        windowSeconds: signupLimit.windowSeconds,
+      });
+
+      if (!signupCheck.allowed) {
+        await logSecurity(
+          "oauth.signup_rate_limited",
+          "warn",
+          {
+            provider: "google",
+            emailHash: hashForLog(email),
+          },
+          { suppress: { key: "oauth-signup" } }
+        );
+        return NextResponse.redirect(loginErrorUrl);
+      }
+
       const adminEmail = (process.env.ADMIN_EMAIL || "").toLowerCase();
       role = adminEmail && email === adminEmail ? "admin" : "user";
 

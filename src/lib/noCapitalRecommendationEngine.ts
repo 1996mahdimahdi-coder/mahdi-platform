@@ -204,8 +204,18 @@ export function scoreNoCapitalProfiles(input: {
 
     const matchLevel: NoCapitalRecommendation["matchLevel"] = totalScore >= 75 ? "high" : totalScore >= 55 ? "medium" : "low";
 
+    // F10-01 — defense in depth: even if a future caller passes a profile
+    // that still carries `study` / internal metadata (DB row spread, admin
+    // path, defaults), never put it into the public recommendation payload.
+    const publicProfile = {
+      ...profile,
+    } as NoCapitalProfile & { study?: unknown; lastUpdated?: unknown; active?: boolean };
+    delete publicProfile.study;
+    delete publicProfile.lastUpdated;
+    delete publicProfile.active;
+
     return {
-      profile,
+      profile: publicProfile,
       totalScore,
       dimensionScores: { mode: modeScore, effort: effortScore, skills: skillsScore, tools: toolsScore, startability: startabilityScore },
       reasons: reasons.slice(0, 5),

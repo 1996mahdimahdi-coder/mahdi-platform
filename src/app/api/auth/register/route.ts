@@ -3,11 +3,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
-import {
-  createSession,
-  getSessionCookieOptions,
-  SESSION_COOKIE_NAME,
-} from "@/lib/auth";
+import { emailRateLimitKey } from "@/lib/emailRateLimitKey";
 import {
   checkRateLimit,
   clientIpKey,
@@ -22,6 +18,13 @@ export const dynamic = "force-dynamic";
 const NO_STORE_HEADERS = {
   "Cache-Control": "private, no-store",
 };
+
+// F10-04 — timing equalization. A cost-12 bcrypt hash used ONLY as a dummy
+// comparison target so the duplicate-email branch burns the same ~bcrypt
+// budget as a real registration (bcrypt.compare internally recomputes the
+// cost-12 hash). Pattern mirrors the existing login route DUMMY_BCRYPT_HASH.
+const DUMMY_BCRYPT_HASH =
+  "$2b$12$Y.PdX6Az5.V57S3BJ20aK.F2mYnIByD3DWbbHeIGU5r5XDKGTPS3a";
 
 const EMAIL_PATTERN =
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -160,6 +163,22 @@ export async function POST(request: Request) {
     );
   }
 
+  // F10-04 — per-email registration bucket on top of the per-IP cap. It uses
+  // the same HMAC-pseudonymized key as login, so the raw address never lands
+  // in `rate_limits.key`, and the 429/201 shapes stay identical for both new
+  // and duplicate addresses — no account-existence oracle is created.
+  const emailLimit = RATE_LIMITS.register.email;
+
+  const emailCheck = await checkRateLimit({
+    key: emailRateLimitKey("register", email),
+    limit: emailLimit.limit,
+    windowSeconds: emailLimit.windowSeconds,
+  });
+
+  if (!emailCheck.allowed) {
+    return rateLimitExceededResponse(emailCheck);
+  }
+
   try {
     const existing = await db
       .select({ id: users.id })
@@ -171,6 +190,11 @@ export async function POST(request: Request) {
       await logSecurity("auth.register_duplicate", "info", {
         emailHash: hashForLog(email),
       });
+
+      // F10-04 — dummy cost-12 bcrypt comparison to erase the registration
+      // timing oracle: an existing address must not be recognizable by a
+      // faster response than a brand-new registration.
+      await bcrypt.compare(password, DUMMY_BCRYPT_HASH);
 
       return NextResponse.json(
         { success: true },
@@ -184,7 +208,7 @@ export async function POST(request: Request) {
     const passwordHash =
       await bcrypt.hash(password, 12);
 
-    const [created] = await db
+    await db
       .insert(users)
       .values({
         name,
@@ -195,36 +219,17 @@ export async function POST(request: Request) {
       })
       .returning();
 
-    const token = await createSession({
-      id: created.id,
-      role: created.role,
-      tokenVersion: created.tokenVersion,
-    });
-
-    const response = NextResponse.json(
-      {
-        success: true,
-        user: {
-          id: created.id,
-          name: created.name,
-          email: created.email,
-          role: created.role,
-          phone: created.phone,
-        },
-      },
+    // F10-04 — registration is deliberately NOT a login: no session cookie,
+    // no user object leaking out. Both the duplicate branch and this success
+    // branch return the exact same `201 {success:true}` so third parties
+    // cannot enumerate existing accounts by response shape.
+    return NextResponse.json(
+      { success: true },
       {
         status: 201,
         headers: NO_STORE_HEADERS,
       }
     );
-
-    response.cookies.set(
-      SESSION_COOKIE_NAME,
-      token,
-      getSessionCookieOptions()
-    );
-
-    return response;
   } catch (error) {
     await logSecurity("auth.register_error", "warn", {
       message: safeErrorMessage(error),

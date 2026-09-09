@@ -70,7 +70,12 @@ export async function GET(request: Request) {
     return rateLimitExceededResponse(searchCheck);
   }
 
-  const pattern = `%${q}%`;
+  // F10-10 — user text goes into SQL LIKE/ILIKE patterns; `%`, `_` and `\`
+  // must be escaped or the query itself becomes a wildcard (a search for
+  // `%project%` currently matches every row). Backslash is Postgres' default
+  // escape character, so we escape all three before wrapping in `%…%`.
+  const escapedQ = q.replace(/[\\%_]/g, (match) => `\\${match}`);
+  const pattern = `%${escapedQ}%`;
 
   try {
     const results: SearchItem[] = [];

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSession, unauthorizedResponse, PRIVATE_NO_STORE_HEADERS } from "@/lib/auth";
 import { csrfGuard } from "@/lib/csrf";
-import { checkRateLimit, rateLimitExceededResponse } from "@/lib/rateLimit";
+import { checkRateLimit, clientIpKey, rateLimitExceededResponse } from "@/lib/rateLimit";
 import { isAIConfigured, generateAIResponse } from "@/lib/ai/provider";
 import { buildSystemPrompt } from "@/lib/ai/system-prompt";
 import { retrieveKnowledge, buildKnowledgeContext } from "@/lib/ai/knowledge";
@@ -10,7 +10,7 @@ import { AI_RATE_LIMITS, AI_INPUT_LIMITS } from "@/lib/ai/types";
 import type { AIMessage, AIChatRequest, AIChatResponse } from "@/lib/ai/types";
 import { logSecurity, safeErrorMessage } from "@/lib/securityLog";
 
-async function rateLimitCheck(userId: number): Promise<{ allowed: boolean; response?: NextResponse }> {
+async function rateLimitCheck(request: Request, userId: number): Promise<{ allowed: boolean; response?: NextResponse }> {
   const userResult = await checkRateLimit({
     key: `ai:user:${userId}:daily`,
     limit: AI_RATE_LIMITS.daily.limit,
@@ -18,6 +18,19 @@ async function rateLimitCheck(userId: number): Promise<{ allowed: boolean; respo
   });
   if (!userResult.allowed) {
     return { allowed: false, response: rateLimitExceededResponse(userResult) };
+  }
+
+  // F10-06 — per-IP ceiling independent of account count: a single address
+  // that multiplies throwaway accounts can no longer zero the shared global
+  // daily budget. Deliberately higher than the per-user cap (60 vs 30/day)
+  // so legit users behind a NAT are not punished.
+  const perIpDaily = await checkRateLimit({
+    key: clientIpKey(request, "ai:ip:daily"),
+    limit: AI_RATE_LIMITS.perIpDaily.limit,
+    windowSeconds: AI_RATE_LIMITS.perIpDaily.windowSeconds,
+  });
+  if (!perIpDaily.allowed) {
+    return { allowed: false, response: rateLimitExceededResponse(perIpDaily) };
   }
 
   const perMinute = await checkRateLimit({
@@ -109,7 +122,7 @@ export async function POST(request: Request) {
     body.messages = body.messages.slice(-(AI_INPUT_LIMITS.maxMessages + 1));
   }
 
-  const rl = await rateLimitCheck(session.userId);
+  const rl = await rateLimitCheck(request, session.userId);
   if (!rl.allowed) {
     await logSecurity(
       "ai.abuse",

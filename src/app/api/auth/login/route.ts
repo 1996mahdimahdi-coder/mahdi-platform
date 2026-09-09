@@ -8,10 +8,10 @@ import {
   getSessionCookieOptions,
   SESSION_COOKIE_NAME,
 } from "@/lib/auth";
+import { emailRateLimitKey } from "@/lib/emailRateLimitKey";
 import {
   checkRateLimit,
   clientIpKey,
-  normalizeEmail,
   RATE_LIMITS,
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
@@ -129,31 +129,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // H1 rate limiting: per-account (email) limit protects the account
-  // even when many hosts share one IP (NAT) without blocking the whole
-  // network. The email is normalized (trim + lowercase) before use.
-  const emailLimit = RATE_LIMITS.login.email;
-
-  loginDiag("rateLimit:email:start");
-  const emailCheck = await checkRateLimit({
-    key: `login:email:${normalizeEmail(email)}`,
-    limit: emailLimit.limit,
-    windowSeconds: emailLimit.windowSeconds,
-  });
-  loginDiag("rateLimit:email:done");
-
-  if (!emailCheck.allowed) {
-    loginDiag("rateLimit:email:rejected");
-    await logSecurity(
-      "auth.login_rate_limited",
-      "warn",
-      { emailHash: hashForLog(email) },
-      { suppress: { key: "login-email" } }
-    );
-
-    return rateLimitExceededResponse(emailCheck);
-  }
-
   try {
     loginDiag("db.users:start");
     const userRows = await db
@@ -197,6 +172,36 @@ export async function POST(request: Request) {
       !passwordMatches ||
       user.role === "disabled"
     ) {
+      // F10-07 — the per-email bucket is consumed ONLY on a failed attempt.
+      // A successful login short-circuits above, so a legit account cannot
+      // burn its own budget by merely logging in (e.g. from a shared NAT).
+      // Unknown / disabled accounts count as failures exactly like a wrong
+      // password, preserving brute-force protection for one specific address.
+      // The email is normalized (trim + lowercase) before use and stored only
+      // as an HMAC digest (F4) — the raw address never reaches the
+      // rate_limits table.
+      const emailLimit = RATE_LIMITS.login.email;
+
+      loginDiag("rateLimit:email:start");
+      const emailCheck = await checkRateLimit({
+        key: emailRateLimitKey("login", email),
+        limit: emailLimit.limit,
+        windowSeconds: emailLimit.windowSeconds,
+      });
+      loginDiag("rateLimit:email:done");
+
+      if (!emailCheck.allowed) {
+        loginDiag("rateLimit:email:rejected");
+        await logSecurity(
+          "auth.login_rate_limited",
+          "warn",
+          { emailHash: hashForLog(email) },
+          { suppress: { key: "login-email" } }
+        );
+
+        return rateLimitExceededResponse(emailCheck);
+      }
+
       await logSecurity(
         "auth.login_failed",
         "warn",

@@ -40,6 +40,11 @@ export const DEFAULT_AI_CONFIG: AIProviderConfig = {
 export const AI_RATE_LIMITS = {
   daily: { limit: 30, windowSeconds: 24 * 60 * 60 },
   perMinute: { limit: 10, windowSeconds: 60 },
+  // F10-06 — per-IP daily chat allowance, additive to the per-user budget.
+  // New-account multiplication from one address can no longer zero the
+  // global daily budget; 60/day is deliberately above two heavy users on
+  // one shared NAT address.
+  perIpDaily: { limit: 60, windowSeconds: 24 * 60 * 60 },
 } as const;
 
 export const AI_INPUT_LIMITS = {

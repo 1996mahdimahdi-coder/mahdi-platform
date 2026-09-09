@@ -5,6 +5,7 @@ const MAX_CONTEXT_FIELD_LENGTH = 100;
 function sanitizeContextValue(value: string): string {
   return value
     .replace(/[\r\n\t]/g, " ")
+    .replace(/[<>]/g, "")
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, MAX_CONTEXT_FIELD_LENGTH);
@@ -15,6 +16,32 @@ function sanitizeSlug(value: string): string {
     .replace(/[^a-zA-Z0-9_-]/g, "")
     .trim()
     .slice(0, MAX_CONTEXT_FIELD_LENGTH);
+}
+
+// F10-02 — the chat request context is client-supplied, so `recommendations`
+// cannot be trusted to contain finite numbers: an injected non-numeric or
+// gigantic `score` would corrupt the system prompt before it reaches the LLM.
+// ONLY genuine finite numbers survive (strings, null, objects that would
+// coerce are rejected on purpose), scores are clamped to [0,100], and every
+// item is reduced to {slug,nameAr,score}.
+export function sanitizeTestResultRecommendations(input: unknown): { slug: string; nameAr: string; score: number }[] {
+  if (!Array.isArray(input)) return [];
+  const out: { slug: string; nameAr: string; score: number }[] = [];
+  for (const raw of input) {
+    if (!raw || typeof raw !== "object") continue;
+    const item = raw as Record<string, unknown>;
+    const score = item.score;
+    if (typeof score !== "number" || !Number.isFinite(score)) continue;
+    const nameAr = sanitizeContextValue(typeof item.nameAr === "string" ? item.nameAr : "");
+    if (!nameAr) continue;
+    const slug = sanitizeSlug(typeof item.slug === "string" ? item.slug : "");
+    out.push({ slug, nameAr, score: Math.min(100, Math.max(0, Math.round(score * 10) / 10)) });
+  }
+  return out;
+}
+
+function formatScore(score: number): string {
+  return Number.isInteger(score) ? String(score) : score.toFixed(1);
 }
 
 export function buildSystemPrompt(context?: AIChatRequest["context"]): string {
@@ -68,10 +95,14 @@ export function buildSystemPrompt(context?: AIChatRequest["context"]): string {
     }
   }
 
-  if (context?.testResult?.recommendations?.length) {
-    const recs = context.testResult.recommendations.slice(0, 5)
-      .map((r) => `${sanitizeContextValue(r.nameAr)} (الدرجة: ${r.score})`).join(", ");
-    sections.push(`\nنتائج اختبار المستخدم: ${recs}. اقترح عليه مشاريع متوافقة.`);
+  if (context?.testResult?.recommendations) {
+    const recs = sanitizeTestResultRecommendations(context.testResult.recommendations)
+      .slice(0, 5)
+      .map((r) => `${r.nameAr} (الدرجة: ${formatScore(r.score)})`)
+      .join(", ");
+    if (recs) {
+      sections.push(`\nنتائج اختبار المستخدم: ${recs}. اقترح عليه مشاريع متوافقة.`);
+    }
   }
 
   return sections.join("\n");

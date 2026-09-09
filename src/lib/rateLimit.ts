@@ -36,6 +36,11 @@ export const RATE_LIMITS = {
   },
   register: {
     ip: { limit: 3, windowSeconds: 60 * 60 },
+    // F10-04 — per-email registration bucket, same privacy-preserving HMAC
+    // pattern as login: harvesters of ONE address are bounded without ever
+    // storing the raw email in rate_limits.key. The 429 is identical for
+    // any address, so it adds no account-existence oracle.
+    email: { limit: 3, windowSeconds: 60 * 60 },
   },
   assess: {
     user: { limit: 10, windowSeconds: 15 * 60 },
@@ -45,11 +50,24 @@ export const RATE_LIMITS = {
     ip: { limit: 15, windowSeconds: 15 * 60 },
     global: { limit: 240, windowSeconds: 15 * 60 },
   },
+  // F10-01/F10-09 — /api/no-capital/assess anonymous budget. The per-IP
+  // window mirrors /api/assess; the shared fixed-key global bucket closes
+  // the IP-rotation loophole for this recommendation surface (no AI spend,
+  // but unbounded DB/CPU work per rotated address).
+  noCapitalAssess: {
+    anonymous: { limit: 5, windowSeconds: 15 * 60 },
+    anonymousGlobal: { limit: 240, windowSeconds: 15 * 60 },
+  },
   search: {
     ip: { limit: 30, windowSeconds: 60 },
   },
   google: {
     ip: { limit: 20, windowSeconds: 15 * 60 },
+    // F10-08 — per-IP account-creation cap for Google OAuth. The callback is
+    // a browser redirect that repeats on every login, so normal logins are
+    // NOT throttled; only NEW account creation is bound, so an IP-rotating
+    // attacker cannot mass-create users (and correlated emails) via OAuth.
+    signup: { limit: 5, windowSeconds: 15 * 60 },
   },
   visitor: {
     ip: { limit: 5, windowSeconds: 60 * 60 },
@@ -78,6 +96,12 @@ export const RATE_LIMITS = {
     ip: { limit: 60, windowSeconds: 15 * 60 },
   },
 } as const;
+// F10-09 — fixed key for the global anonymous /api/no-capital/assess budget.
+// Request-independent for the same rotation-proof reason as above.
+export const NO_CAPITAL_ASSESS_GLOBAL_KEY = "no-capital-assess:global:anonymous";
+// F10 — per-account (email) rate-limit bucket for login/registration.
+// Self-contained module: raw emails stay out of rate_limits (HMAC only).
+export { emailRateLimitKey } from "@/lib/emailRateLimitKey";
 
 export type RateLimitInput = {
   key: string;
