@@ -23,6 +23,9 @@ import {
   clientIpKey,
   RATE_LIMITS,
   rateLimitExceededResponse,
+  ASSESS_AUTHENTICATED_GLOBAL_KEY,
+  ASSESS_AUTHENTICATED_GLOBAL_LIMIT,
+  ASSESS_AUTHENTICATED_GLOBAL_WINDOW_SECONDS,
 } from "@/lib/rateLimit";
 import { loadActiveConsent } from "@/lib/noCapital/publicData";
 import {
@@ -94,6 +97,22 @@ export async function POST(request: Request) {
 
       if (!userCheck.allowed) {
         return rateLimitExceededResponse(userCheck);
+      }
+
+      // F12-1 — global authenticated AI-spend budget. The per-user bucket
+      // bounds one account; this STATIC key bounds total authenticated spend
+      // across every account (account-rotation cannot spread the counter).
+      // Checked before any consent / DB / scoring / AI work so an over-budget
+      // attacker is rejected cheaply. Fail-open behavior is inherited from
+      // checkRateLimit; the anonymous path below is untouched.
+      const authedGlobalCheck = await checkRateLimit({
+        key: ASSESS_AUTHENTICATED_GLOBAL_KEY,
+        limit: ASSESS_AUTHENTICATED_GLOBAL_LIMIT,
+        windowSeconds: ASSESS_AUTHENTICATED_GLOBAL_WINDOW_SECONDS,
+      });
+
+      if (!authedGlobalCheck.allowed) {
+        return rateLimitExceededResponse(authedGlobalCheck);
       }
     } else {
       const anonLimit = RATE_LIMITS.assess.anonymous;
@@ -436,8 +455,51 @@ export async function POST(request: Request) {
     // 3. التأكد من وجود المشاريع
     // ============================================================
 
+    // F12-4 — minimal projection of EXACTLY the fields consumed by
+    // typedProjects / rankProjectsV2. Ranking requires every project row, so
+    // there is deliberately NO LIMIT and no field that the scoring engine
+    // consumes may be omitted.
+    const projectSelection = {
+      id: projects.id,
+      projectId: projects.projectId,
+      projectName: projects.projectName,
+      category: projects.category,
+      description: projects.description,
+      minCapital: projects.minCapital,
+      recommendedCapital: projects.recommendedCapital,
+      maxCapital: projects.maxCapital,
+      riskLevel: projects.riskLevel,
+      requiresShop: projects.requiresShop,
+      homeBased: projects.homeBased,
+      onlinePossible: projects.onlinePossible,
+      transportRequired: projects.transportRequired,
+      skillsRequired: projects.skillsRequired,
+      timeRequired: projects.timeRequired,
+      difficulty: projects.difficulty,
+      scalability: projects.scalability,
+      seasonality: projects.seasonality,
+      competitionLevel: projects.competitionLevel,
+      targetArea: projects.targetArea,
+      equipment: projects.equipment,
+      initialStock: projects.initialStock,
+      fixedCosts: projects.fixedCosts,
+      variableCostsPercent: projects.variableCostsPercent,
+      pricingMethod: projects.pricingMethod,
+      profitFormula: projects.profitFormula,
+      breakEvenFormula: projects.breakEvenFormula,
+      risks: projects.risks,
+      advantages: projects.advantages,
+      disadvantages: projects.disadvantages,
+      launchPlan: projects.launchPlan,
+      legalNotes: projects.legalNotes,
+      source: projects.source,
+      workLocation: projects.workLocation,
+      skillLevel: projects.skillLevel,
+      legalStatus: projects.legalStatus,
+    } as const;
+
     let dbProjects = await db
-      .select()
+      .select(projectSelection)
       .from(projects);
 
     if (dbProjects.length === 0) {
@@ -448,7 +510,7 @@ export async function POST(request: Request) {
       // Automatic database seeding is disabled in request handlers.
 
       dbProjects = await db
-        .select()
+        .select(projectSelection)
         .from(projects);
     }
 

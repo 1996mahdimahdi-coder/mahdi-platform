@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { projects } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq, lte } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
 import {
   forbiddenResponse,
   getSession,
@@ -40,29 +41,47 @@ export async function GET(request: Request) {
     const session = await getSession();
     const adminView = isAdminView(session);
 
-    let allProjects = await db.select().from(projects);
+    // F12-4 — filters are pushed to SQL (previously the whole table was
+    // fetched and filtered in JS). Semantics are identical to the old filter
+    // chain: `الكل` sentinels and non-numeric maxCapital are skipped, booleans
+    // match exactly, and the result order is unchanged (no ORDER BY added).
+    const predicates: SQL[] = [];
 
     if (category && category !== "الكل") {
-      allProjects = allProjects.filter((p) => p.category === category);
+      predicates.push(eq(projects.category, category));
     }
     if (riskLevel && riskLevel !== "الكل") {
-      allProjects = allProjects.filter((p) => p.riskLevel === riskLevel);
+      predicates.push(eq(projects.riskLevel, riskLevel));
     }
     if (maxCapital) {
       const capNum = parseInt(maxCapital, 10);
       if (!isNaN(capNum)) {
-        allProjects = allProjects.filter((p) => p.minCapital <= capNum);
+        predicates.push(lte(projects.minCapital, capNum));
       }
     }
     if (homeBasedOnly) {
-      allProjects = allProjects.filter((p) => p.homeBased);
+      predicates.push(eq(projects.homeBased, true));
     }
     if (onlineOnly) {
-      allProjects = allProjects.filter((p) => p.onlinePossible);
+      predicates.push(eq(projects.onlinePossible, true));
     }
 
+    const allProjects = await db
+      .select()
+      .from(projects)
+      .where(and(...predicates));
+
     const payload = adminView ? allProjects : allProjects.map(publicProjectShape);
-    return NextResponse.json({ success: true, projects: payload });
+
+    const response = NextResponse.json({ success: true, projects: payload });
+
+    // F12-4 — admin payloads carry the full (authorized) rows: never let a
+    // shared cache store them. Public responses keep default caching.
+    if (adminView) {
+      response.headers.set("Cache-Control", "private, no-store");
+    }
+
+    return response;
   } catch (error: any) {
     return NextResponse.json({ success: false, error: "\u062d\u062f\u062b \u062e\u0637\u0623 \u062f\u0627\u062e\u0644\u064a. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649 \u0644\u0627\u062d\u0642\u064b\u0627." }, { status: 500 });
   }

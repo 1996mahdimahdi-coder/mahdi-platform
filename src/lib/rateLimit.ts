@@ -103,6 +103,16 @@ export const NO_CAPITAL_ASSESS_GLOBAL_KEY = "no-capital-assess:global:anonymous"
 // Self-contained module: raw emails stay out of rate_limits (HMAC only).
 export { emailRateLimitKey } from "@/lib/emailRateLimitKey";
 
+// F12-1 — fixed global DAILY budget for AUTHENTICATED /api/assess. Session
+// users keep their per-user 10/15min bucket; this static key bounds the total
+// authenticated AI-spend across the whole population (many accounts / IP
+// rotation cannot spread the counter), mirroring the AI-chat daily budget.
+// Request-independent for the same rotation-proof reason.
+export const ASSESS_AUTHENTICATED_GLOBAL_KEY =
+  "assess:global:authenticated";
+export const ASSESS_AUTHENTICATED_GLOBAL_LIMIT = 5000;
+export const ASSESS_AUTHENTICATED_GLOBAL_WINDOW_SECONDS = 24 * 60 * 60;
+
 export type RateLimitInput = {
   key: string;
   limit: number;

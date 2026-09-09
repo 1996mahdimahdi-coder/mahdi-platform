@@ -7,6 +7,12 @@ import {
   ALLOWED_CONFIDENCE_GRADES,
   ALLOWED_SOURCE_TYPES,
 } from "@/lib/sourceValidation";
+import {
+  checkRateLimit,
+  clientIpKey,
+  RATE_LIMITS,
+  rateLimitExceededResponse,
+} from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +46,21 @@ export async function GET(request: Request) {
         { success: false, error: "قيمة نوع المصدر (source_type) غير صالحة." },
         { status: 400 }
       );
+    }
+
+    // F12-3 — public read limiting (mirrors the F5 readList convention used by
+    // sibling list endpoints). Placed after query validation so an invalid
+    // parameter still returns its established 400, and before the DB work so
+    // floods are rejected cheaply.
+    const readLimit = RATE_LIMITS.readList.ip;
+    const readCheck = await checkRateLimit({
+      key: clientIpKey(request, "read:list:sources"),
+      limit: readLimit.limit,
+      windowSeconds: readLimit.windowSeconds,
+    });
+
+    if (!readCheck.allowed) {
+      return rateLimitExceededResponse(readCheck);
     }
 
     const filters = [];

@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { Clock, ArrowRight, Sparkles, BarChart3, ImageIcon } from "lucide-react";
 import { db } from "@/db";
 import { blogPosts } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { and, desc, eq, ne } from "drizzle-orm";
 import MarkdownContent from "@/components/MarkdownContent";
 import ArticleImage from "@/components/ArticleImage";
 import SourcesSection from "@/components/SourcesSection";
@@ -121,9 +121,20 @@ export default async function SingleBlogPostPage(props: { params: Promise<{ slug
   let relatedPosts: { id: number; slug: string; title: string; summary: string; category: string; image: string | null }[] = [];
   try {
     if (post.category) {
-      const all = await db.select({ id: blogPosts.id, slug: blogPosts.slug, title: blogPosts.title, summary: blogPosts.summary, category: blogPosts.category, image: blogPosts.image })
-        .from(blogPosts);
-      relatedPosts = all.filter((p) => p.category === post.category && p.id !== post.id).slice(0, 3);
+      // F12-4 — deterministic, bounded related-posts lookup (was an unbounded
+      // full-table fetch filtered in JS): same category, exclude the current
+      // post, most-recent-first, at most 3.
+      relatedPosts = await db
+        .select({ id: blogPosts.id, slug: blogPosts.slug, title: blogPosts.title, summary: blogPosts.summary, category: blogPosts.category, image: blogPosts.image })
+        .from(blogPosts)
+        .where(
+          and(
+            eq(blogPosts.category, post.category),
+            ne(blogPosts.id, post.id)
+          )
+        )
+        .orderBy(desc(blogPosts.id))
+        .limit(3);
     }
   } catch { /* ignore */ }
 

@@ -14,7 +14,7 @@ import {
   RATE_LIMITS,
   rateLimitExceededResponse,
 } from "@/lib/rateLimit";
-import { logSecurity } from "@/lib/securityLog";
+import { logSecurity, hashForLog } from "@/lib/securityLog";
 
 export const dynamic = "force-dynamic";
 
@@ -99,6 +99,37 @@ export async function POST(request: Request) {
       role = existing[0].role;
       tokenVersion = existing[0].tokenVersion;
     } else {
+      // F12-2 — bound NEW account creation exactly like the web callback
+      // (RATE_LIMITS.google.signup, SAME shared bucket so web + Android
+      // combined stay ≤ 5/15min per IP). Existing-account logins above never
+      // reach this branch and are NOT throttled.
+      const signupLimit = RATE_LIMITS.google.signup;
+      const signupCheck = await checkRateLimit({
+        key: clientIpKey(request, "google:signup"),
+        limit: signupLimit.limit,
+        windowSeconds: signupLimit.windowSeconds,
+      });
+
+      if (!signupCheck.allowed) {
+        await logSecurity(
+          "oauth.signup_rate_limited",
+          "warn",
+          {
+            provider: "google",
+            emailHash: hashForLog(email),
+          },
+          { suppress: { key: "oauth-signup" } }
+        );
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              "تم تجاوز عدد حسابات Google المسموح إنشاؤها. أعد المحاولة لاحقًا.",
+          },
+          { status: 429 }
+        );
+      }
+
       const adminEmail = (process.env.ADMIN_EMAIL || "").toLowerCase();
       role = adminEmail && email === adminEmail ? "admin" : "user";
 

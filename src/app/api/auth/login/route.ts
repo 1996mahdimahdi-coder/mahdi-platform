@@ -40,45 +40,29 @@ function jsonError(error: string, status: number) {
 }
 
 export async function POST(request: Request) {
-  const loginDiagStartedAt = Date.now();
-  const loginDiag = (stage: string) =>
-    console.log(
-      `[LOGIN_DIAG] +${Date.now() - loginDiagStartedAt}ms ${stage}`
-    );
-
-  loginDiag("POST:start");
-  loginDiag("csrfGuard:start");
   const csrfErr = await csrfGuard(request);
-  loginDiag("csrfGuard:done");
   if (csrfErr) {
-    loginDiag("csrfGuard:rejected");
     return csrfErr;
   }
 
   // H1 rate limiting: per-IP first so even malformed floods are bounded.
   const ipLimit = RATE_LIMITS.login.ip;
 
-  loginDiag("rateLimit:ip:start");
   const ipCheck = await checkRateLimit({
     key: clientIpKey(request, "login"),
     limit: ipLimit.limit,
     windowSeconds: ipLimit.windowSeconds,
   });
-  loginDiag("rateLimit:ip:done");
 
   if (!ipCheck.allowed) {
-    loginDiag("rateLimit:ip:rejected");
     return rateLimitExceededResponse(ipCheck);
   }
 
   let body: unknown;
 
   try {
-    loginDiag("request.json:start");
     body = await request.json();
-    loginDiag("request.json:done");
   } catch {
-    loginDiag("request.json:error");
     return jsonError(
       "\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0637\u0644\u0628 \u063a\u064a\u0631 \u0635\u0627\u0644\u062d\u0629.",
       400
@@ -130,13 +114,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    loginDiag("db.users:start");
     const userRows = await db
       .select()
       .from(users)
       .where(eq(users.email, email))
       .limit(1);
-    loginDiag("db.users:done");
 
     const user = userRows[0];
 
@@ -148,12 +130,10 @@ export async function POST(request: Request) {
       | null = null;
 
     if (user) {
-      loginDiag("bcrypt.compare:start");
       passwordMatches = await bcrypt.compare(
         password,
         user.passwordHash
       );
-      loginDiag("bcrypt.compare:done");
 
       if (!passwordMatches) {
         authFailedReason = "bad_credentials";
@@ -161,9 +141,7 @@ export async function POST(request: Request) {
         authFailedReason = "account_disabled";
       }
     } else {
-      loginDiag("bcrypt.compare:dummy:start");
       await bcrypt.compare(password, DUMMY_BCRYPT_HASH);
-      loginDiag("bcrypt.compare:dummy:done");
       authFailedReason = "unknown_email";
     }
 
@@ -182,16 +160,13 @@ export async function POST(request: Request) {
       // rate_limits table.
       const emailLimit = RATE_LIMITS.login.email;
 
-      loginDiag("rateLimit:email:start");
       const emailCheck = await checkRateLimit({
         key: emailRateLimitKey("login", email),
         limit: emailLimit.limit,
         windowSeconds: emailLimit.windowSeconds,
       });
-      loginDiag("rateLimit:email:done");
 
       if (!emailCheck.allowed) {
-        loginDiag("rateLimit:email:rejected");
         await logSecurity(
           "auth.login_rate_limited",
           "warn",
@@ -215,13 +190,11 @@ export async function POST(request: Request) {
       );
     }
 
-    loginDiag("createSessionToken:start");
     const token = await createSession({
       id: user.id,
       role: user.role,
       tokenVersion: user.tokenVersion,
     });
-    loginDiag("createSessionToken:done");
 
     await logSecurity("auth.login_success", "info", {
       userId: user.id,
@@ -251,15 +224,11 @@ export async function POST(request: Request) {
       getSessionCookieOptions()
     );
 
-    loginDiag("POST:success");
     return response;
   } catch {
-    loginDiag("login:error");
-
     return jsonError(
       "\u062d\u062f\u062b \u062e\u0637\u0623 \u062f\u0627\u062e\u0644\u064a. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649 \u0644\u0627\u062d\u0642\u064b\u0627.",
       500
     );
   }
 }
-

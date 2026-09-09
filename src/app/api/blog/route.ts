@@ -6,10 +6,23 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    let posts = await db.select().from(blogPosts);
+    // F12-4 — minimal projection: the list consumers (RSC blog index) render
+    // only these fields; full `content`/`sources`/`financialData` blobs no
+    // longer travel on the list endpoint. No pagination added (list semantics
+    // unchanged).
+    const projection = {
+      id: blogPosts.id,
+      slug: blogPosts.slug,
+      title: blogPosts.title,
+      summary: blogPosts.summary,
+      category: blogPosts.category,
+      image: blogPosts.image,
+    };
+
+    let posts = await db.select(projection).from(blogPosts);
     if (posts.length === 0) {
       // Automatic database seeding is disabled in request handlers.
-      posts = await db.select().from(blogPosts);
+      posts = await db.select(projection).from(blogPosts);
     }
     return NextResponse.json({ success: true, posts });
   } catch (error: any) {
