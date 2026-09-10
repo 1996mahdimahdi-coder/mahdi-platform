@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ShieldCheck, Heart, ArrowLeft, Mail, MapPin } from "lucide-react";
+import { ShieldCheck, Heart, ArrowLeft, Mail, MapPin, MessageCircle, Send } from "lucide-react";
 import PlatformIcon from "@/components/PlatformIcon";
+import { CONTACT_LINKS } from "@/lib/email/config";
 
 export default function Footer() {
   return (
@@ -30,7 +31,7 @@ export default function Footer() {
               <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                 تابع NABDA
               </h4>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <a
                   href="https://web.facebook.com/profile.php?id=61593142754403"
                   target="_blank"
@@ -48,6 +49,31 @@ export default function Footer() {
                 >
                   <PlatformIcon platform="instagram" size={16} />
                   Instagram
+                </a>
+                <a
+                  href={CONTACT_LINKS.whatsappChannel}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-white text-xs font-bold hover:bg-slate-700 hover:scale-[1.03] active:scale-[0.98] transition-all"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-400" />
+                  WhatsApp
+                </a>
+                <a
+                  href={CONTACT_LINKS.telegram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-white text-xs font-bold hover:bg-slate-700 hover:scale-[1.03] active:scale-[0.98] transition-all"
+                >
+                  <Send className="w-4 h-4 text-sky-400" />
+                  Telegram
+                </a>
+                <a
+                  href={`mailto:${CONTACT_LINKS.email}`}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800 text-white text-xs font-bold hover:bg-slate-700 hover:scale-[1.03] active:scale-[0.98] transition-all"
+                >
+                  <Mail className="w-4 h-4 text-indigo-400" />
+                  Gmail
                 </a>
               </div>
             </div>
